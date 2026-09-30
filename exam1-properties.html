@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ECN 377 Midterm I properties</title>
+<style>
+  @page { size: letter portrait; margin: 0.32in 0.36in; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 10.4px/1.28 "Segoe UI", Calibri, Arial, sans-serif;
+    color: #161616;
+  }
+  h1 {
+    font-size: 15px;
+    line-height: 1.15;
+    margin: 0 0 1px;
+  }
+  .meta {
+    margin: 0 0 5px;
+    color: #333;
+    font-size: 9.2px;
+  }
+  .cols { column-count: 2; column-gap: 16px; }
+  h2 {
+    font-size: 11px;
+    margin: 5px 0 1px;
+    padding-bottom: 1px;
+    border-bottom: 1px solid #222;
+    break-after: avoid;
+  }
+  p, ul { margin: 0 0 2px; }
+  ul { padding-left: 11px; }
+  li { margin: 0; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 9.6px;
+  }
+  .toy { color: #333; }
+</style>
+</head>
+<body>
+<h1>ECN 377 Midterm I. Properties, Days 1-12.</h1>
+<p class="meta">Open this next to exam1.R. Numbers below are the toys in that file. On the exam, change the # SET lines and run that block only. Round to hundredths (5.90). Day 13 (Monday) is not on this page.</p>
+<div class="cols">
+
+<h2>Before any arithmetic</h2>
+<ul>
+<li><strong>Sample list</strong> (no probabilities): <code>mean var sd cov cor</code>. Variance, sd, and covariance divide by <strong>n-1</strong>. Do not divide again.</li>
+<li><strong>Probability table</strong>: <code>sum(x * p)</code>. Never <code>var()</code> or <code>cov()</code> on a table. Those ignore p. Check that p adds to 1.</li>
+<li><strong>Change</strong> ignores the intercept. <strong>Prediction</strong> keeps it.</li>
+<li><code>E[X^2]</code> squares each value, then weights. <code>(E[X])^2</code> squares the mean. Different numbers.</li>
+<li>"That same sample" can still be a new list. Use the numbers printed in that question.</li>
+<li>A fraction like 7/10 is 0.7. Type <code>7/10</code>.</li>
+</ul>
+
+<h2>Mean, percent, ceteris paribus</h2>
+<ul>
+<li>Mean = sum / n. <code>mean(x)</code> equals <code>sum(x)/length(x)</code>. Toy 0,0,6,2,1 -&gt; <span class="toy">1.80</span>. Sum 90 and n 5 -&gt; <span class="toy">18.00</span>.</li>
+<li>Percent change = <code>100 * (new - old) / old</code>. $20 to $25 -&gt; <span class="toy">25.00</span>.</li>
+<li>Percentage points = new - old. 4% to 6% is <strong>2 points</strong> and a <strong>50% increase</strong>. 3% to 5% is 2 points and <span class="toy">66.67%</span>.</li>
+<li>Ceteris paribus = holding the other factors fixed. In <code>y = b0 + b1 X1 + b2 X2</code>, <strong>b1 is the effect of X1 holding X2 fixed</strong>. b0 is predicted y when every x is 0.</li>
+<li>Correlation is not causation. Ice cream and drownings: summer drives both. A strong correlation does not prove X causes Y.</li>
+</ul>
+
+<h2>A change vs a prediction</h2>
+<ul>
+<li><code>delta y = b1*dX1 + b2*dX2 + b3*dX3</code>. Intercept cancels. "Rises by 2" is a change of 2, not a level of 2.</li>
+<li>Toy: quantity = 120 - 9.8*price + 0.03*income. Price +$1, income fixed -&gt; <span class="toy">-9.80</span>. Price -$2 and income +$300 -&gt; <span class="toy">28.60</span>.</li>
+<li>Slope from a rise over a run: <code>b1 = dy / dx</code>. 27 over 3 -&gt; <span class="toy">9.00</span>.</li>
+<li>Prediction: <code>yhat = b0 + b1*x</code>. b0=1, b1=7, x=1 -&gt; <span class="toy">8.00</span>.</li>
+<li>Line they already wrote: <code>15/10 + (3/10)*hsGPA</code> at 36/10 -&gt; <span class="toy">2.58</span>. Read their fractions. Do not memorize 0.5.</li>
+</ul>
+
+<h2>Sample spread (lists)</h2>
+<ul>
+<li>Variance <code>var(x) = sum((x-xbar)^2) / (n-1)</code>. x=(3,4,5) -&gt; <span class="toy">1.00</span>.</li>
+<li>sd <code>sd(x) = sqrt(var(x))</code>. x=(9,2,2) -&gt; <span class="toy">4.04</span>. Given Var=10, sd -&gt; <span class="toy">3.16</span>.</li>
+<li>Covariance <code>cov(x,y)</code>, divide by n-1. Rise and fall together means positive. x=(2,2,0), y=(4,4,2) -&gt; <span class="toy">1.33</span>.</li>
+<li>Correlation <code>cor = cov / (sdx * sdy)</code> = <code>cor(x,y)</code>. Between -1 and 1. No units. 4/(3*2) -&gt; <span class="toy">0.67</span>.</li>
+</ul>
+
+<h2>Expectation and population moments</h2>
+<ul>
+<li><code>E[g(X)] = sum(g(x) * p)</code>. <code>E[c] = c</code>.</li>
+<li><code>E[aX+b] = a*E[X] + b</code>. <code>E[aX+bY-c] = a*EX + b*EY - c</code>. E[4X+5Y-3] with EX=2, EY=3 -&gt; <span class="toy">20.00</span>.</li>
+<li><code>E[X^2] = sum(x^2 * p)</code>. Values 1,2,3 with p 0.2, 0.5, 0.3 -&gt; E[X] <span class="toy">2.10</span>, E[X^2] <span class="toy">4.90</span>.</li>
+<li><code>Var(X) = E[X^2] - (E[X])^2</code>. E[X]=4, E[X^2]=83 -&gt; <span class="toy">67.00</span>. Same table -&gt; Var <span class="toy">0.49</span>, sd <span class="toy">0.70</span>.</li>
+<li><code>Var(aX+b) = a^2 * Var(X)</code>. The added constant does nothing. a=2, Var=4 -&gt; <span class="toy">16.00</span>.</li>
+<li><code>Cov(X,Y) = E[XY] - E[X]*E[Y]</code>. <code>E[XY] = sum(x*y*p)</code>. Given 17, 1, 3 -&gt; <span class="toy">14.00</span>. Pairs (1,2),(0,2),(0,1) each 1/3 -&gt; <span class="toy">0.11</span>.</li>
+<li>Joint table, asked only for E[X]: ignore y. x=1,5,1 with p 0.2, 0.3, 0.5 -&gt; <span class="toy">2.20</span>.</li>
+<li><code>Cov(a1*X+b1, a2*Y+b2) = a1*a2*Cov</code>. Constants drop. Cov=-1, a1=3, a2=5 -&gt; <span class="toy">-15.00</span>.</li>
+<li><code>Cor = Cov / (sdX * sdY)</code>. Unitless, between -1 and 1. 3/(3*3) -&gt; <span class="toy">0.33</span>.</li>
+<li>Independent means Cov = 0, and <code>Var(X+Y) = Var(X)+Var(Y)</code>. 6 and 6 -&gt; <span class="toy">12.00</span>.</li>
+<li>Always: <code>Var(aX+bY) = a^2*VarX + b^2*VarY + 2*a*b*Cov</code>. a=b=3, vars 6 and 5, Cov 0 -&gt; <span class="toy">99.00</span>.</li>
+<li>A 0/1 variable has X^2 = X, so E[X^2] = E[X].</li>
+</ul>
+
+<h2>Conditional mean and variance</h2>
+<ul>
+<li><code>E[Y|X=x]</code> = average of Y in the subgroup where X = x.</li>
+<li>List, no probabilities: <code>mean(y)</code>. 1,3,5,10 -&gt; <span class="toy">4.75</span>.</li>
+<li>With probabilities: <code>sum(y*p)</code>. Three 9s with 0.2, 0.3, 0.5 -&gt; <span class="toy">9.00</span>.</li>
+<li><code>E[aY+b | X=x] = a*(conditional mean) + b</code>. Mean 2, a=3, b=9 -&gt; <span class="toy">15.00</span>.</li>
+<li><code>E[X|X] = X</code>.</li>
+<li>Conditional variance is the spread inside that same subgroup. A list uses <code>var(y)</code> (sample, n-1). A table uses <code>E[Y^2]-(E[Y])^2</code>.</li>
+</ul>
+
+<h2>The regression model</h2>
+<ul>
+<li><code>Y = b0 + b1*X + U</code>. Y is dependent (wage, colGPA). X is explanatory (educ, hsGPA).</li>
+<li>U is every other factor that affects Y. Not the slope. Not the average of Y.</li>
+<li>b1 is the ceteris paribus effect of X on Y. Units of Y per unit of X. Any size. Not the correlation.</li>
+<li><code>E[U|X]=0</code> means the average of U does not depend on X. People still differ. Then <code>E[Y|X=x] = b0 + b1*x</code>. Do not leave +U in the conditional mean.</li>
+<li><code>b0 + b1*X</code> is the part of Y explained by X. Hats are estimates, because b0 and b1 are population constants and you only see a sample.</li>
+</ul>
+
+<h2>OLS</h2>
+<ul>
+<li>Slope <code>b1 = cov(x,y) / var(x)</code>. Covariance on top, variance of X on the bottom. n-1 cancels, so this matches the sum formula. Negative is allowed. cov=4, var=7 -&gt; <span class="toy">0.57</span>. x=(1,2,3), y=(2,2,5) -&gt; <span class="toy">1.50</span>.</li>
+<li>Population slope from a table is Cov/Var, using the population formulas. Not <code>cov()/var()</code>.</li>
+<li>Intercept, after the slope: <code>b0 = ybar - b1*xbar</code>. ybar 10, xbar 8, slope 7/10 -&gt; <span class="toy">4.40</span>. The 1,2,3 toy intercept is <span class="toy">0.00</span>.</li>
+<li><code>lm(y ~ x)</code>: coefficient [1] is the intercept, [2] is the slope. Fitted values <code>fitted()</code>, residuals <code>resid()</code>.</li>
+<li>Fitted value = prediction = <code>b0 + b1*x</code>. Not the actual y, not U.</li>
+<li>Residual = <strong>actual - fitted</strong>. Positive residual: actual is above the line, OLS <strong>under-predicted</strong>. Negative: over-predicted.</li>
+<li>Toy line -0.90 + 0.54*x at x=12, actual y=9: fitted <span class="toy">5.58</span>, residual <span class="toy">3.42</span>, under. Predict the 1,2,3 line at x=4 -&gt; <span class="toy">6.00</span>.</li>
+</ul>
+
+<h2>Three OLS properties (any sample)</h2>
+<ul>
+<li>1. Residuals sum to 0. Not SSR, not 1.</li>
+<li>2. X and the residuals are uncorrelated. <code>sum(x * uhat)</code> is 0.</li>
+<li>3. (xbar, ybar) lies on the line. <code>mean(y) = b0 + b1*mean(x)</code>.</li>
+</ul>
+
+<h2>R^2 and units</h2>
+<ul>
+<li>SST = total variation = <code>sum((y-ybar)^2)</code>.</li>
+<li>SSR = unexplained = <code>sum((y-yhat)^2)</code>.</li>
+<li>SSE = explained = SST - SSR.</li>
+<li><strong>SST = SSE + SSR</strong>.</li>
+<li><code>R^2 = SSE / SST = 1 - SSR/SST</code>. Unexplained fraction = <code>SSR / SST</code>.</li>
+<li>SST 200, SSR 150 -&gt; SSE <span class="toy">50.00</span>, R^2 <span class="toy">0.25</span>, unexplained <span class="toy">0.75</span>.</li>
+<li>R^2 is the fraction of sample variation in Y explained by X. Near 0 is common and not automatically a bad model. The slope can still be nonzero.</li>
+<li>Multiply <strong>Y</strong> by c: intercept and slope both multiply by c. R^2 unchanged. (Salary in dollars = 1000 times salary in thousands.)</li>
+<li>Multiply <strong>X</strong> by c: slope divides by c. Intercept unchanged. R^2 unchanged. (Roe as a decimal is roe/100, so the slope multiplies by 100.)</li>
+</ul>
+
+<h2>Words, data, log</h2>
+<ul>
+<li>Population: the whole group, usually not fully observed. Sample: what you collected. You use the sample to learn about the population.</li>
+<li>Cross-section: many units, one time. 526 workers in 1976 (wage1).</li>
+<li>Time-series: one unit, many times. U.S. unemployment each year, 2000-2024.</li>
+<li>Panel: many units, many times. GDP for 50 states, every year 2015-2020.</li>
+<li><code>wage1$wage</code> pulls one column. <code>summary()</code> snapshots every variable. Center, spread, shape: <code>mean()</code>, <code>sd()</code>, <code>hist()</code>.</li>
+<li>Econometrics combines economics, data, and statistics.</li>
+<li><code>log</code> and <code>exp</code> undo each other. <code>exp(log(3))</code> is 3. log needs a positive input. This is not a log-wage percent interpretation yet.</li>
+<li>Practice rule only: AI writes, you verify. Off on the exam.</li>
+</ul>
+
+</div>
+</body>
+</html>
