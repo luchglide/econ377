@@ -59,10 +59,11 @@ r2 <- function(z) {
 ## dependent, error U, E[U|X] .................. MODEL
 ## OLS slope, beta1 hat, cov/var ............... OLS SLOPE
 ## OLS intercept, beta0 hat .................... OLS INTERCEPT
-## fitted, y hat, residual, u hat .............. FITTED
+## fitted, predict at a new x ................... FITTED
+## residual, uhat, positive, under, over ........ RESIDUAL
 ## sum of residuals, xbar ybar on the line ..... OLS PROPERTIES
 ## R^2, SST, SSR, SSE, unexplained ............. R SQUARED
-## units, dollars, rescale, salary, roe ........ UNITS
+## units, salary, dollars, thousands, roe ...... UNITS
 ## cross-section, time-series, panel ........... DATA TYPE
 ## population, sample, $, summary, hist ........ WORDS
 ## log, exp .................................... LOG
@@ -93,10 +94,10 @@ r2 <- function(z) {
 ## CLICK: a prediction keeps the intercept. yhat = b0 + b1*x.
 ##
 ## FITTED
-## CLICK: the fitted value is the model's prediction of Y at that X. Not the actual Y, not U, not the residual.
-## CLICK: the residual equals actual Y minus fitted Y. Not fitted minus actual.
-## CLICK: a positive residual means OLS under-predicted Y. Actual is above the line.
-## CLICK: a negative residual means OLS over-predicted Y.
+## CLICK: POSITIVE residual = UNDER-predicted. Actual is above the line.
+## CLICK: NEGATIVE residual = OVER-predicted. Do not pair positive with over.
+## CLICK: the residual equals actual Y minus fitted Y.
+## CLICK: the fitted value is the model's prediction of Y at that X. Not the actual Y, not U.
 ##
 ## OLS PROPERTIES
 ## CLICK: the sum of the OLS residuals is always 0. Not SSR, not 1, not always positive.
@@ -162,8 +163,8 @@ r2 <- function(z) {
 ## CLICK: log needs a positive input. This is not a log-wage percent interpretation yet.
 ##
 ## UNITS
+## CLICK: salary converted to dollars means multiply the slope by 1000. R^2 stays the number they already gave you.
 ## CLICK: multiply Y by c and both the intercept and the slope multiply by c. R^2 does not change.
-##        Salary in dollars = 1000 times salary in thousands.
 ## CLICK: multiply X by c and the slope divides by c. The intercept stays. R^2 does not change.
 ##        Roe as a decimal is roe/100, so the slope multiplies by 100 and the intercept stays.
 ##
@@ -544,49 +545,55 @@ r2(coef(lm(y ~ x))[2])         # same number. [2] is the slope.
 
 ## ============================================================
 ## OLS INTERCEPT
-## SEARCH: OLS intercept, beta0 hat, ybar - b1 xbar
-## RULE: get the slope first. Then b0_hat = mean(y) - b1_hat * mean(x)
-## TOY: ybar=10, xbar=8, b1=7/10 -> 4.40
-##      sample x=(1,2,3), y=(2,2,5) -> slope 1.50, intercept 0.00
+## SEARCH: OLS intercept, beta0 hat, ybar - b1 xbar, that same sample
+## SAME SAMPLE TRAP: the words can say "that same sample" while printing NEW lists.
+## Replace BOTH x_int and y_int. A leftover y from the slope question gives the wrong intercept.
+## RULE: get the slope first, from THESE lists. Then b0 = mean(y) - b1 * mean(x)
+## TOY check only, ignore the arrow on the exam: ybar=10, xbar=8, b1=7/10 -> 4.40
 ## ============================================================
 ybar <- 10                     # SET
 xbar <- 8                      # SET
 b1 <- 7/10                     # SET
 r2(ybar - b1 * xbar)
 
-x <- c(1, 2, 3)                # SET
-y <- c(2, 2, 5)                # SET
-b1 <- cov(x, y) / var(x)
-r2(mean(y) - b1 * mean(x))
-r2(coef(lm(y ~ x))[1])         # [1] is the intercept
+x_int <- c(1, 2, 3)            # SET  this question's x, not the previous question
+y_int <- c(2, 2, 5)            # SET  this question's y, not the previous question
+b1 <- cov(x_int, y_int) / var(x_int)
+r2(mean(y_int) - b1 * mean(x_int))
+r2(coef(lm(y_int ~ x_int))[1]) # [1] is the intercept
 
 
 ## ============================================================
-## FITTED
-## SEARCH: fitted value, residual, predict at a new x, over, under
-## RULE: fitted yhat = b0 + b1*x. That is the model's prediction, not the actual y.
-##       residual uhat = actual y - fitted y. Not the other way around.
-##       Positive residual: actual > fitted. The point is above the line.
-##         OLS under-predicted.
-##       Negative residual: OLS over-predicted.
-##       If they give the line, plug in. If they give a sample, slope, then intercept, then plug in.
-##       The new x does not have to be one of the data points.
-## TOY: line yhat = -0.90 + 0.54*x at x=12, actual y=9 -> fitted 5.58, residual 3.42, under
-##      sample x=(1,2,3), y=(2,2,5), predict at x=4 -> 6.00
+## RESIDUAL
+## SEARCH: residual, uhat, actual, positive, under-predicted, over-predicted
+## CLICK: POSITIVE residual = UNDER-predicted. NEGATIVE = OVER-predicted.
+## They already gave you the line. Do not run lm(). Do not copy a toy number.
+##   fitted = b0 + b1 * x
+##   residual = actual y - fitted
+## TOY check only: b0=-0.90, b1=0.54, x=12, actual y=9. Run it. Do not memorize it.
 ## ============================================================
 b0 <- -0.90                    # SET
 b1 <- 0.54                     # SET
 x_new <- 12                    # SET
-y_actual <- 9                  # SET  only if they ask for the residual
+y_actual <- 9                  # SET
 yhat <- b0 + b1 * x_new
 r2(yhat)
 r2(y_actual - yhat)            # positive means under-predicted
 
-x <- c(1, 2, 3)                # SET
-y <- c(2, 2, 5)                # SET
-x_new <- 4                     # SET
-b1 <- cov(x, y) / var(x)
-b0 <- mean(y) - b1 * mean(x)
+
+## ============================================================
+## FITTED
+## SEARCH: fitted value, predict at a new x, fit the line
+## RULE: if they give the line, use RESIDUAL above.
+##       If they give a sample: slope, then intercept, then plug in the NEW x.
+##       The new x is often not one of the data points. Use the x in the question.
+##       Ignore any number in a comment. Change the SET lines and run.
+## ============================================================
+x_fit <- c(1, 2, 3)            # SET
+y_fit <- c(2, 2, 5)            # SET
+x_new <- 4                     # SET  the x they say to predict at
+b1 <- cov(x_fit, y_fit) / var(x_fit)
+b0 <- mean(y_fit) - b1 * mean(x_fit)
 r2(b0 + b1 * x_new)
 
 
@@ -654,34 +661,18 @@ r2(SSE / SST)
 
 ## ============================================================
 ## UNITS
-## SEARCH: units, dollars, thousands, rescale, measurement
-## RULE: R^2 does not change when you rescale X or Y.
-##       Multiply Y by c (salary in dollars = 1000 * salary in thousands):
-##         intercept and slope BOTH multiply by c.
-##       Multiply X by c:
-##         slope DIVIDES by c. Intercept stays. R^2 stays.
-##       Day 12 check: roe as a decimal is roe/100, so the slope multiplies by 100
-##         and the intercept stays.
-## TOY: y = 1,2,3 on x = 1,2,3. Slope 1, intercept 0, R^2 1.
-##      Y * 1000 -> slope 1000, intercept 0.
-##      X / 100  -> slope 100, intercept 0.
+## SEARCH: units, salary, dollars, thousands, roe, converted, multiplied, rescale
+## RULE: they handed you the old slope. Do not refit a regression.
+##       Salary converted to dollars means Y was multiplied by 1000.
+##       New slope = old slope * 1000. New intercept = old intercept * 1000.
+##       R^2 does not change. Write the R^2 they already printed.
+##       Roe converted to a decimal is X divided by 100, so the slope multiplies by 100
+##       and the intercept stays.
 ## ============================================================
-x <- c(1, 2, 3)                # SET
-y <- c(1, 2, 3)                # SET
-c_y <- 1000                    # SET  what they multiplied Y by
-c_x <- 1/100                   # SET  what they multiplied X by
-orig <- suppressWarnings(coef(lm(y ~ x)))
-y_scaled <- suppressWarnings(coef(lm(I(c_y * y) ~ x)))
-x_scaled <- suppressWarnings(coef(lm(y ~ I(c_x * x))))
-rbind(original = round(orig, 2),
-      y_times_c = round(y_scaled, 2),
-      x_times_c = round(x_scaled, 2))
-r2_of <- function(fit) r2(summary(fit)$r.squared)
-suppressWarnings(c(
-  R2_original = r2_of(lm(y ~ x)),
-  R2_y = r2_of(lm(I(c_y * y) ~ x)),
-  R2_x = r2_of(lm(y ~ I(c_x * x)))
-))
+old_slope <- 18.50             # SET  their slope, not this toy
+y_multiplier <- 1000           # SET  1000 when Y goes from thousands to dollars
+r2(old_slope * y_multiplier)
+## R^2: copy the number in the question. It stays put.
 
 
 ## ============================================================
