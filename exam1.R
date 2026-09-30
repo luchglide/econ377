@@ -3,7 +3,9 @@
 ##
 ## ON THE EXAM
 ## 1. When you open the file, run the r2 line once (the function under this header).
-## 2. Ctrl+F the word in the question. The FINDER below is the word list.
+## 2. Ctrl+F the word in the question.
+##    A true/false or definition is in CLICKS, near the top. Read the CLICK line.
+##    A number is in the block the FINDER names. Change the # SET lines and run it.
 ## 3. Highlight ONLY that block (the ## header through its last line). Ctrl+Enter.
 ##    Do not source the whole file during the exam. Later blocks reuse names.
 ## 4. Change only the lines marked # SET. Run the block again.
@@ -65,6 +67,108 @@ r2 <- function(z) {
 ## population, sample, $, summary, hist ........ WORDS
 ## log, exp .................................... LOG
 ## omitted, bias, Monday ....................... MONDAY
+## true, false, does the intercept affect ...... CLICKS
+
+
+## ============================================================
+## CLICKS
+## Concepts from the printed sheet. No code. Ctrl+F the word in the question.
+## The first CLICK line under that word is the answer.
+## If the question also has numbers, the block name tells you where to scroll.
+## ============================================================
+##
+## CETERIS
+## CLICK: ceteris paribus means holding other factors fixed.
+## CLICK: in y = b0 + b1*X1 + b2*X2, b1 is the effect of X1 on y, holding X2 fixed.
+## CLICK: b0 is predicted y when every x is 0.
+## CLICK: correlation is not causation. Ice cream and drownings rise together because summer drives both.
+## CLICK: False. A strong correlation does not prove that X causes Y.
+##
+## DELTA
+## CLICK: False. The intercept b0 does not affect the change in y when x changes.
+## CLICK: delta y = b1*dX1 + b2*dX2 + b3*dX3. The intercept cancels, so leave b0 out.
+## CLICK: "rises by 2" is a change of 2, not a level of 2.
+##
+## PREDICT
+## CLICK: a prediction keeps the intercept. yhat = b0 + b1*x.
+##
+## FITTED
+## CLICK: the fitted value is the model's prediction of Y at that X. Not the actual Y, not U, not the residual.
+## CLICK: the residual equals actual Y minus fitted Y. Not fitted minus actual.
+## CLICK: a positive residual means OLS under-predicted Y. Actual is above the line.
+## CLICK: a negative residual means OLS over-predicted Y.
+##
+## OLS PROPERTIES
+## CLICK: the sum of the OLS residuals is always 0. Not SSR, not 1, not always positive.
+## CLICK: X and the residuals are uncorrelated. sum(x * residual) is 0.
+## CLICK: the point (xbar, ybar) always lies on the OLS line.
+##
+## R SQUARED
+## CLICK: R^2 is the fraction of the sample variation in Y explained by X. Not the slope. Not always 1.
+## CLICK: SST = SSE + SSR.
+## CLICK: SST is total variation. SSE is explained. SSR is unexplained, the squared residuals.
+## CLICK: R^2 = SSE / SST = 1 - SSR/SST. Unexplained fraction = SSR / SST.
+## CLICK: an R^2 close to 0 means the line explains little of Y. Common, and not automatically a bad model.
+## CLICK: an R^2 close to 0 does not mean the slope is 0, and it does not mean the regression is invalid.
+##
+## SAMPLE
+## CLICK: the sample variance divides by n-1. In R that command is var(x). Do not divide again.
+## CLICK: True. sd(x) is the sample standard deviation. It divides by n-1.
+## CLICK: True. mean(x) gives the same result as sum(x) / length(x).
+## CLICK: if two variables rise and fall together, their sample covariance is positive.
+## CLICK: correlation is always between -1 and 1, and it has no units.
+##
+## EXPECTATION
+## CLICK: E[c] = c. A constant comes out unchanged.
+## CLICK: E[X] equals the sum of each value times its probability. Not mean() on a table.
+## CLICK: E[X^2] equals the sum of each squared value times its probability. Square the values first.
+## CLICK: Var(X) = E[X^2] - (E[X])^2. Square the mean only in the second term.
+## CLICK: if X and Y are independent, Cov(X,Y) = 0.
+## CLICK: if X and Y are independent, Var(X+Y) = Var(X) + Var(Y).
+## CLICK: Var(aX+b) = a^2 * Var(X). The added constant does not change the variance.
+##
+## CONDITIONAL
+## CLICK: E[Y | X = x] is the average of Y among the observations with X = x.
+## CLICK: a list of Y values, no probabilities: use mean(y). A probability table: use sum(y * p).
+## CLICK: E[U | X] = 0 means the average of U does not depend on X. It does not mean every U is 0.
+## CLICK: under that assumption, E[Y | X = x] = b0 + b1*x. Do not leave + U in the conditional mean.
+## CLICK: E[X | X] = X.
+##
+## MODEL
+## CLICK: the dependent variable is Y. X is the explanatory variable.
+## CLICK: U is every factor other than X that affects Y. Not the slope. Not the average of Y.
+## CLICK: b1 is the ceteris paribus effect of X on Y. A slope can be any number. A correlation stays between -1 and 1.
+## CLICK: b0 + b1*X is the part of Y explained by X.
+## CLICK: we estimate b0 and b1 because they are population constants and we only see a sample.
+## CLICK: the OLS slope is cov(x,y) / var(x). Covariance on top, variance of X on the bottom.
+##
+## DATA TYPE
+## CLICK: cross-section is many units at one time. Wages and education for 526 workers, all in 1976.
+## CLICK: time-series is one unit over many times. The U.S. unemployment rate each year from 2000 to 2024.
+## CLICK: panel is many units over many times. GDP for all 50 states, every year from 2015 to 2020.
+##
+## WORDS
+## CLICK: the population is the whole group you care about and usually cannot fully observe.
+## CLICK: the sample is the part you actually collect.
+## CLICK: True. You use the sample to learn about the population.
+## CLICK: dataset$variable pulls one column out of a dataset. wage1$wage is the wage column.
+## CLICK: summary() is the snapshot of every variable (min, mean, max, and so on).
+## CLICK: center, spread, and shape, in that order, are mean(), sd(), and hist().
+## CLICK: econometrics combines economics, data, and statistics.
+## CLICK: on practice only, AI writes, you verify. AI is off on the exam.
+##
+## LOG
+## CLICK: log and exp undo each other. exp(log(3)) is 3, and log(exp(3)) is 3.
+## CLICK: log needs a positive input. This is not a log-wage percent interpretation yet.
+##
+## UNITS
+## CLICK: multiply Y by c and both the intercept and the slope multiply by c. R^2 does not change.
+##        Salary in dollars = 1000 times salary in thousands.
+## CLICK: multiply X by c and the slope divides by c. The intercept stays. R^2 does not change.
+##        Roe as a decimal is roe/100, so the slope multiplies by 100 and the intercept stays.
+##
+## MONDAY
+## CLICK: not on the exam until he says so. An omitted variable biases OLS if it affects Y AND is correlated with X.
 
 
 ## ============================================================
@@ -115,7 +219,8 @@ c(points = r2(new_rate - old_rate),
 
 ## ============================================================
 ## DELTA
-## SEARCH: delta, Dy, change, rises by, holding fixed, ceteris paribus effect
+## SEARCH: delta, Dy, change, rises by, intercept, affect, true, false
+## CLICK: False. The intercept b0 does not affect the change in y when x changes.
 ## RULE: the intercept does not enter a change. It cancels.
 ##       delta_y = b1*delta_x1 + b2*delta_x2 + b3*delta_x3 + ...
 ##       "Rises by 2" is a change of 2, not a level of 2.
