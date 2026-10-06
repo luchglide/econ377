@@ -1,24 +1,20 @@
 ## ECN 377 Midterm I lookup script. Days 1-12 and Problem Sets 1-6.
 ## Tyler Lucchi. Open in RStudio. This file is your notes plus your calculator.
 ##
-## ON THE EXAM
-## 1. When you open the file, run the r2 line once (the function under this header).
-## 2. Ctrl+F the word in the question.
-##    A true/false or definition is in CLICKS, near the top. Read the CLICK line.
-##    A number is in the block the FINDER names. Change the # SET lines and run it.
-## 3. Highlight ONLY that block (the ## header through its last line). Ctrl+Enter.
-##    Do not source the whole file during the exam. Later blocks reuse names.
-## 4. Change only the lines marked # SET. Run the block again.
-## 5. Canvas wants hundredths: 5.90, not 5.9. The r2() line prints that.
-## 6. Leave the worked lines in this file. Partial credit requires the script
-##    you submit to already contain a nearly complete solution.
+## ON THE EXAM, in this order
+## 1. Open the file and run the two startup lines: r2, then library(wooldridge).
+##    Loh said the Wooldridge library has to be loaded before the last questions.
+## 2. FIRST questions are multiple choice. Ctrl+F CLICKS. Read the CLICK line. No code.
+## 3. MIDDLE questions are the hand equations from Problem Sets 1-6.
+##    Ctrl+F the word (mean, variance, slope, residual, R^2). Change # SET. Run that block.
+## 4. LAST 10 match Problem Set 7. Ctrl+F LAST10. Same 10 moves, new dataset and new numbers.
+## 5. Highlight only that block. Ctrl+Enter. Do not source the whole file.
+## 6. Hundredths: 5.90, not 5.9. Leave the worked lines in the file for partial credit.
 ## 7. "That same sample" can still print a NEW list. Use the numbers in THAT question.
-## 8. No Copilot. No internet. Get this file onto the lab PC before the exam starts.
+## 8. No Copilot. No internet. This file has to already be on the lab PC.
 ##
-## EXAM MAP from Loh's Oct 5 study guide. Through R^2. Not a question list.
 ## NOT on Exam I: units of measurement, and logs inside a regression.
-## The exam is 75 minutes and 39 questions. Round to hundredths.
-## A real dataset question looks like Problem Set 7. Ctrl+F DATASET.
+## Through R^2. 75 minutes. Round to hundredths.
 ##
 ## THE TRAP
 ## A SAMPLE is a list of observed points. No probabilities.
@@ -38,9 +34,13 @@ r2 <- function(z) {
   z[abs(z) < 1e-8] <- 0
   formatC(round(z, 2), format = "f", digits = 2)
 }
+library(wooldridge)   # run this once at the start, before the last 10
 
 ## ============================================================
-## FINDER   Ctrl+F the word on the question
+## FINDER
+## FIRST  = CLICKS     multiple choice, same ideas as the old problem sets
+## MIDDLE = the blocks from MEAN through LOG
+## LAST10 = the 10 data questions, same moves as Problem Set 7
 ## ============================================================
 ## mean, average, sum, length, n ............... MEAN
 ## percent change, percentage point, % ......... PERCENT
@@ -68,8 +68,9 @@ r2 <- function(z) {
 ## residual, uhat, positive, under, over ........ RESIDUAL
 ## sum of residuals, xbar ybar on the line ..... OLS PROPERTIES
 ## R^2, SST, SSR, SSE, unexplained ............. R SQUARED
-## nrow, wooldridge, wage1, bwght, how many ...... DATASET
-## lm, coefficients, SSR from a regression ....... DATASET
+## nrow, wooldridge, how many, workers .......... LAST10
+## lm, slope, intercept, predicted wage ......... LAST10
+## SSR, R^2, cigarettes, birth weight ........... LAST10
 ## units, salary, dollars, thousands, roe ...... UNITS  (not on Exam I)
 ## cross-section, time-series, panel ........... DATA TYPE
 ## population, sample, $, summary, hist ........ WORDS
@@ -79,6 +80,10 @@ r2 <- function(z) {
 ## true, false, does the intercept affect ...... CLICKS
 
 
+## ============================================================
+## ============================================================
+## FIRST: multiple choice. Ctrl+F CLICKS.
+## Same kind of question as Problem Sets 1-6. No calculator.
 ## ============================================================
 ## CLICKS
 ## Concepts from the printed sheet. No code. Ctrl+F the word in the question.
@@ -193,6 +198,10 @@ r2 <- function(z) {
 ## CLICK: An omitted variable biases the slope only if it affects Y AND is correlated with X. The study guide asks when the assumption fails. It does not ask you to sign the bias.
 
 
+## ============================================================
+## ============================================================
+## MIDDLE: hand equations. Ctrl+F the word in the question.
+## Change the # SET lines. Run only that block.
 ## ============================================================
 ## MEAN
 ## SEARCH: mean, average, sum, how many, length
@@ -736,55 +745,132 @@ c(exp_log = exp(log(3)), log_exp = log(exp(3)))
 
 
 ## ============================================================
-## DATASET
-## SEARCH: nrow, wooldridge, wage1, bwght, how many, workers, lm, coefficients, SSR
-## This is Problem Set 7. The exam uses the same moves on a Wooldridge dataset.
-## Change the dataset name and the variable names. Keep the commands.
-## Round with r2(). Ignore the name R prints above a coefficient.
-## A second regression gets its own name. Do not reuse reg.
-## Toys below are wage1 and bwght, so you can check the script before the exam.
+## LAST10
+## The last 10 questions. Same moves as Problem Set 7, questions 1 through 10.
+## library(wooldridge) is at the top of this file. Run that line before you start these.
+## Each block below reloads its own data, so you can run one question by itself.
+## Change the dataset name, the column names, and the numbers. Keep the commands.
+## Toys are wage1 and bwght. Do not memorize the toy numbers.
 ## ============================================================
-library(wooldridge)
-data(wage1)                              # SET dataset
-nrow(wage1)                              # how many rows. wage1 toy: 526
 
-r2(mean(wage1$wage))                     # SET column. toy mean wage: 5.90
-r2(sd(wage1$educ))                       # SET column. toy sd educ: 2.77
-r2(var(wage1$educ))                      # sample variance, if they ask
-r2(cov(wage1$wage, wage1$educ))          # SET the two columns
-r2(cor(wage1$wage, wage1$educ))
+## ------------------------------------------------------------
+## L1  how many observations
+## SEARCH: how many, nrow, sample size, workers, rows
+## PS7: How many workers are in the wage1 sample?
+## Toy: 526
+## ------------------------------------------------------------
+data(wage1)                              # SET dataset name
+nrow(wage1)                              # SET same name
 
-reg <- lm(wage ~ educ, data = wage1)     # SET y ~ x and the dataset
-b0 <- unname(reg$coefficients[1])        # intercept. toy: -0.90
-b1 <- unname(reg$coefficients[2])        # slope. toy: 0.54
-r2(b0)
+## ------------------------------------------------------------
+## L2  sample mean of one column
+## SEARCH: sample mean, mean, hourly wage
+## PS7: sample mean of wage1$wage
+## Toy: 5.90
+## ------------------------------------------------------------
+data(wage1)                              # SET
+r2(mean(wage1$wage))                     # SET dataset$column
+
+## ------------------------------------------------------------
+## L3  sample standard deviation of one column
+## SEARCH: standard deviation, sd, education
+## PS7: sd of wage1$educ
+## Toy: 2.77
+## Also here if they ask variance or correlation instead:
+## ------------------------------------------------------------
+data(wage1)                              # SET
+r2(sd(wage1$educ))                       # SET dataset$column
+r2(var(wage1$educ))                      # only if they ask variance
+r2(cor(wage1$wage, wage1$educ))          # only if they ask correlation. SET both columns
+
+## ------------------------------------------------------------
+## L4  OLS slope from a dataset
+## SEARCH: OLS slope, beta1, lm, coefficients, regress
+## PS7: lm(wage ~ educ, data = wage1), slope is coefficients[2]
+## The name R prints above the number is not part of the answer. unname() drops it.
+## Toy: 0.54
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET y ~ x, and the dataset
+b1 <- unname(reg$coefficients[2])
 r2(b1)
 
-educ_new <- 14                           # SET the level they want a prediction at
-r2(b0 + b1 * educ_new)                   # toy at 14 years: 6.67
+## ------------------------------------------------------------
+## L5  OLS intercept from that same regression
+## SEARCH: OLS intercept, beta0, coefficients[1]
+## PS7: coefficients[1]. It can be negative.
+## Toy: -0.90
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET the same formula as L4
+b0 <- unname(reg$coefficients[1])
+r2(b0)
 
-delta_educ <- 2                          # SET the change. intercept stays out
-r2(b1 * delta_educ)                      # toy, educ up 2: 1.08
+## ------------------------------------------------------------
+## L6  predicted y at a given x
+## SEARCH: predicted, predict, hourly wage, educ = 
+## PS7: predicted wage at educ = 14. Keep the intercept.
+## Toy: 6.67
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET
+b0 <- unname(reg$coefficients[1])
+b1 <- unname(reg$coefficients[2])
+x_level <- 14                            # SET the level in the question
+r2(b0 + b1 * x_level)
 
-y <- wage1$wage                          # SET the y column, same one you regressed
+## ------------------------------------------------------------
+## L7  change in predicted y
+## SEARCH: by how much, rises by, change, delta
+## PS7: education rises by 2. Intercept does not enter.
+## Toy: 1.08
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET
+b1 <- unname(reg$coefficients[2])
+delta_x <- 2                             # SET the change, not a level
+r2(b1 * delta_x)
+
+## ------------------------------------------------------------
+## L8  sum of squared residuals
+## SEARCH: SSR, sum of squared residuals, residuals
+## PS7: SSR = sum(reg$residuals^2)
+## Toy: 5980.68
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET
+r2(sum(reg$residuals^2))
+
+## ------------------------------------------------------------
+## L9  R^2
+## SEARCH: R^2, r.squared, SST
+## PS7: R^2 = 1 - SSR/SST. Decimal, not a percent.
+## summary(reg)$r.squared is the same number.
+## Toy: 0.16
+## ------------------------------------------------------------
+data(wage1)                              # SET
+reg <- lm(wage ~ educ, data = wage1)     # SET
+y <- wage1$wage                          # SET the y column
 SSR <- sum(reg$residuals^2)
 SST <- sum((y - mean(y))^2)
-SSE <- SST - SSR
-r2(SSR)                                  # toy: 5980.68
-r2(SSE)
-r2(1 - SSR / SST)                        # R^2. toy: 0.16
-r2(summary(reg)$r.squared)               # same R^2
+r2(1 - SSR / SST)
+r2(summary(reg)$r.squared)
 
-## Second dataset. New object name.
-data(bwght)                              # SET
-reg2 <- lm(bwght ~ cigs, data = bwght)   # SET
-b1_cigs <- unname(reg2$coefficients[2])
-delta_cigs <- 5                          # SET
-r2(b1_cigs * delta_cigs)                 # toy, 5 more cigarettes: -2.57
+## ------------------------------------------------------------
+## L10  a second regression, then a change
+## SEARCH: bwght, cigs, cigarettes, birth weight, ounces
+## PS7: lm(bwght ~ cigs). New name reg2, so reg is not overwritten.
+## Predicted birth weight change when cigarettes rise by 5. Can be negative.
+## Toy: -2.57
+## ------------------------------------------------------------
+data(bwght)                              # SET the new dataset
+reg2 <- lm(bwght ~ cigs, data = bwght)   # SET y ~ x
+b1_new <- unname(reg2$coefficients[2])
+delta_x <- 5                             # SET
+r2(b1_new * delta_x)
 
-## Challenge on PS7. Loh said this will NOT be on the exam.
-## Average y among rows where x equals a number.
-r2(mean(wage1$wage[wage1$educ == 16]))   # toy, educ exactly 16: 8.04
+## Not one of the last 10. PS7 question 11. Loh said this will not be on the exam.
+## mean(wage1$wage[wage1$educ == 16]) is the average wage among educ exactly 16. Toy: 8.04
 
 
 ## ============================================================
