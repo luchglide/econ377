@@ -15,6 +15,11 @@
 ## 7. "That same sample" can still print a NEW list. Use the numbers in THAT question.
 ## 8. No Copilot. No internet. Get this file onto the lab PC before the exam starts.
 ##
+## EXAM MAP from Loh's Oct 5 study guide. Through R^2. Not a question list.
+## NOT on Exam I: units of measurement, and logs inside a regression.
+## The exam is 75 minutes and 39 questions. Round to hundredths.
+## A real dataset question looks like Problem Set 7. Ctrl+F DATASET.
+##
 ## THE TRAP
 ## A SAMPLE is a list of observed points. No probabilities.
 ##   mean() var() sd() cov() cor()     all divide by n-1 where that applies.
@@ -63,11 +68,14 @@ r2 <- function(z) {
 ## residual, uhat, positive, under, over ........ RESIDUAL
 ## sum of residuals, xbar ybar on the line ..... OLS PROPERTIES
 ## R^2, SST, SSR, SSE, unexplained ............. R SQUARED
-## units, salary, dollars, thousands, roe ...... UNITS
+## nrow, wooldridge, wage1, bwght, how many ...... DATASET
+## lm, coefficients, SSR from a regression ....... DATASET
+## units, salary, dollars, thousands, roe ...... UNITS  (not on Exam I)
 ## cross-section, time-series, panel ........... DATA TYPE
 ## population, sample, $, summary, hist ........ WORDS
 ## log, exp .................................... LOG
-## omitted, bias, Monday ....................... MONDAY
+## omitted, E[U|X] fails ........................ MODEL
+## not on exam ................................. NOT ON THIS EXAM
 ## true, false, does the intercept affect ...... CLICKS
 
 
@@ -142,6 +150,18 @@ r2 <- function(z) {
 ## CLICK: b0 + b1*X is the part of Y explained by X.
 ## CLICK: we estimate b0 and b1 because they are population constants and we only see a sample.
 ## CLICK: the OLS slope is cov(x,y) / var(x). Covariance on top, variance of X on the bottom.
+## CLICK: OLS means least squares. It chooses b0 and b1 to minimize the sum of squared residuals.
+## CLICK: E[U|X] = 0 fails when something inside U moves with X. In wage on educ, ability is in U and ability moves with education. Then E[Y|X] is not b0 + b1*X.
+##
+## DATASET
+## CLICK: nrow(data) is how many rows. That is the sample size.
+## CLICK: reg$coefficients[1] is the intercept. reg$coefficients[2] is the slope. Ignore the name R prints above the number. unname() strips it.
+## CLICK: SSR = sum(reg$residuals^2). SST = sum((y - mean(y))^2). R^2 = 1 - SSR/SST. summary(reg)$r.squared is the same R^2.
+## CLICK: a second regression needs a new name, or it overwrites the first one.
+## CLICK: the average of Y among rows with X exactly equal to a number is mean(y[x == that number]). Problem Set 7 calls this a challenge. Loh said that one will not be on the exam.
+##
+## DISTRIBUTIONS
+## CLICK: know the names normal, t, and F. Exam I does not ask you to run a t-test or an F-test.
 ##
 ## DATA TYPE
 ## CLICK: cross-section is many units at one time. Wages and education for 526 workers, all in 1976.
@@ -160,16 +180,17 @@ r2 <- function(z) {
 ##
 ## LOG
 ## CLICK: log and exp undo each other. exp(log(3)) is 3, and log(exp(3)) is 3.
-## CLICK: log needs a positive input. This is not a log-wage percent interpretation yet.
+## CLICK: log needs a positive input.
+## CLICK: NOT ON EXAM I: putting log on wage or educ inside a regression. Percent change is still the PERCENT block.
 ##
 ## UNITS
-## CLICK: salary converted to dollars means multiply the slope by 1000. R^2 stays the number they already gave you.
-## CLICK: multiply Y by c and both the intercept and the slope multiply by c. R^2 does not change.
+## CLICK: NOT ON EXAM I. The Oct 5 study guide says units of measurement are not on this exam.
+## CLICK: if a later exam does ask: salary converted to dollars means multiply the slope by 1000. R^2 stays the same.
 ## CLICK: multiply X by c and the slope divides by c. The intercept stays. R^2 does not change.
-##        Roe as a decimal is roe/100, so the slope multiplies by 100 and the intercept stays.
 ##
-## MONDAY
-## CLICK: not on the exam until he says so. An omitted variable biases OLS if it affects Y AND is correlated with X.
+## E[U|X] FAILS
+## CLICK: E[U|X] = 0 fails when something inside U moves with X. For wage on education, ability is in U and ability moves with education.
+## CLICK: An omitted variable biases the slope only if it affects Y AND is correlated with X. The study guide asks when the assumption fails. It does not ask you to sign the bias.
 
 
 ## ============================================================
@@ -662,7 +683,7 @@ r2(SSE / SST)
 ## ============================================================
 ## UNITS
 ## SEARCH: units, salary, dollars, thousands, roe, converted, multiplied, rescale
-## RULE: they handed you the old slope. Do not refit a regression.
+## NOT ON EXAM I. Leave this block alone tomorrow.
 ##       Salary converted to dollars means Y was multiplied by 1000.
 ##       New slope = old slope * 1000. New intercept = old intercept * 1000.
 ##       R^2 does not change. Write the R^2 they already printed.
@@ -715,10 +736,60 @@ c(exp_log = exp(log(3)), log_exp = log(exp(3)))
 
 
 ## ============================================================
-## MONDAY
-## Day 13 is Monday Oct 5. Not on this sheet as an exam fact until he says so.
-## The starter's one sentence: an omitted variable biases OLS if it
-## (1) affects Y AND (2) is correlated with X.
-## Fill the direction (up or down) in class. Do not guess it on Wednesday
-## unless he puts Day 13 on the exam.
+## DATASET
+## SEARCH: nrow, wooldridge, wage1, bwght, how many, workers, lm, coefficients, SSR
+## This is Problem Set 7. The exam uses the same moves on a Wooldridge dataset.
+## Change the dataset name and the variable names. Keep the commands.
+## Round with r2(). Ignore the name R prints above a coefficient.
+## A second regression gets its own name. Do not reuse reg.
+## Toys below are wage1 and bwght, so you can check the script before the exam.
+## ============================================================
+library(wooldridge)
+data(wage1)                              # SET dataset
+nrow(wage1)                              # how many rows. wage1 toy: 526
+
+r2(mean(wage1$wage))                     # SET column. toy mean wage: 5.90
+r2(sd(wage1$educ))                       # SET column. toy sd educ: 2.77
+r2(var(wage1$educ))                      # sample variance, if they ask
+r2(cov(wage1$wage, wage1$educ))          # SET the two columns
+r2(cor(wage1$wage, wage1$educ))
+
+reg <- lm(wage ~ educ, data = wage1)     # SET y ~ x and the dataset
+b0 <- unname(reg$coefficients[1])        # intercept. toy: -0.90
+b1 <- unname(reg$coefficients[2])        # slope. toy: 0.54
+r2(b0)
+r2(b1)
+
+educ_new <- 14                           # SET the level they want a prediction at
+r2(b0 + b1 * educ_new)                   # toy at 14 years: 6.67
+
+delta_educ <- 2                          # SET the change. intercept stays out
+r2(b1 * delta_educ)                      # toy, educ up 2: 1.08
+
+y <- wage1$wage                          # SET the y column, same one you regressed
+SSR <- sum(reg$residuals^2)
+SST <- sum((y - mean(y))^2)
+SSE <- SST - SSR
+r2(SSR)                                  # toy: 5980.68
+r2(SSE)
+r2(1 - SSR / SST)                        # R^2. toy: 0.16
+r2(summary(reg)$r.squared)               # same R^2
+
+## Second dataset. New object name.
+data(bwght)                              # SET
+reg2 <- lm(bwght ~ cigs, data = bwght)   # SET
+b1_cigs <- unname(reg2$coefficients[2])
+delta_cigs <- 5                          # SET
+r2(b1_cigs * delta_cigs)                 # toy, 5 more cigarettes: -2.57
+
+## Challenge on PS7. Loh said this will NOT be on the exam.
+## Average y among rows where x equals a number.
+r2(mean(wage1$wage[wage1$educ == 16]))   # toy, educ exactly 16: 8.04
+
+
+## ============================================================
+## NOT ON THIS EXAM
+## Loh's Oct 5 study guide: units of measurement, and logs inside a regression.
+## Problem Set 7 question 11 (mean of y where x equals one number) is a challenge.
+## He said that challenge will not be on the exam. The command is still in DATASET.
 ## ============================================================
