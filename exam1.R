@@ -272,20 +272,27 @@ new_pp <- 5                         # SET
 r2(new_pp - old_pp)
 ## TOY: 3 to 5 is 2 points. Notes: 4 pp to 6 pp is 2 points. Polling 52 to 38 is -14 points.
 
-## CHANGE y = b0 + b1 x    y = b0 + b1*x    Dy = b1 * Dx    leave b0 out
+## CHANGE y = b0 + b1 x    y = b0 + b1*x    Dy = b1 * Dx    b0 is not typed
+## For y = b0 + b1 X1 + b2 X2, Dy = b1 DX1 + b2 DX2.
 ## y = b0 + b1 X1 + b2 X2    y=b0+b1 X1+b2 X2    Dy = b1 DX1 + b2 DX2
-## y = b0 + b1 X1 + b2 X2 + b3 X3    Dy = b1 DX1 + b2 DX2 + b3 DX3
+## For y = b0 + b1 X1 + b2 X2 + b3 X3, Dy = b1 DX1 + b2 DX2 + b3 DX3.
 ## For y = b0 + b1 x, a change gives Dy = b1 * Dx. With b0 = 7, b1 = 8, and Dx = 4, find Dy.
-## For y = b0 + b1 X1 + b2 X2, Dy = b1 DX1 + b2 DX2. They print b0. Leave b0 out.
-## One slope: leave b2 and dx2 at 0. Three slopes: fill b3 and dx3.
-b1_dy <- -9.8                       # SET
-b2_dy <- 0                          # SET leave 0 if the question has one slope
-b3_dy <- 0                          # SET
-dx1_dy <- 1                         # SET
-dx2_dy <- 0                         # SET
-dx3_dy <- 0                         # SET
+##
+## b0 has no line. Do not type it.
+## b1 -> b1_dy      DX1 -> dx1_dy
+## b2 -> b2_dy      DX2 -> dx2_dy      both 0 if there is no second slope
+## b3 -> b3_dy      DX3 -> dx3_dy      both 0 if there is no third slope
+## Worked: b0 = 12, b1 = 3, b2 = -2, DX1 = 4, DX2 = 5.
+##   Type 3, -2, 0 and 4, 5, 0. The 12 is not typed. Result is 2.00.
+##   12*4 + 3*5 = 63 uses b0 as a slope. That pairing is wrong.
+b1_dy <- 3                          # SET b1 only. Never b0.
+b2_dy <- -2                         # SET b2. Type 0 if only one slope.
+b3_dy <- 0                          # SET b3. Type 0 if no third slope.
+dx1_dy <- 4                         # SET DX1, the change in the first x
+dx2_dy <- 5                         # SET DX2. Type 0 if only one slope.
+dx3_dy <- 0                         # SET DX3. Type 0 if no third slope.
 r2(b1_dy * dx1_dy + b2_dy * dx2_dy + b3_dy * dx3_dy)
-## TOY: price slope -9.8, price up 1, income slope left at 0, prints -9.80. The intercept 120 never enters. Two slopes: type both slopes and both changes. Income down 100 is dx2 = -100.
+## Prints 2.00 for the worked numbers above. Replace all six lines from the question.
 
 ## b1 = Dy/Dx
 ## b1 = Dy / Dx
