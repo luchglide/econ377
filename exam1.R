@@ -69,7 +69,7 @@ library(wooldridge)
 ## CLICK: A percentage-point change is new minus old. A percent change divides by the old value, not the new value.
 
 ## proportion percent multiply divide 100
-## CLICK: Proportion to percent: multiply by 100. Percent to proportion: divide by 100.
+## CLICK: To turn a proportion into a percent, multiply by 100. To turn a percent into a proportion, divide by 100.
 
 ## probability table not a list
 ## takes the values with probabilities
@@ -182,7 +182,7 @@ library(wooldridge)
 ## CLICK: True. SST = SSE + SSR. SST is total variation in Y. SSE is explained. SSR is unexplained, the squared residuals.
 
 ## R^2 fraction explained low common
-## CLICK: R^2 is the fraction of the sample variation in Y explained by X. It is not the slope. It is not always 1. A value near 0 means the line explains little. That is common in economics, and it does not mean the slope is 0.
+## CLICK: R^2 is the fraction of the sample variation in Y explained by X. It is not the slope. It is not always 1. A value close to 0 means the line explains little. That is common in economics, and it does not mean the slope is 0.
 
 ## R^2 between 0 and 1 perfect fit
 ## R^2 = 1
@@ -271,6 +271,11 @@ old_pp <- 3                         # SET
 new_pp <- 5                         # SET
 r2(new_pp - old_pp)
 ## TOY: 3 to 5 is 2 points. Notes: 4 pp to 6 pp is 2 points. Polling 52 to 38 is -14 points.
+
+## proportion to percent = 100 * proportion
+## percent to proportion = percent / 100
+prop_in <- 0.18                     # SET the proportion. 18% means type 0.18 here only if they gave a proportion.
+r2(100 * prop_in)
 
 ## CHANGE y = b0 + b1 x    y = b0 + b1*x    Dy = b1 * Dx    b0 is not typed
 ## For y = b0 + b1 X1 + b2 X2, Dy = b1 DX1 + b2 DX2.
@@ -757,7 +762,7 @@ c(exp(log(3)), log(exp(3)))
 ## bwght:   y = bwght    x = cigs     birth weight in ounces
 ## ceosal1: y = salary   x = roe. Use the CURVE block at the bottom. Not L4.
 ## lwage, lbwght, lsalary start with l. Those are logs. Not on Exam I.
-## A level keeps the intercept. "Rises by" is a change. Fewer, lower, or falls is a negative change.
+## A level keeps the intercept. "Rises by" is a change. Fewer, lower, or falls by is a negative change.
 ## cor() is not the slope. nrow() is workers. ncol() is variables.
 ## Second regression gets a new name.
 ## ============================================================
@@ -771,14 +776,14 @@ nrow(wage1)                                      # SET same name
 
 ## L2 sample mean of hourly wage
 ## mean(wage1$wage)
-## If they name educ, exper, tenure, cigs, or roe, change the column. This block is wage.
+## If they name educ, exper, tenure, cigs, roe, bwght, or salary, change the column. This block is wage.
 data(wage1)                                      # SET
 r2(mean(wage1$wage))                             # SET dataset$column
 ## TOY: wage1$wage only.
 
 ## L3 sample standard deviation years of education wage1$educ sd
 ## sd(wage1$educ)
-## If they ask for the sd of wage, change educ to wage before you run.
+## If they ask for the sd of wage, exper, tenure, cigs, roe, or bwght, change educ before you run.
 data(wage1)                                      # SET
 r2(sd(wage1$educ))                               # SET dataset$column
 ## TOY: wage1$educ only.
@@ -795,7 +800,7 @@ r2(unname(reg_l4$coefficients[2]))
 
 ## L5 OLS intercept coefficients[1]
 ## b0 <- reg$coefficients[1]
-## hat beta_0    intercept = unname(reg$coefficients[1])
+## Use the same y ~ x as the question. If the slope block used exper, tenure, cigs, or roe, use that here too.
 data(wage1)                                      # SET
 reg_l5 <- lm(wage ~ educ, data = wage1)          # SET the same formula as L4
 r2(unname(reg_l5$coefficients[1]))
@@ -804,6 +809,7 @@ r2(unname(reg_l5$coefficients[1]))
 ## L6 predicted hourly wage keep the intercept
 ## wagehat = b0 + b1*educ
 ## has 12 years, or educ = 12, is a LEVEL. Keep the intercept. "Rises by" is L7.
+## Same y ~ x as the question. exper, tenure, cigs, and roe are not educ.
 data(wage1)                                      # SET
 reg_l6 <- lm(wage ~ educ, data = wage1)          # SET
 b0_l6 <- unname(reg_l6$coefficients[1])
@@ -815,7 +821,8 @@ r2(b0_l6 + b1_l6 * x_level_l6)
 ## L7 predicted wage change when education rises delta educ
 ## Delta wage = b1 * Delta educ
 ## rises by is a CHANGE. The intercept stays out.
-## fewer, lower, or falls: type the change as a negative number. 2 fewer years is -2.
+## fewer, lower, or falls by: type the change as a negative number. 2 fewer years is -2. Education falls by 2 is -2.
+## Same y ~ x as the question.
 data(wage1)                                      # SET
 reg_l7 <- lm(wage ~ educ, data = wage1)          # SET
 b1_l7 <- unname(reg_l7$coefficients[2])
@@ -825,7 +832,7 @@ r2(b1_l7 * delta_x_l7)
 
 ## L8 sum of squared residuals SSR reg$residuals^2
 ## SSR = sum(reg$residuals^2)
-## SSR = sum(uhat^2)
+## Same y ~ x as the question before you run.
 data(wage1)                                      # SET
 reg_l8 <- lm(wage ~ educ, data = wage1)          # SET
 r2(sum(reg_l8$residuals^2))
@@ -833,7 +840,7 @@ r2(sum(reg_l8$residuals^2))
 
 ## L9 R^2 = 1 - SSR/SST r.squared decimal
 ## R^2 = 1-SSR/SST
-## SST = sum((y-ybar)^2)
+## Same y ~ x as the question. Decimal, not a percent. Percent is the CURVE block.
 ## SST <- sum((wage1$wage - mean(wage1$wage))^2)
 ## summary(reg)$r.squared
 data(wage1)                                      # SET
@@ -861,8 +868,9 @@ r2(b1_l10 * delta_x_l10)
 ## CURVE. Same moves, different names. Search the word in the question.
 ## ============================================================
 
-## sample correlation between wage and educ cor() is not the slope
-## cor(wage, educ)    correlation between salary and roe
+## sample correlation between wage and educ
+## correlation between wage and exper
+## cor() is not the slope
 data(wage1)                                      # SET
 r2(cor(wage1$wage, wage1$educ))                  # SET y column, x column
 ## TOY: wage and educ. This is not the OLS slope.
@@ -876,12 +884,12 @@ r2(cov(wage1$wage, wage1$educ))                  # SET y column, x column
 data(wage1)                                      # SET
 ncol(wage1)                                      # SET same name
 
-## mean of educ exper tenure cigs roe faminc
+## mean of educ exper tenure cigs roe faminc bwght salary
 ## mean of the x column. Use L2 only when they asked for wage.
 data(wage1)                                      # SET
 r2(mean(wage1$educ))                             # SET dataset$column
 
-## sd of wage. L3 is educ. Change the column if they name wage.
+## sd of wage exper tenure cigs roe bwght. L3 is educ. Change the column to the one they name.
 data(wage1)                                      # SET
 r2(sd(wage1$wage))                               # SET dataset$column
 
