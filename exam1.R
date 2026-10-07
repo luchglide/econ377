@@ -1,13 +1,11 @@
 ## ECN 377 Exam I lookup. Wed Oct 7, 2026. Open notes. Round to the hundredths.
-## Run the next two lines once. Ctrl+F the equation as written on the question.
-## Spaces and * both work. First hit is the block to run. FIRST lines start with CLICK.
-## MIDDLE is one equation: formula, then the SET lines, then r2(). Run that block only.
-## LAST10 matches Problem Set 7. Each block stands alone.
+## Run the next two lines once. Ctrl+F a phrase copied from the question.
+## CLICK = the click answer. Read it. Do not run it.
+## A copied equation should land on MIDDLE: formula, then # SET, then r2(). Change every SET line in that block. Run that block only.
+## If the first hit is CLICK and the question gave numbers, search that equation again and use the SET block.
+## A line that starts with CHANGE drops the intercept. A line that starts with PREDICT keeps it. Find-next is the other one.
+## LAST10 matches Problem Set 7. Each of those blocks stands alone.
 ## Day 13 is marked NOT ON EXAM I at the bottom of this file.
-##
-## Fast searches: y = b0 + b1 x    Dy = b1 Dx    %Dx = 100*(x_new-x_old)/x_old
-##   Var(X) = E[X^2]-(E[X])^2    b1 = cov(x,y)/var(x)    uhat = y - yhat
-##   R^2 = 1-SSR/SST    lm(wage ~ educ    wagehat = b0 + b1*educ
 
 r2 <- function(z) {
   z <- as.numeric(z)
@@ -30,19 +28,16 @@ library(wooldridge)
 ## CLICK: A negative residual means over-predicted. Actual y is below the fitted value.
 
 ## residual uhat actual minus fitted
-## uhat = y - yhat    hat u = y - hat y    Uhat = Y - Yhat    hat U_i = Y_i - hat Y_i
 ## CLICK: The residual equals actual y minus the fitted value.
 
 ## fitted value prediction at that x
-## yhat = b0 + b1*x    Yhat_i = b0_hat + b1_hat * X_i    hat Y_i = hat beta_0 + hat beta_1 X_i
 ## CLICK: The fitted value is the model's prediction of y at that x. It is not the actual y.
 
 ## intercept affect change true false
-## y = b0 + b1 x    y=b0+b1 x    Dy = b1 Dx    the intercept b0 affects the change Dy
+## the intercept b0 affects the change Dy when x changes
 ## CLICK: False. The intercept does not affect the change in y when x changes.
 
 ## prediction keeps the intercept
-## yhat = b0 + b1*x    predict y at x    keep b0
 ## CLICK: A prediction keeps the intercept. A change drops the intercept.
 
 ## rises by is a change not a level
@@ -50,11 +45,9 @@ library(wooldridge)
 ## CLICK: "Rises by 2" is a change of 2, not a level of 2.
 
 ## y when x is 0 intercept
-## b0 is y when x = 0    Y = b0 + b1*X + U
 ## CLICK: The intercept is predicted y when every x is 0.
 
-## For y = b0 + b1 X1 + b2 X2, the coefficient b1 is
-## y=b0+b1 X1+b2 X2    y = b0 + b1*X1 + b2*X2
+## the coefficient b1 is    holding X2 fixed
 ## CLICK: b1 is the effect of X1 on y, holding X2 fixed. Not the intercept.
 
 ## ceteris paribus holding other factors fixed
@@ -73,22 +66,19 @@ library(wooldridge)
 ## CLICK: A strong education-wage correlation does not prove education causes higher wages. Ability, family, and ambition can confound.
 
 ## percentage point versus percent change old value
-## %Dx = 100*(x_new-x_old)/x_old    percentage points = new - old
-## CLICK: A percentage-point change is new minus old. A percent change is 100 * (new - old) / old. Divide by the old value, not the new value.
+## CLICK: A percentage-point change is new minus old. A percent change divides by the old value, not the new value.
 
 ## proportion percent multiply divide 100
 ## CLICK: Proportion to percent: multiply by 100. Percent to proportion: divide by 100.
 
 ## probability table not a list
-## E[X] = sum(x*p)    do not use mean() or var() on a table
+## takes the values with probabilities
 ## CLICK: A list of observed points is a sample: use mean(), var(), sd(), cov(), cor(). A probability table weights each value by p. Use sum(value * p). Do not call var() or cov() on a table. Check that the probabilities add to 1.
 
 ## sample variance standard deviation divide n-1
-## Sx^2 = 1/(n-1)*sum(xi-xbar)^2    Sx = sqrt(Sx^2)
 ## CLICK: True. The sample variance and the sample standard deviation divide by n - 1. var() and sd() already do that. Do not divide again.
 
 ## mean sum length same true
-## xbar = (1/n)*sum xi    x-bar = (1/n)*sum xi
 ## CLICK: True. mean(x) gives the same result as sum(x) / length(x).
 
 ## c() hist() not the mean
@@ -99,7 +89,6 @@ library(wooldridge)
 ## CLICK: If two variables move together, the sample covariance is positive. If one rises while the other falls, the sample covariance is negative.
 
 ## correlation between -1 and 1 no units
-## rho = Sxy/(Sx*Sy)    Cor(X,Y) = Cov(X,Y)/(sd(X)*sd(Y))
 ## CLICK: Correlation is always between -1 and 1, and it has no units. Close to -1 is a strong negative relationship. Close to +1 is a strong positive relationship (height and weight). Covariance is harder to read because it depends on the scale of the variables.
 
 ## correlation uncorrelated independent
@@ -107,7 +96,7 @@ library(wooldridge)
 ## CLICK: Correlation 0 means uncorrelated. Independent implies uncorrelated, and independent implies covariance 0. An added shift does not change correlation when both scale factors are positive: Corr(a1*X + b1, a2*Y + b2) = Corr(X, Y) if a1 > 0 and a2 > 0.
 
 ## E[X] expected value probability weighted
-## E[X] = sum(x*p)    E[c] = c
+## E[c] = c
 ## CLICK: E[X] equals the sum of each value times its probability. Not mean() on a table. E[c] = c. A constant comes out unchanged.
 
 ## E[g(X)] function of X square first
@@ -115,23 +104,20 @@ library(wooldridge)
 ## CLICK: E[g(X)] weights g(x) by the probability. For g(x) = x^2, square the values first, then multiply by p.
 
 ## E[X^2] not the square of the mean
-## E[X^2] = sum(x^2*p)    E[X^2] is not (E[X])^2
 ## CLICK: E[X^2] is not (E[X])^2. Square each value, then weight by p.
 
 ## Var(X) = E[X^2] - (E[X])^2
-## Var(X) = E[X^2] - E[X]^2    Var(X) = E[(X-E[X])^2]
-## CLICK: Var(X) = E[X^2] - (E[X])^2. Square the mean only in the second term. Also Var(X) = E[(X - E[X])^2]. Variance is always greater than or equal to 0.
+## Var(X) = E[X^2] - E[X]^2
+## CLICK: TRUE. Var(X) = E[X^2] - (E[X])^2. Square the mean only in the second term. Also Var(X) = E[(X - E[X])^2]. Variance is always at least 0. If they gave numbers, use the SET block with this same formula.
 
 ## 0 1 variable X squared equals X
 ## X^2 = X    E[X^2] = E[X]
 ## CLICK: For a 0/1 variable, X^2 = X, so E[X^2] = E[X].
 
 ## added constant expectation keeps it variance drops it
-## E[aX+b] = a*E[X]+b    Var(aX+b) = a^2*Var(X)
-## CLICK: An added constant stays in the expectation: E[aX + b] = a*E[X] + b. An added constant does not change the variance: Var(aX + b) = a^2 * Var(X).
+## CLICK: An added constant stays in the expectation. An added constant does not change the variance. The square of the multiplier stays on the variance.
 
 ## independent Var(X+Y) covariance 0
-## Var(X+Y) = Var(X)+Var(Y)    Cov(X,Y)=0
 ## CLICK: If X and Y are independent, Cov(X, Y) = 0 and Var(X + Y) = Var(X) + Var(Y).
 
 ## uppercase random variable lowercase realization
@@ -154,12 +140,10 @@ library(wooldridge)
 ## CLICK: E[U | X] = 0 fails when something inside U moves with X. If U is ability, average ability has to be the same at every education level. If ability rises with education, the assumption fails, and E[Y | X] is not b0 + b1*X.
 
 ## omitted other factors in U
-## Y = b0 + b1*X + U    Dy = b1*Dx if DU = 0
-## CLICK: U is every factor other than X that affects Y. If those other factors do not change, the change in U is 0, so the change in Y is b1 times the change in X.
+## CLICK: U is every factor other than X that affects Y. If those other factors do not change, the change in Y is the slope times the change in X.
 
 ## dependent explanatory error
-## Y = b0 + b1*X + U    y = b0 + b1 x + u
-## CLICK: Y is the dependent variable. X is the explanatory variable. b0 + b1*X is the explained part of Y. U is the error.
+## CLICK: Y is the dependent variable. X is the explanatory variable. The line is the explained part of Y. U is the error.
 
 ## slope versus correlation any number
 ## CLICK: b1 is the ceteris paribus effect of X on Y. A slope can be any number. A correlation stays between -1 and 1.
@@ -169,11 +153,9 @@ library(wooldridge)
 ## CLICK: b0 and b1 are population constants. We only see a sample, so we estimate them. Estimates wear hats and change from sample to sample.
 
 ## OLS least squares minimize SSR
-## SSR = sum(uhat^2)    OLS minimizes SSR
 ## CLICK: OLS means least squares. It chooses the intercept and the slope to minimize the sum of squared residuals. Any other choice gives a bigger SSR.
 
 ## OLS slope covariance over variance
-## b1 = cov(x,y)/var(x)    b1_hat = cov(x,y)/var(x)
 ## CLICK: The OLS slope is covariance of x and y, divided by variance of x. Covariance on top. Variance of x on the bottom.
 
 ## that same sample new lists
@@ -188,7 +170,7 @@ library(wooldridge)
 ## CLICK: X and the residuals are uncorrelated. Their sample covariance is 0. The sum of x times residual is 0.
 
 ## xbar ybar on the line average of y
-## (xbar, ybar)    ybar = b0 + b1*xbar    mean(y) = b0 + b1*mean(x)
+## (xbar, ybar) lies on the OLS line
 ## CLICK: The point (xbar, ybar) is on the OLS line. The average of y equals b0 + b1 times the average of x.
 
 ## explained part fitted unexplained residual
@@ -200,7 +182,6 @@ library(wooldridge)
 ## CLICK: True. SST = SSE + SSR. SST is total variation in Y. SSE is explained. SSR is unexplained, the squared residuals.
 
 ## R^2 fraction explained low common
-## R^2 = SSE/SST    R^2 = 1-SSR/SST
 ## CLICK: R^2 is the fraction of the sample variation in Y explained by X. It is not the slope. It is not always 1. A value near 0 means the line explains little. That is common in economics, and it does not mean the slope is 0.
 
 ## R^2 between 0 and 1 perfect fit
@@ -277,10 +258,11 @@ length(x_len)
 ## percent change = 100*(new-old)/old
 ## Percent change is %Dx = 100*(x_new-x_old)/x_old. Find it when x goes from old to new.
 ## A polling share goes from 52% to 38%. Divide by the OLD value, 52. The answer is negative.
+## Same formula when the level is already a percent: 3% to 5% still divides by 3.
 old_pct <- 20                       # SET
 new_pct <- 25                       # SET
 r2(100 * (new_pct - old_pct) / old_pct)
-## TOY: 20 to 25. Notes: 4 pp to 6 pp divides by 4. Polling 52 to 38 divides by 52, not by 38.
+## TOY: 20 to 25 is 25.00. Notes: 4 to 6 divides by 4. Polling 52 to 38 divides by 52, not by 38.
 
 ## percentage POINTS. A rate goes from 52% to 38%. What is the change in percentage points?
 ## percentage points = new - old
@@ -290,35 +272,20 @@ new_pp <- 5                         # SET
 r2(new_pp - old_pp)
 ## TOY: 3 to 5 is 2 points. Notes: 4 pp to 6 pp is 2 points. Polling 52 to 38 is -14 points.
 
-## percent change when the level is already a percent
-## %Dx = 100*(x_new-x_old)/x_old
-old_rate <- 3                       # SET already in percent, not a decimal
-new_rate <- 5                       # SET
-r2(100 * (new_rate - old_rate) / old_rate)
-
-## y = b0 + b1*X1 + b2*X2
-## y = b0 + b1 X1 + b2 X2
-## y=b0+b1 X1+b2 X2
-## y = b0 + b1*x1 + b2*x2
-## y = b0 + b1 X1 + b2 X2 + b3 X3
-## y=b0+b1 X1+b2 X2+b3 X3
-## Dy = b1 DX1 + b2 DX2
-## Dy = b1*dX1 + b2*dX2
-## Dy = b1 DX1 + b2 DX2 + b3 DX3
-## Dy = b1 Dx
-## Dy = b1 * Dx
-## delta y = b1*dx1 + b2*dx2 + b3*dx3
+## CHANGE y = b0 + b1 x    y = b0 + b1*x    Dy = b1 * Dx    leave b0 out
+## y = b0 + b1 X1 + b2 X2    y=b0+b1 X1+b2 X2    Dy = b1 DX1 + b2 DX2
+## y = b0 + b1 X1 + b2 X2 + b3 X3    Dy = b1 DX1 + b2 DX2 + b3 DX3
+## For y = b0 + b1 x, a change gives Dy = b1 * Dx. With b0 = 7, b1 = 8, and Dx = 4, find Dy.
 ## For y = b0 + b1 X1 + b2 X2, Dy = b1 DX1 + b2 DX2. They print b0. Leave b0 out.
-## Example: b0 = 9, b1 = 8, b2 = 8, dX1 = 4, dX2 = -1.
-## One slope only: set b2 and dX2 to 0. Three slopes: fill b3 and dX3.
-b1_dy <- -9.8                       # SET slope on the variable that changes
-b2_dy <- 0.03                       # SET 0 if the question has only one slope
+## One slope: leave b2 and dx2 at 0. Three slopes: fill b3 and dx3.
+b1_dy <- -9.8                       # SET
+b2_dy <- 0                          # SET leave 0 if the question has one slope
 b3_dy <- 0                          # SET
 dx1_dy <- 1                         # SET
 dx2_dy <- 0                         # SET
 dx3_dy <- 0                         # SET
 r2(b1_dy * dx1_dy + b2_dy * dx2_dy + b3_dy * dx3_dy)
-## TOY: ramen quantity = 120 - 9.8*price + 0.03*income. Price up 1, income fixed. Income down 100 is a change of -100 on the second slope. Price down 2 and income up 300 uses both changes. The 120 never enters.
+## TOY: price slope -9.8, price up 1, income slope left at 0, prints -9.80. The intercept 120 never enters. Two slopes: type both slopes and both changes. Income down 100 is dx2 = -100.
 
 ## b1 = Dy/Dx
 ## b1 = Dy / Dx
@@ -329,11 +296,8 @@ dy_rise <- 27                       # SET
 dx_run <- 3                         # SET
 r2(dy_rise / dx_run)
 
-## y = b0 + b1*x
-## y = b0 + b1 x
-## y=b0+b1 x
-## y = b0 + b1*x1
-## yhat = b0 + b1*x + b2*x2
+## PREDICT y = b0 + b1 x    y = b0 + b1*x    yhat = b0 + b1*x    keep b0
+## y=b0+b1 x    yhat = b0 + b1*x + b2*x2
 ## For y = b0 + b1 x with b0 = 1 and b1 = 7, predict y at x = 1. Keep the intercept.
 b0_pred <- 1                        # SET
 b1_pred <- 7                        # SET
@@ -410,6 +374,7 @@ r2(cor(x_cor, y_cor))
 ## E[X] = sum(x*p)
 ## A random variable X takes the values 1, 2, 3 with probabilities 0.2, 0.5, 0.3. Find E[X].
 ## "takes the values" and "with probabilities" means a probability table. Do not use mean().
+## If the table also has a y column, ignore y. Put only the x values here.
 x_ex <- c(1, 2, 3)                  # SET
 p_ex <- c(0.2, 0.5, 0.3)            # SET
 if (abs(sum(p_ex) - 1) > 1e-6) warning("probabilities do not sum to 1")
@@ -421,13 +386,15 @@ r2(sum(x_ex * p_ex))
 ## E[aX+bY+c] = a*E[X]+b*E[Y]+c
 ## E[aX+bY-c] = a*E[X]+b*E[Y]-c
 ## E[4X+5Y-3]
+## No Y in the question: set b_lin to 0. No added constant: set c_lin to 0.
+## A minus sign in the question is a negative c_lin. E[4X+5Y-3] means c_lin = -3, not 3.
 EX_lin <- 2                         # SET
 EY_lin <- 3                         # SET
 a_lin <- 4                          # SET
-b_lin <- 5                          # SET
-c_lin <- -3                         # SET the constant, with its sign
+b_lin <- 5                          # SET 0 if there is no Y
+c_lin <- -3                         # SET the constant WITH its sign. 0 if there is no constant
 r2(a_lin * EX_lin + b_lin * EY_lin + c_lin)
-## TOY: notes, E[4X + 5Y - 3] with E[X] = 2 and E[Y] = 3.
+## TOY: E[4X + 5Y - 3] with E[X] = 2 and E[Y] = 3 is 20.00.
 
 ## E[X^2] = sum(x^2 * p)
 ## E[X^2] = sum(x^2*p)
@@ -439,7 +406,7 @@ r2(sum(x_ex2^2 * p_ex2))
 
 ## Var(X) = E[X^2] - (E[X])^2
 ## Var(X) = E[X^2] - E[X]^2
-## Var(X) from E[X^2] and E[X]
+## ONLY if they already gave you E[X^2] and E[X] as two numbers. A probability table is the next block.
 EX_pv <- 4                          # SET
 EX2_pv <- 83                        # SET
 r2(EX2_pv - EX_pv^2)
@@ -564,22 +531,27 @@ r2(EY2_cvt - EY_cvt^2)
 ## TOY: do not call var() on this table.
 
 ## b1 = cov(x,y)/var(x)
-## b1_hat = cov(x,y)/var(x)
+## b1 = cov(x, y) / var(x)
+## b1_hat = cov(x, y) / var(x)
 ## hat beta_1 = cov(x,y)/var(x)
-## OLS slope from covariance and variance
+## ONLY if they already gave you the covariance and the variance as two numbers.
+## A list of x and y is the next block. Do not type the list into these two lines.
 cov_b1 <- 4                         # SET
 var_b1 <- 7                         # SET
 r2(cov_b1 / var_b1)
 
-## b1 = cov(x,y)/var(x)
-## hat beta_1 = sum((Xi-Xbar)(Yi-Ybar))/sum((Xi-Xbar)^2)
 ## b1 = sum((x-xbar)*(y-ybar))/sum((x-xbar)^2)
+## b1 = sum( (x - xbar) * (y - ybar) ) / sum( (x - xbar)^2 )
+## hat beta_1 = sum((Xi-Xbar)(Yi-Ybar))/sum((Xi-Xbar)^2)
 ## For the sample x = (1, 2, 3), y = (2, 2, 5), find the OLS slope.
+## They printed a list. cov() and var() on that list. Do not use the two-number block above.
 x_b1 <- c(1, 2, 3)                  # SET this question only
 y_b1 <- c(2, 2, 5)                  # SET this question only
 r2(cov(x_b1, y_b1) / var(x_b1))
 
 ## beta1 = Cov(X,Y)/Var(X)
+## b1 = Cov(X,Y)/Var(X)
+## b1 = Cov(X, Y) / Var(X)
 ## population slope from a joint table, not cov()/var()
 ## beta1 = Cov / Var    Var(X) = E[X^2]-(E[X])^2
 x_popb1 <- c(3, 1, 6)               # SET
@@ -594,17 +566,18 @@ r2((EXY_pop - EX_pop * EY_pop) / (EX2_pop - EX_pop^2))
 ## TOY: PS5 table. Do not call cov() or var() on this table.
 
 ## b0 = ybar - b1*xbar
+## b0 = ybar - b1 * xbar
 ## b0_hat = ybar - b1_hat * xbar
 ## hat beta_0 = Ybar - hat beta_1 * Xbar
-## OLS intercept from ybar xbar and b1
+## ONLY if they already gave you ybar, xbar, and b1. A list of points is the next block.
 ybar_b0 <- 10                       # SET
 xbar_b0 <- 8                        # SET
 b1_b0 <- 7/10                       # SET
 r2(ybar_b0 - b1_b0 * xbar_b0)
 
-## b0 = ybar - b1*xbar
+## b0 = mean(y) - b1 * mean(x)
 ## b0 = mean(y) - b1*mean(x)
-## For that same sample x = (1, 2, 3), y = (2, 2, 5), find the OLS intercept. Use the lists in THIS question.
+## For that same sample, find the OLS intercept. Use the x and y printed in THIS question, not the block above.
 x_b0 <- c(1, 2, 3)                  # SET this question's x, not the previous question
 y_b0 <- c(2, 2, 5)                  # SET this question's y, not the previous question
 b1_b0s <- cov(x_b0, y_b0) / var(x_b0)
@@ -613,6 +586,7 @@ r2(mean(y_b0) - b1_b0s * mean(x_b0))
 ## yhat = b0 + b1*x
 ## hat y = hat beta_0 + hat beta_1 x
 ## Yhat = b0_hat + b1_hat * X
+## ONLY if they already wrote the line. A sample you still have to fit is the next block.
 ## A fitted line is yhat = 5 + (2/10)*x. Find the fitted value at x = 15.
 b0_fit <- 5                         # SET
 b1_fit <- 2/10                      # SET
@@ -675,6 +649,7 @@ x_covr <- c(1, 2, 3)                # SET
 y_covr <- c(2, 2, 5)                # SET
 u_covr <- resid(lm(y_covr ~ x_covr))
 r2(cov(x_covr, u_covr))
+r2(sum(x_covr * u_covr))
 
 ## ybar = b0 + b1*xbar
 ## average of y on the line b0 + b1 * xbar
@@ -699,6 +674,7 @@ r2(SST_sse - SSR_sse)
 
 ## R^2 = 1 - SSR/SST
 ## R^2 = 1-SSR/SST
+## ONLY if they already gave you SST and SSR. A list of points is the block "R^2 from a sample".
 SST_r <- 200                        # SET
 SSR_r <- 150                        # SET
 r2(1 - SSR_r / SST_r)
@@ -770,6 +746,8 @@ c(exp(log(3)), log(exp(3)))
 ## LAST10. Same 10 moves as Problem Set 7.
 ## library(wooldridge) is the startup line above. Run it once before these.
 ## Change the dataset name, the column names, and the numbers. Keep the commands.
+## ceosal1 swap: y is salary, x is roe. lm(salary ~ roe, data = ceosal1)
+## Same ten moves. Do not reuse the wage1 numbers.
 ## ============================================================
 
 ## L1 how many workers are in the wage1 sample nrow
