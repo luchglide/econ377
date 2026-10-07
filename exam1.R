@@ -299,6 +299,11 @@ dx3_dy <- 0                         # SET DX3. Type 0 if no third slope.
 r2(b1_dy * dx1_dy + b2_dy * dx2_dy + b3_dy * dx3_dy)
 ## Prints 2.00 for the worked numbers above. Replace all six lines from the question.
 
+## Y = b0 + b1*X + U
+## Y is dependent. X is explanatory. U is the error. b0 + b1*X is the part explained by X.
+## E[U|X] = 0 implies E[Y|X] = b0 + b1*X. Do not leave + U in that conditional mean.
+## A short search y = b0 + b1*x is the CHANGE block above if they want Dy, or PREDICT if they want a level.
+
 ## b1 = Dy/Dx
 ## b1 = Dy / Dx
 ## beta_1 = Dy/Dx
@@ -680,6 +685,7 @@ r2(unname(coef(fit_on)[1]) + unname(coef(fit_on)[2]) * mean(x_on))
 
 ## SSE = SST - SSR
 ## SSE = SST-SSR
+## SSE = sum((yhat - ybar)^2)
 SST_sse <- 200                      # SET
 SSR_sse <- 150                      # SET
 r2(SST_sse - SSR_sse)
@@ -770,6 +776,7 @@ c(exp(log(3)), log(exp(3)))
 ## L1 how many workers are in the wage1 sample nrow
 ## n = nrow(data)
 ## nrow(wage1)
+## data("wage1") is the same call.
 data(wage1)                                      # SET dataset name
 nrow(wage1)                                      # SET same name
 ## TOY: wage1 only.
@@ -901,6 +908,7 @@ y_sst <- wage1$wage                              # SET the y column
 r2(sum((y_sst - mean(y_sst))^2))
 
 ## SSE = SST - SSR explained sum of squares
+## SSE = sum((yhat - ybar)^2)
 data(wage1)                                      # SET
 reg_sse <- lm(wage ~ educ, data = wage1)         # SET y ~ x
 y_sse <- wage1$wage                              # SET the y column
