@@ -123,6 +123,7 @@ library(wooldridge)
 ## CLICK: U is every factor other than X that affects Y. If those other factors do not change, the change in U is 0, so the change in Y is b1 times the change in X.
 
 ## dependent explanatory error
+## Y = b0 + b1*X + U
 ## CLICK: Y is the dependent variable. X is the explanatory variable. b0 + b1*X is the explained part of Y. U is the error.
 
 ## slope versus correlation any number
@@ -243,8 +244,11 @@ old_rate <- 3                       # SET already in percent, not a decimal
 new_rate <- 5                       # SET
 r2(100 * (new_rate - old_rate) / old_rate)
 
+## y = b0 + b1*X1 + b2*X2
+## y = b0 + b1*x1 + b2*x2
+## y = b0 + b1*X1 + b2*X2 + b3*X3
 ## For y = b0 + b1*X1 + b2*X2, find the change in y. delta y = b1*dX1 + b2*dX2.
-## They print b0. Leave b0 out. It does not affect the change.
+## Example: b0 = 9, b1 = 8, b2 = 8, dX1 = 4, dX2 = -1. They print b0. Leave b0 out.
 ## One slope only: set b2 and dX2 to 0. Three slopes: fill b3 and dX3.
 ## delta y = b1*dx1 + b2*dx2 + b3*dx3
 b1_dy <- -9.8                       # SET slope on the variable that changes
@@ -256,13 +260,15 @@ dx3_dy <- 0                         # SET
 r2(b1_dy * dx1_dy + b2_dy * dx2_dy + b3_dy * dx3_dy)
 ## TOY: ramen quantity = 120 - 9.8*price + 0.03*income. Price up 1, income fixed. Income down 100 is a change of -100 on the second slope. Price down 2 and income up 300 uses both changes. The 120 never enters.
 
-## slope from a rise and a run
+## On a line, when x increases by 3, y increases by 27. Find the slope b1 = Dy/Dx.
 ## slope = delta y / delta x
 dy_rise <- 27                       # SET
 dx_run <- 3                         # SET
 r2(dy_rise / dx_run)
 
-## predict yhat keep the intercept plug in
+## y = b0 + b1*x
+## y = b0 + b1*x1
+## For y = b0 + b1*x with b0 = 1 and b1 = 7, predict y at x = 1. Keep the intercept.
 ## yhat = b0 + b1*x + b2*x2
 b0_pred <- 1                        # SET
 b1_pred <- 7                        # SET
@@ -477,7 +483,8 @@ cov_b1 <- 4                         # SET
 var_b1 <- 7                         # SET
 r2(cov_b1 / var_b1)
 
-## OLS slope from this question lists
+## b1 = cov(x,y) / var(x)
+## For the sample x = (1, 2, 3), y = (2, 2, 5), find the OLS slope.
 ## b1 = cov(x, y) / var(x)
 x_b1 <- c(1, 2, 3)                  # SET this question only
 y_b1 <- c(2, 2, 5)                  # SET this question only
@@ -490,14 +497,16 @@ xbar_b0 <- 8                        # SET
 b1_b0 <- 7/10                       # SET
 r2(ybar_b0 - b1_b0 * xbar_b0)
 
-## that same sample OLS intercept use these lists
+## b0 = ybar - b1*xbar
+## For that same sample x = (1, 2, 3), y = (2, 2, 5), find the OLS intercept. Use the lists in THIS question.
 ## b0 = mean(y) - b1 * mean(x)
 x_b0 <- c(1, 2, 3)                  # SET this question's x, not the previous question
 y_b0 <- c(2, 2, 5)                  # SET this question's y, not the previous question
 b1_b0s <- cov(x_b0, y_b0) / var(x_b0)
 r2(mean(y_b0) - b1_b0s * mean(x_b0))
 
-## fitted value from a line they already gave you
+## yhat = b0 + b1*x
+## A fitted line is yhat = 5 + (2/10)*x. Find the fitted value at x = 15.
 ## fitted = b0 + b1 * x
 b0_fit <- 5                         # SET
 b1_fit <- 2/10                      # SET
@@ -514,7 +523,8 @@ b1_fs <- cov(x_fs, y_fs) / var(x_fs)
 b0_fs <- mean(y_fs) - b1_fs * mean(x_fs)
 r2(b0_fs + b1_fs * xnew_fs)
 
-## A fitted line is yhat = b0 + b1*x. A person has x and actual y. Find the residual uhat = y - yhat.
+## yhat = b0 + b1*x    uhat = y - yhat
+## A fitted line is yhat = 4 + (1/2)*x. A person has x = 6 and actual y = 5. Find the residual.
 ## residual = actual y - fitted
 b0_res <- -0.90                     # SET
 b1_res <- 0.54                      # SET
