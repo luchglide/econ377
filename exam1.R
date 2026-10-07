@@ -752,9 +752,14 @@ c(exp(log(3)), log(exp(3)))
 ## ============================================================
 ## LAST10. Same 10 moves as Problem Set 7.
 ## library(wooldridge) is the startup line above. Run it once before these.
-## Change the dataset name, the column names, and the numbers. Keep the commands.
-## ceosal1 swap: y is salary, x is roe. lm(salary ~ roe, data = ceosal1)
-## Same ten moves. Do not reuse the wage1 numbers.
+## He can swap the dataset, the column, and the sign. Do not reuse a memorized wage1 number.
+## wage1:   y = wage     x = educ. If they say exper or tenure, replace educ in L4 before you run.
+## bwght:   y = bwght    x = cigs     birth weight in ounces
+## ceosal1: y = salary   x = roe. Use the CURVE block at the bottom. Not L4.
+## lwage, lbwght, lsalary start with l. Those are logs. Not on Exam I.
+## A level keeps the intercept. "Rises by" is a change. Fewer, lower, or falls is a negative change.
+## cor() is not the slope. nrow() is workers. ncol() is variables.
+## Second regression gets a new name.
 ## ============================================================
 
 ## L1 how many workers are in the wage1 sample nrow
@@ -766,20 +771,21 @@ nrow(wage1)                                      # SET same name
 
 ## L2 sample mean of hourly wage
 ## mean(wage1$wage)
-## mean of the column
+## If they name educ, exper, tenure, cigs, or roe, change the column. This block is wage.
 data(wage1)                                      # SET
 r2(mean(wage1$wage))                             # SET dataset$column
 ## TOY: wage1$wage only.
 
 ## L3 sample standard deviation years of education wage1$educ sd
 ## sd(wage1$educ)
-## sd of the column
+## If they ask for the sd of wage, change educ to wage before you run.
 data(wage1)                                      # SET
 r2(sd(wage1$educ))                               # SET dataset$column
 ## TOY: wage1$educ only.
 
 ## L4 OLS slope lm wage on educ coefficients[2] ignore the name
 ## lm(wage ~ educ, data = wage1)
+## exper or tenure: replace educ in the lm() line before you run. Do not leave educ.
 ## b1 <- reg$coefficients[2]
 ## hat beta_1    slope = unname(reg$coefficients[2])
 data(wage1)                                      # SET
@@ -797,8 +803,7 @@ r2(unname(reg_l5$coefficients[1]))
 
 ## L6 predicted hourly wage keep the intercept
 ## wagehat = b0 + b1*educ
-## wage = b0 + b1*educ
-## predicted = b0 + b1 * x_level
+## has 12 years, or educ = 12, is a LEVEL. Keep the intercept. "Rises by" is L7.
 data(wage1)                                      # SET
 reg_l6 <- lm(wage ~ educ, data = wage1)          # SET
 b0_l6 <- unname(reg_l6$coefficients[1])
@@ -809,8 +814,8 @@ r2(b0_l6 + b1_l6 * x_level_l6)
 
 ## L7 predicted wage change when education rises delta educ
 ## Delta wage = b1 * Delta educ
-## Delta wagehat = b1 * Delta educ
-## Dyhat = b1 * Dx
+## rises by is a CHANGE. The intercept stays out.
+## fewer, lower, or falls: type the change as a negative number. 2 fewer years is -2.
 data(wage1)                                      # SET
 reg_l7 <- lm(wage ~ educ, data = wage1)          # SET
 b1_l7 <- unname(reg_l7$coefficients[2])
@@ -843,13 +848,113 @@ r2(summary(reg_l9)$r.squared)
 ## L10 birth weight cigarettes cigs ounces bwght second regression new name
 ## lm(bwght ~ cigs, data = bwght)
 ## Delta bwght = b1 * Delta cigs
-## delta = slope * change, and the regression must use a new name
+## 5 more cigarettes is +5. 5 fewer cigarettes is -5. New regression name.
 data(bwght)                                      # SET the new dataset
 reg2 <- lm(bwght ~ cigs, data = bwght)           # SET y ~ x, new name
 b1_l10 <- unname(reg2$coefficients[2])
 delta_x_l10 <- 5                                 # SET
 r2(b1_l10 * delta_x_l10)
 ## TOY: bwght only. It can be negative.
+
+
+## ============================================================
+## CURVE. Same moves, different names. Search the word in the question.
+## ============================================================
+
+## sample correlation between wage and educ cor() is not the slope
+## cor(wage, educ)    correlation between salary and roe
+data(wage1)                                      # SET
+r2(cor(wage1$wage, wage1$educ))                  # SET y column, x column
+## TOY: wage and educ. This is not the OLS slope.
+
+## sample covariance cov(wage, educ) not the slope
+data(wage1)                                      # SET
+r2(cov(wage1$wage, wage1$educ))                  # SET y column, x column
+
+## how many variables ncol not nrow
+## ncol(wage1)    ncol(bwght)    ncol(ceosal1)
+data(wage1)                                      # SET
+ncol(wage1)                                      # SET same name
+
+## mean of educ exper tenure cigs roe faminc
+## mean of the x column. Use L2 only when they asked for wage.
+data(wage1)                                      # SET
+r2(mean(wage1$educ))                             # SET dataset$column
+
+## sd of wage. L3 is educ. Change the column if they name wage.
+data(wage1)                                      # SET
+r2(sd(wage1$wage))                               # SET dataset$column
+
+## SST total sum of squares for the wage regression
+## SST = sum((y - ybar)^2)
+data(wage1)                                      # SET
+reg_sst <- lm(wage ~ educ, data = wage1)         # SET y ~ x
+y_sst <- wage1$wage                              # SET the y column
+r2(sum((y_sst - mean(y_sst))^2))
+
+## SSE = SST - SSR explained sum of squares
+data(wage1)                                      # SET
+reg_sse <- lm(wage ~ educ, data = wage1)         # SET y ~ x
+y_sse <- wage1$wage                              # SET the y column
+r2(sum((y_sse - mean(y_sse))^2) - sum(reg_sse$residuals^2))
+
+## R^2 as a percent only if the question says percent
+## 100 * summary(reg)$r.squared
+data(wage1)                                      # SET
+reg_pct <- lm(wage ~ educ, data = wage1)         # SET y ~ x
+r2(100 * summary(reg_pct)$r.squared)
+## A decimal question uses L9. This block is the percent.
+
+## one worker residual uhat = y - (b0 + b1*x)
+## A worker has educ = 12 and actual wage = 8. Find the residual.
+data(wage1)                                      # SET
+reg_one <- lm(wage ~ educ, data = wage1)         # SET y ~ x
+b0_one <- unname(reg_one$coefficients[1])
+b1_one <- unname(reg_one$coefficients[2])
+x_one <- 12                                      # SET their x
+y_one <- 8                                       # SET their actual y
+r2(y_one - (b0_one + b1_one * x_one))
+
+## predicted y at the average x. b0 + b1*mean(x) equals mean(y)
+data(wage1)                                      # SET
+reg_avg <- lm(wage ~ educ, data = wage1)         # SET y ~ x
+b0_avg <- unname(reg_avg$coefficients[1])
+b1_avg <- unname(reg_avg$coefficients[2])
+r2(b0_avg + b1_avg * mean(wage1$educ))           # SET the x column
+r2(mean(wage1$wage))                             # SET the y column
+## The two numbers match.
+
+## fewer cigarettes falls by lower negative change
+## 5 fewer is -5. Do not type 5.
+data(bwght)                                      # SET
+reg_neg <- lm(bwght ~ cigs, data = bwght)        # SET y ~ x
+b1_neg <- unname(reg_neg$coefficients[2])
+delta_neg <- -5                                  # SET negative
+r2(b1_neg * delta_neg)
+
+## ceosal1 salary roe lm(salary ~ roe, data = ceosal1)
+## Question names ceosal1. Slope. Do not run the wage1 blocks.
+data(ceosal1)
+reg_ceo_b1 <- lm(salary ~ roe, data = ceosal1)
+r2(unname(reg_ceo_b1$coefficients[2]))
+
+## ceosal1 intercept salary roe
+data(ceosal1)
+reg_ceo_b0 <- lm(salary ~ roe, data = ceosal1)
+r2(unname(reg_ceo_b0$coefficients[1]))
+
+## ceosal1 predicted salary at a roe level. Keep the intercept.
+data(ceosal1)
+reg_ceo_fit <- lm(salary ~ roe, data = ceosal1)
+roe_level <- 15                                  # SET the roe in the question
+r2(unname(reg_ceo_fit$coefficients[1]) + unname(reg_ceo_fit$coefficients[2]) * roe_level)
+
+## ceosal1 salary change when roe rises or falls
+## fewer or falls: type a negative change
+data(ceosal1)
+reg_ceo_d <- lm(salary ~ roe, data = ceosal1)
+roe_delta <- 5                                   # SET. Negative if roe falls.
+r2(unname(reg_ceo_d$coefficients[2]) * roe_delta)
 
 
 ## ============================================================
