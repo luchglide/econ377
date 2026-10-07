@@ -770,7 +770,12 @@ c(exp(log(3)), log(exp(3)))
 ## lwage, lbwght, lsalary start with l. Those are logs. Not on Exam I.
 ## A level keeps the intercept. "Rises by" is a change. Fewer, lower, or falls by is a negative change.
 ## cor() is not the slope. nrow() is workers. ncol() is variables.
-## Second regression gets a new name.
+## HOW A DATA QUESTION IS SET UP
+## "has 12 years" or educ = 12 is a LEVEL. L6. Type 12 on x_level. Keep b0.
+## "rises by 3" is a CHANGE. L7. Type 3 on delta. Do not type b0.
+## "4 fewer" or "falls by 4" is a negative change. Type -4.
+## Slope is coefficients[2]. Intercept is coefficients[1].
+## A second dataset needs a new name, reg2. Do not reuse reg.
 ## ============================================================
 
 ## L1 how many workers are in the wage1 sample nrow
@@ -822,7 +827,8 @@ data(wage1)                                      # SET
 reg_l6 <- lm(wage ~ educ, data = wage1)          # SET
 b0_l6 <- unname(reg_l6$coefficients[1])
 b1_l6 <- unname(reg_l6$coefficients[2])
-x_level_l6 <- 14                                 # SET the level in the question
+## Example: educ = 12. Type 12 below. That is a level, not a change of 12.
+x_level_l6 <- 14                                 # SET the level in the question. Example: 12
 r2(b0_l6 + b1_l6 * x_level_l6)
 ## TOY: wage1 at educ 14 only.
 
@@ -834,7 +840,8 @@ r2(b0_l6 + b1_l6 * x_level_l6)
 data(wage1)                                      # SET
 reg_l7 <- lm(wage ~ educ, data = wage1)          # SET
 b1_l7 <- unname(reg_l7$coefficients[2])
-delta_x_l7 <- 2                                  # SET the change, not a level
+## Example: rises by 3 means type 3. Falls by 2 means type -2.
+delta_x_l7 <- 2                                  # SET the change, not a level. Example: 3, or -2
 r2(b1_l7 * delta_x_l7)
 ## TOY: wage1, education rises by 2, only.
 
@@ -868,7 +875,8 @@ r2(summary(reg_l9)$r.squared)
 data(bwght)                                      # SET the new dataset
 reg2 <- lm(bwght ~ cigs, data = bwght)           # SET y ~ x, new name
 b1_l10 <- unname(reg2$coefficients[2])
-delta_x_l10 <- 5                                 # SET
+## Example: 5 more cigarettes, type 5. 4 fewer cigarettes, type -4.
+delta_x_l10 <- 5                                 # SET. Positive if more. Negative if fewer.
 r2(b1_l10 * delta_x_l10)
 ## TOY: bwght only. It can be negative.
 
@@ -881,6 +889,8 @@ r2(b1_l10 * delta_x_l10)
 ## correlation between wage and exper
 ## cor() is not the slope
 data(wage1)                                      # SET
+## Example: correlation between wage and educ. wage is the first column, educ is the second.
+## If they say exper, change educ to exper. Do not report this number as the slope.
 r2(cor(wage1$wage, wage1$educ))                  # SET y column, x column
 ## TOY: wage and educ. This is not the OLS slope.
 
@@ -929,8 +939,10 @@ data(wage1)                                      # SET
 reg_one <- lm(wage ~ educ, data = wage1)         # SET y ~ x
 b0_one <- unname(reg_one$coefficients[1])
 b1_one <- unname(reg_one$coefficients[2])
-x_one <- 12                                      # SET their x
-y_one <- 8                                       # SET their actual y
+## Example: a worker has educ = 12 and actual wage = 8.
+## Type 12 on x_one and 8 on y_one. The regression supplies b0 and b1.
+x_one <- 12                                      # SET their x. Example: 12
+y_one <- 8                                       # SET their actual y. Example: 8
 r2(y_one - (b0_one + b1_one * x_one))
 
 ## predicted y at the average x. b0 + b1*mean(x) equals mean(y)
@@ -977,11 +989,15 @@ r2(unname(reg_ceo_d$coefficients[2]) * roe_delta)
 ## var(wage1$educ) sample variance of a column. Not sd().
 ## var(wage1$wage)    var(wage1$exper)
 data(wage1)                                      # SET
+## Example: sample variance of educ. The sheet's command is var(wage1$educ).
+## If they name wage or exper, change educ. This is not sd().
 r2(var(wage1$educ))                              # SET dataset$column
 
 ## median min max of a column. summary() prints all of them.
 ## median(wage1$wage)    min(wage1$wage)    max(wage1$wage)
 data(wage1)                                      # SET
+## Example: median of wage. Type median. If they ask for the minimum, change median to min.
+## If they ask for the maximum, change median to max.
 r2(median(wage1$wage))                           # SET median, min, or max, and the column
 
 ## reg$fitted.values
@@ -989,6 +1005,8 @@ r2(median(wage1$wage))                           # SET median, min, or max, and 
 ## sum((reg$fitted.values - mean(y))^2)
 data(wage1)                                      # SET
 reg_fitv <- lm(wage ~ educ, data = wage1)        # SET y ~ x
+## Example: no number to type. If they say bwght on cigs, change wage ~ educ to bwght ~ cigs and wage1$wage to bwght$bwght.
+## The printed number is SSE.
 y_fitv <- wage1$wage                             # SET the y column
 r2(sum((reg_fitv$fitted.values - mean(y_fitv))^2))
 
@@ -997,15 +1015,21 @@ r2(sum((reg_fitv$fitted.values - mean(y_fitv))^2))
 ## coefficients[1] intercept. [2] first slope, educ. [3] second slope, exper. [4] third slope, tenure.
 data(wage1)
 reg_multi <- lm(wage ~ educ + exper + tenure, data = wage1)
-which_coef <- 2                                  # SET 1, 2, 3, or 4
+## Example: wage = b0 + b1*educ + b2*exper + b3*tenure + U.
+## They ask for the slope on exper. exper is the second slope, so type 3.
+## intercept -> 1    educ -> 2    exper -> 3    tenure -> 4
+which_coef <- 2                                  # SET 1, 2, 3, or 4. Example: exper is 3.
 r2(unname(reg_multi$coefficients[which_coef]))
 
 ## standard error of the slope
 ## summary(reg)$coefficients[2,2]
-## Row 2 is the slope. Column 2 is the standard error. This is not a t-test.
+## Example from the command sheet: standard error of the educ slope.
+## summary(reg)$coefficients[2, 2]
+## Row is the coefficient: 1 intercept, 2 slope. Column 2 is the standard error.
+## Column 3 would be the t value. Column 4 would be the p value. The study guide does not ask for those.
 data(wage1)                                      # SET
 reg_se <- lm(wage ~ educ, data = wage1)          # SET y ~ x
-r2(summary(reg_se)$coefficients[2, 2])
+r2(summary(reg_se)$coefficients[2, 2])           # SET [row, 2]. Slope SE is [2, 2]. Intercept SE is [1, 2].
 
 
 ## ============================================================
