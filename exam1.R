@@ -797,6 +797,7 @@ r2(sd(wage1$educ))                               # SET dataset$column
 
 ## L4 OLS slope lm wage on educ coefficients[2] ignore the name
 ## lm(wage ~ educ, data = wage1)
+## lm(wage1$wage ~ wage1$educ)
 ## exper or tenure: replace educ in the lm() line before you run. Do not leave educ.
 ## b1 <- reg$coefficients[2]
 ## hat beta_1    slope = unname(reg$coefficients[2])
@@ -839,6 +840,7 @@ r2(b1_l7 * delta_x_l7)
 
 ## L8 sum of squared residuals SSR reg$residuals^2
 ## SSR = sum(reg$residuals^2)
+## SSR = sum(reg$residuals**2)
 ## Same y ~ x as the question before you run.
 data(wage1)                                      # SET
 reg_l8 <- lm(wage ~ educ, data = wage1)          # SET
@@ -971,6 +973,39 @@ data(ceosal1)
 reg_ceo_d <- lm(salary ~ roe, data = ceosal1)
 roe_delta <- 5                                   # SET. Negative if roe falls.
 r2(unname(reg_ceo_d$coefficients[2]) * roe_delta)
+
+## var(wage1$educ) sample variance of a column. Not sd().
+## var(wage1$wage)    var(wage1$exper)
+data(wage1)                                      # SET
+r2(var(wage1$educ))                              # SET dataset$column
+
+## median min max of a column. summary() prints all of them.
+## median(wage1$wage)    min(wage1$wage)    max(wage1$wage)
+data(wage1)                                      # SET
+r2(median(wage1$wage))                           # SET median, min, or max, and the column
+
+## reg$fitted.values
+## SSE = sum((reg$fitted.values - ybar)^2)
+## sum((reg$fitted.values - mean(y))^2)
+data(wage1)                                      # SET
+reg_fitv <- lm(wage ~ educ, data = wage1)        # SET y ~ x
+y_fitv <- wage1$wage                             # SET the y column
+r2(sum((reg_fitv$fitted.values - mean(y_fitv))^2))
+
+## multiple regression wage ~ educ + exper + tenure
+## lm(wage ~ educ + exper + tenure, data = wage1)
+## coefficients[1] intercept. [2] first slope, educ. [3] second slope, exper. [4] third slope, tenure.
+data(wage1)
+reg_multi <- lm(wage ~ educ + exper + tenure, data = wage1)
+which_coef <- 2                                  # SET 1, 2, 3, or 4
+r2(unname(reg_multi$coefficients[which_coef]))
+
+## standard error of the slope
+## summary(reg)$coefficients[2,2]
+## Row 2 is the slope. Column 2 is the standard error. This is not a t-test.
+data(wage1)                                      # SET
+reg_se <- lm(wage ~ educ, data = wage1)          # SET y ~ x
+r2(summary(reg_se)$coefficients[2, 2])
 
 
 ## ============================================================
