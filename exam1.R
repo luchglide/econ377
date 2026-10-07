@@ -168,7 +168,15 @@ library(wooldridge)
 ## CLICK: The population is the whole group you care about. The sample is the part you actually collect. True: you use the sample to learn about the population.
 
 ## dataset dollar sign column summary center spread shape
-## CLICK: dataset$variable pulls one column. The $ is not a money sign. summary() is the snapshot of every variable. Center, spread, and shape, in that order, are mean(), sd(), and hist().
+## CLICK: The name in front of $ is whatever you saved with <-. It is not a money sign.
+##   wage1$wage is the wage column of the dataset you loaded as wage1.
+##   reg <- lm(y ~ x, data = wage1), then:
+##   reg$coefficients     both estimates. [1] intercept, [2] slope.
+##   reg$fitted.values    the predictions.
+##   reg$residuals        actual y minus fitted.
+##   summary(reg)$r.squared
+## If you named the regression fit instead of reg, write fit$fitted.values. Same for any other name.
+## summary() with no $ is the snapshot of every variable. Center, spread, shape: mean(), sd(), hist().
 
 ## econometrics economics data statistics
 ## CLICK: Econometrics combines economics, data, and statistics.
@@ -600,6 +608,17 @@ r2((n_ssru - 1) * suhat2_ssr)
 ## exp(log(x)) = x and log(exp(x)) = x
 c(exp(log(3)), log(exp(3)))
 
+
+## dollar sign $ fitted.values coefficients residuals r.squared what goes in front
+## The name in front of $ is the object you already saved.
+## Dataset column: wage1$wage
+## After reg <- lm(y ~ x, data = wage1):
+##   reg$coefficients[1]     intercept
+##   reg$coefficients[2]     slope
+##   reg$fitted.values       predictions
+##   reg$residuals           actual minus fitted
+##   summary(reg)$r.squared  R^2
+## Swap reg for whatever name is on the left of <-.
 
 ## ============================================================
 ## LAST10. Same 10 moves as Problem Set 7.
