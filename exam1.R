@@ -193,6 +193,8 @@ library(wooldridge)
 
 ## ============================================================
 ## MIDDLE. Hand equations. Change the SET lines. Run only that block.
+## Search a phrase copied from the question, the way it is written.
+## "find the change in y"   "takes the values"   "with probabilities"   "find the residual"
 ## ============================================================
 
 ## sample mean average xbar sum divided by n
@@ -219,15 +221,17 @@ sum(x_sum)
 x_len <- c(2, 5, 7, 10)             # SET
 length(x_len)
 
-## percent change 100 times new minus old over old
+## percent change when x goes from old to new. Find the percent change.
+## A polling share goes from 52% to 38%. Divide by the OLD value, 52. The answer is negative.
 ## percent change = 100 * (new - old) / old
 old_pct <- 20                       # SET
 new_pct <- 25                       # SET
 r2(100 * (new_pct - old_pct) / old_pct)
 ## TOY: 20 to 25. Notes: 4 pp to 6 pp divides by 4. Polling 52 to 38 divides by 52, not by 38.
 
-## percentage point change new minus old
+## percentage POINTS. A rate goes from 52% to 38%. What is the change in percentage points?
 ## percentage points = new - old
+## This is not a percent. 52 to 38 is -14 points, not -14 percent.
 old_pp <- 3                         # SET
 new_pp <- 5                         # SET
 r2(new_pp - old_pp)
@@ -239,7 +243,9 @@ old_rate <- 3                       # SET already in percent, not a decimal
 new_rate <- 5                       # SET
 r2(100 * (new_rate - old_rate) / old_rate)
 
-## delta y change drops the intercept
+## For y = b0 + b1*X1 + b2*X2, find the change in y. delta y = b1*dX1 + b2*dX2.
+## They print b0. Leave b0 out. It does not affect the change.
+## One slope only: set b2 and dX2 to 0. Three slopes: fill b3 and dX3.
 ## delta y = b1*dx1 + b2*dx2 + b3*dx3
 b1_dy <- -9.8                       # SET slope on the variable that changes
 b2_dy <- 0.03                       # SET 0 if the question has only one slope
@@ -282,7 +288,7 @@ x_gpa <- 3.6                        # SET
 r2(b0_gpa + b1_gpa * x_gpa)
 ## TOY: notes, hsGPA 3.6. For hsGPA 3.0, change x_gpa only.
 
-## sample variance Sx^2 demean square sum divide by n-1
+## Compute the sample variance for x = (3, 4, 5). Divide by n - 1.
 ## sample variance = sum((x - mean(x))^2) / (length(x) - 1)
 x_svar <- c(3, 4, 5)                # SET
 r2(var(x_svar))
@@ -318,7 +324,8 @@ x_cor <- c(3, 4, 7)                 # SET
 y_cor <- c(3, 6, 7)                 # SET
 r2(cor(x_cor, y_cor))
 
-## E[X] expected value sum of value times probability
+## A random variable X takes the values 1, 2, 3 with probabilities 0.2, 0.5, 0.3. Find E[X].
+## "takes the values" and "with probabilities" means a probability table. Do not use mean().
 ## E[X] = sum(x * p)
 x_ex <- c(1, 2, 3)                  # SET
 p_ex <- c(0.2, 0.5, 0.3)            # SET
@@ -336,7 +343,7 @@ c_lin <- -3                         # SET the constant, with its sign
 r2(a_lin * EX_lin + b_lin * EY_lin + c_lin)
 ## TOY: notes, E[4X + 5Y - 3] with E[X] = 2 and E[Y] = 3.
 
-## E[X^2] square the values first
+## For that same distribution, find E[X^2]. Square the values first, then weight by the probabilities.
 ## E[X^2] = sum(x^2 * p)
 x_ex2 <- c(1, 2, 3)                 # SET
 p_ex2 <- c(0.2, 0.5, 0.3)           # SET
@@ -373,7 +380,7 @@ VarX_scale <- 4                     # SET
 a_scale <- 2                        # SET
 r2(a_scale^2 * VarX_scale)
 
-## Cov(X,Y) from E[XY] E[X] E[Y]
+## Given E[XY], E[X], and E[Y], find Cov(X, Y).
 ## Cov(X, Y) = E[XY] - E[X]*E[Y]
 EXY_cv <- 17                        # SET
 EX_cv <- 1                          # SET
@@ -507,7 +514,7 @@ b1_fs <- cov(x_fs, y_fs) / var(x_fs)
 b0_fs <- mean(y_fs) - b1_fs * mean(x_fs)
 r2(b0_fs + b1_fs * xnew_fs)
 
-## residual uhat actual y minus fitted
+## A fitted line is yhat = b0 + b1*x. A person has x and actual y. Find the residual uhat = y - yhat.
 ## residual = actual y - fitted
 b0_res <- -0.90                     # SET
 b1_res <- 0.54                      # SET
