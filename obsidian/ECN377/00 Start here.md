@@ -11,6 +11,7 @@ Exam II: **Wed Nov 11** (in class, open notes + R, no AI/internet). Likely cover
 6. Timed mock exam
 
 ## Reference
+- [[Exam II real-data drill]] ★ priority: data analysis in R (D13–D22)
 - [[Key tables (2.3 and 3.2)]] ★ professor's two most important tables
 - [[Exam I - every question solved]]
 - [[R script guide]]
