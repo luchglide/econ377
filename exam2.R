@@ -20,6 +20,7 @@
 # TABLE OF CONTENTS (Ctrl+F the tag)
 #  PART B - REAL DATA (wooldridge)
 #   [B0] one-liners: nrow, mean(data$x), cor(data$x, data$y)
+#   [B2a] plain lm() lines: slope, prediction, change, R^2, residual
 #   [B1] n, mean, sd, correlation of variables          STATS()
 #   [B2] regression report: coefs, se, t, p, CI, R^2,   REG()
 #        SST/SSE/SSR, sigma-hat, prediction, change,
@@ -184,6 +185,18 @@ ans("[B0] cov(data$x, data$y)", cov(b0_data$salary, b0_data$roe))           #   
 ## [B1] n, mean, correlation --------------------------------------------------
 ## ceosal1: n = 209, mean roe = 17.18, cor(salary, roe) = 0.11
 STATS(ceosal1, c("salary", "roe"))                             # <-- CHANGE dataset, variables
+
+## [B2a] the plain lm() lines, one answer each (Exam I Q32-Q36) -----------------
+## The same answers REG() prints below, written out so you can see where each comes from.
+## Full walkthrough of every Exam I question: exam1_solutions.R
+reg <- lm(wage ~ tenure, data = wage1)               # <-- CHANGE y ~ x, data
+b <- reg$coefficients                                # b[1] = intercept, b[2] = slope
+ans("[B2a] slope b[2]", b[2])                                    # Q32: 0.18
+ans("[B2a] prediction b[1] + b[2]*x", b[1] + b[2] * 10)          # Q33: 6.76  <-- CHANGE x (KEEP intercept)
+ans("[B2a] change b[2]*(new - old)", b[2] * (16 - 3))            # Q34: 2.31  <-- CHANGE new, old (NO intercept)
+ans("[B2a] R^2 percent", 100 * summary(reg)$r.squared)           # Q35: 12.03
+ans("[B2a] residual of row i", reg$residuals[2])                 # Q36: -2.11 <-- CHANGE row
+ans("[B2a] SSE explained", sum((reg$fitted.values - mean(wage1$wage))^2))   # <-- CHANGE y column
 
 ## [B2] regression report -------------------------------------------------------
 ## wage1, wage on tenure: slope 0.18 | wage at tenure 10 = 6.76 | change 3 -> 16 = 2.31
