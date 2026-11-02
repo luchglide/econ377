@@ -19,6 +19,7 @@
 # =======================================================================
 # TABLE OF CONTENTS (Ctrl+F the tag)
 #  PART B - REAL DATA (wooldridge)
+#   [B0] one-liners: nrow, mean(data$x), cor(data$x, data$y)
 #   [B1] n, mean, sd, correlation of variables          STATS()
 #   [B2] regression report: coefs, se, t, p, CI, R^2,   REG()
 #        SST/SSE/SSR, sigma-hat, prediction, change,
@@ -167,6 +168,18 @@ FTEST <- function(unrestricted, restricted, data, alpha = 0.05) {
 cat("\n#################### PART B - REAL DATA ####################\n")
 ## These defaults are the actual Exam I Part III questions. The correct
 ## Canvas answers are in the comments, so they double as a self-check.
+
+## [B0] one-line answers straight from a dataset (Exam I Q29, Q30, Q31) ---------
+## dataset$column pulls ONE column. Swap in the dataset and column names from the
+## question. Use the question's dataset, not wage1 out of habit (Q29: 526 was wage1's n).
+## A correlation NEVER comes from lm(): lm() gives the intercept/slope (Q31: 963.19
+## was the intercept). A correlation must land between -1 and 1.
+b0_data <- ceosal1                                   # <-- CHANGE dataset
+ans("[B0] n = nrow(data)", nrow(b0_data))                                   # 209
+ans("[B0] mean(data$x)", mean(b0_data$roe))                                 # 17.18  <-- CHANGE column
+ans("[B0] sd(data$x)", sd(b0_data$roe))                                     #        <-- CHANGE column
+ans("[B0] cor(data$x, data$y)", cor(b0_data$salary, b0_data$roe))           # 0.11   <-- CHANGE columns
+ans("[B0] cov(data$x, data$y)", cov(b0_data$salary, b0_data$roe))           #        <-- CHANGE columns
 
 ## [B1] n, mean, correlation --------------------------------------------------
 ## ceosal1: n = 209, mean roe = 17.18, cor(salary, roe) = 0.11
