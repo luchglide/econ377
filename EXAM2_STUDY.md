@@ -20,7 +20,11 @@ On Nov 2 the course schedule shifted one slot: D20 now stops before Gauss–Mark
 ## Lessons (interactive, answers save so Claude can see what to reteach)
 - L1 Foundations: https://claude.ai/artifact/2wixtDbG5DgR6EBLVvAdAG
 - L2 Sampling, unbiasedness, OVB, standard errors, with a simulator: https://claude.ai/artifact/PmkGSC2TyoCZdppG49vQQZ
-- L3–L6: units and logs, MLR, t-tests, then a timed mock exam
+- L3 Units and logs (Table 2.3): https://claude.ai/artifact/1pdakkuJR57E3C5B5YcRyj
+- L4 Multiple regression and OVB (Table 3.2), with multi-step chains: https://claude.ai/artifact/EHwgYo8BiLZArkGbb1SZsp
+- L5 Gauss–Markov and one-sided t-tests (the logic questions): https://claude.ai/artifact/9NzVZRGbbs7eBqie6n42TM
+- L6 Timed mock Exam II: https://claude.ai/artifact/7BXNAJhL8G87JqaTGnkNDj
+- Each of L3–L5 ends with a rewording drill: the same skill asked several ways. Name what's GIVEN and ASKED, then the block, before any math.
 
 ## Lessons from Exam I (11.4 / 38, 70 minutes)
 - Most lost points were **unanswered**, not wrong. Part III (real data) was nearly all blank or wrong, yet the questions themselves were short: n, a mean, a correlation, a slope, a prediction, a change, R², and a residual.
