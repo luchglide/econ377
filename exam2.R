@@ -24,6 +24,8 @@
 # PREDICTION keeps the intercept. CHANGE drops it.
 # =======================================================================
 # PART 1 - REAL DATA (wooldridge)               PART 2 - NUMBERS IN THE QUESTION
+#                                                [S1]-[S7] SOLVERS: type what's given, NA the rest;
+#                                                  they print EVERY related answer (twist-proof)
 #  [D0] n, mean, sd, cor of columns              [U1] x rescaled -> new slope
 #  [D1] simple lm: slope, prediction, change,    [U2] y rescaled -> new slope/intercept
 #       R^2, residual of a row, SST/SSE/SSR      [U3] log(y) model, y rescaled -> intercept
@@ -39,6 +41,7 @@
 #  [D11] perfect collinearity -> NA              [O3] sum of x*uhat (always 0)
 #  [D12] t-stat + one-sided test from data       [O4] SSR from SSE and R^2
 #  [D13] REG(): everything at once               [O5] SST from n and S^2
+#                                                ** NEW WORDING? [S1]-[S7] any-input solvers **
 #                                                [V1] Var(b1) = sigma^2/SST
 # PART 3 - MULTIPLE CHOICE                       [V2] sd/se from sigma, n, S_X (or S_X^2)
 #  [K1]-[K16] answers keyed to the question      [V3] sd from sigma and raw x values
@@ -73,6 +76,13 @@ for (d in c("wage1", "ceosal1", "bwght", "gpa1", "vote1", "campus", "rdchem", "m
 
 ## ---- FIND(): type words from the question, get the block tag -----------------
 CATALOG <- list(
+  c("S1",  "SOLVER sums of squares: any of SST, SSE, SSR, R^2, n + S_y^2", "sst sse ssr r2 r-squared explained unexplained fraction total sum squares residual sample variance n observations"),
+  c("S2",  "SOLVER Var/sd/se of the slope from any mix of sigma, SSR, n, SST_x, x, S_X", "variance sd se standard error standard deviation sigma ssr sst_x sample variance x n observations var(b1 vif"),
+  c("S3",  "SOLVER units: rescale y and/or x in any of the 4 log models", "units measured instead multiplied divided 1000 100 dollars thousands percent decimal new slope intercept log-log log-level level-log"),
+  c("S4",  "SOLVER logs: prints the answer for all 4 log models + percent vs points", "log log-log log-level level-log percent units elasticity percentage points rises falls about"),
+  c("S5",  "SOLVER probability: E[X], Var, sd(aX+b), Var(aX+bY), tables, Cor", "e[x] e[x^2] expected var(x) var(y) cov(x,y) sd(ax+b) joint distribution probability table cor(x,y) takes values with probabilities"),
+  c("S6",  "SOLVER small sample: type x and y, get slope, intercept, residuals, R^2, cor ...", "sample x= y= regress by hand slope intercept residual observation predict sum sample standard deviation covariance correlation"),
+  c("S7",  "SOLVER equation: prediction, change, ybar, % change, exp() for logged y", "yhat equation predicted value change rises falls sample mean ybar means intercept percent dollars"),
   c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns"),
   c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained"),
   c("D2",  "Data: measure y or x in other units, new slope", "data units measured instead dollars thousands slope rescale percent decimal"),
@@ -367,6 +377,166 @@ REG(log(wage) ~ educ + exper + tenure, data = wage1,          # <-- CHANGE formu
     row = 2, test = "exper")                                  # <-- CHANGE (or delete)
 
 cat("\n#################### PART 2 - NUMBERS IN THE QUESTION ####################\n")
+
+## ######################################################################
+## UNIVERSAL SOLVERS [S1]-[S7]: USE THESE WHEN THE QUESTION IS WORDED NEW
+## Type EVERY number the question gives; leave the rest NA. Each solver
+## fills in everything it can and prints ALL related answers, so a flipped
+## direction or a merged step still lands on a printed line.
+## TRIAGE every question (20 seconds):
+##   1. ASKED: what number do they want? (sd? SSR? % change? residual?)
+##   2. GIVEN: list the numbers they hand you.
+##   3. CONNECT: FIND() or pick the solver that links given -> asked.
+##   4. CHECK: correlation in [-1, 1]? % vs units? dollars from log(y) need exp()?
+## ######################################################################
+
+## ======================================================================
+## [S1] SUMS-OF-SQUARES SOLVER: any of SST, SSE, SSR, R^2, n + S_y^2
+## LOOKS LIKE: "SSE = 135, R^2 = 0.18. Find SSR." / "SST = 241, SSR = 113. Find SSE."
+##   / "n = 44, S_y^2 = 7. Find SST." / "What fraction is UNEXPLAINED?"   (Exam I Q24-25, PS6, PS8 #9-10)
+## SSE = EXPLAINED, SSR = RESIDUAL (unexplained). DEFAULT (Exam I Q25) -> SSR 615.00
+s1_SST <- NA; s1_SSE <- 135; s1_SSR <- NA; s1_R2 <- 0.18     # <-- CHANGE: given numbers, NA otherwise
+s1_n <- NA; s1_S2y <- NA                                     # <-- CHANGE: n and sample variance of y, if given
+for (s1_i in 1:4) {
+  if (is.na(s1_SST) && !is.na(s1_n) && !is.na(s1_S2y)) s1_SST <- (s1_n - 1) * s1_S2y
+  if (is.na(s1_SST) && !is.na(s1_SSE) && !is.na(s1_SSR)) s1_SST <- s1_SSE + s1_SSR
+  if (is.na(s1_SST) && !is.na(s1_SSE) && !is.na(s1_R2))  s1_SST <- s1_SSE / s1_R2
+  if (is.na(s1_SST) && !is.na(s1_SSR) && !is.na(s1_R2))  s1_SST <- s1_SSR / (1 - s1_R2)
+  if (is.na(s1_SSE) && !is.na(s1_SST) && !is.na(s1_SSR)) s1_SSE <- s1_SST - s1_SSR
+  if (is.na(s1_SSE) && !is.na(s1_SST) && !is.na(s1_R2))  s1_SSE <- s1_R2 * s1_SST
+  if (is.na(s1_SSR) && !is.na(s1_SST) && !is.na(s1_SSE)) s1_SSR <- s1_SST - s1_SSE
+  if (is.na(s1_R2)  && !is.na(s1_SST) && !is.na(s1_SSE)) s1_R2  <- s1_SSE / s1_SST
+}
+ans("[S1] SST (total)", s1_SST); ans("[S1] SSE (EXPLAINED)", s1_SSE); ans("[S1] SSR (RESIDUAL)", s1_SSR)
+ans("[S1] R^2 (explained share)", s1_R2); ans("[S1] R^2 in percent", 100 * s1_R2)
+ans("[S1] 1 - R^2 (UNEXPLAINED share)", 1 - s1_R2)
+if (!is.na(s1_n)) ans("[S1] sample variance of y = SST/(n-1)", s1_SST / (s1_n - 1))
+
+## ======================================================================
+## [S2] VARIANCE / SD / SE SOLVER for the OLS slope
+## Takes any mix of: sigma or sigma^2 (or SSR + n), and SST_x or raw x or S_X or S_X^2.
+## LOOKS LIKE: "sigma = 20, n = 6, S_X^2 = 2: sd(b1)?" / "SSR = 437, n = 13, SST_X = 12: se?"
+##   / "sigma-hat = 9.4, n = 23, S_X = 0.7: se?" / "sigma^2 = 66, SST = 53: Var?"   (PS9, PS10, Q8, Q9)
+## DEFAULT (PS9 #16) -> se 1.82
+s2_sigma  <- NA       # <-- CHANGE error sd (sigma or sigma-hat), if given
+s2_sigma2 <- NA       # <-- CHANGE error variance (sigma^2 or sigma^2-hat), if given
+s2_SSR <- 437         # <-- CHANGE SSR, if given (then sigma-hat^2 = SSR/(n-k-1))
+s2_n   <- 13          # <-- CHANGE n
+s2_k   <- 1           # <-- CHANGE number of slopes (1 = simple regression)
+s2_SSTx <- 12         # <-- CHANGE SST_X, if given
+s2_x   <- NULL        # <-- CHANGE OR raw x values, e.g. c(3,4,7,8,9)
+s2_SX  <- NA          # <-- CHANGE OR sample SD of X (gets squared)
+s2_SX2 <- NA          # <-- CHANGE OR sample VARIANCE of X
+s2_Rj2 <- 0           # <-- CHANGE MLR only: R^2 of xj on the other x's
+if (!is.null(s2_x)) { s2_SSTx <- sum((s2_x - mean(s2_x))^2); if (is.na(s2_n)) s2_n <- length(s2_x) }
+if (is.na(s2_SSTx) && !is.na(s2_SX2)) s2_SSTx <- (s2_n - 1) * s2_SX2
+if (is.na(s2_SSTx) && !is.na(s2_SX))  s2_SSTx <- (s2_n - 1) * s2_SX^2
+if (is.na(s2_sigma2) && !is.na(s2_sigma)) s2_sigma2 <- s2_sigma^2
+if (is.na(s2_sigma2) && !is.na(s2_SSR))   s2_sigma2 <- s2_SSR / (s2_n - s2_k - 1)
+ans("[S2] df = n - k - 1", s2_n - s2_k - 1)
+ans("[S2] sigma^2 (or sigma^2-hat)", s2_sigma2); ans("[S2] sigma (or sigma-hat)", sqrt(s2_sigma2))
+ans("[S2] SST_X", s2_SSTx); ans("[S2] VIF = 1/(1-Rj^2)", 1 / (1 - s2_Rj2))
+ans("[S2] Var(b1)", s2_sigma2 / (s2_SSTx * (1 - s2_Rj2)))
+ans("[S2] sd(b1) = se(b1)", sqrt(s2_sigma2 / (s2_SSTx * (1 - s2_Rj2))))
+ans("[S2] ...if sample k=2 times as large", sqrt(s2_sigma2 / (s2_SSTx * (1 - s2_Rj2))) / sqrt(2))
+
+## ======================================================================
+## [S3] UNITS SOLVER: rescale y and/or x in ANY of the 4 models -> new b0, b1
+## LOOKS LIKE: "slope 0.58; x divided by 1,000: new slope?" / "y times 1,000" /
+##   "log(salary) = 3.36 + 0.44 log(sales); salary in dollars: new intercept?"  (PS8 #13-16, PS9 #1,#3, Q8 #1-2)
+## R^2 NEVER changes. DEFAULT (PS9 #3) -> b0 10.27, b1 0.44
+s3_model <- "log-log"   # <-- CHANGE "level-level", "log-level" (log y), "level-log" (log x), "log-log"
+s3_b0 <- 3.36           # <-- CHANGE intercept (0 if not given)
+s3_b1 <- 0.44           # <-- CHANGE slope
+s3_cy <- 1000           # <-- CHANGE what y is MULTIPLIED by (1 = unchanged; $000s -> $: 1000)
+s3_cx <- 1              # <-- CHANGE what x is MULTIPLIED by (divided by 1000 -> 1/1000)
+s3_new <- switch(s3_model,
+  "level-level" = c(s3_cy * s3_b0, s3_cy * s3_b1 / s3_cx),
+  "log-level"   = c(s3_b0 + log(s3_cy), s3_b1 / s3_cx),
+  "level-log"   = c(s3_cy * (s3_b0 - s3_b1 * log(s3_cx)), s3_cy * s3_b1),
+  "log-log"     = c(s3_b0 + log(s3_cy) - s3_b1 * log(s3_cx), s3_b1))
+ans("[S3] new intercept", s3_new[1]); ans("[S3] new slope", s3_new[2])
+pick("[S3] what changed", paste(ifelse(abs(s3_new[1] - s3_b0) > 1e-9, "intercept CHANGES", "intercept same"),
+                                ifelse(abs(s3_new[2] - s3_b1) > 1e-9, "slope CHANGES", "slope same"), "R^2 same", sep = "; "))
+
+## ======================================================================
+## [S4] LOG / PERCENT READER: prints the answer for ALL 4 models at once, so you only
+## have to know WHERE the log is. Plus percent vs percentage points.
+## LOOKS LIKE: any "by about what percent / how many units" question with logs (Table 2.3)
+## DEFAULTS (b = 0.083): 0.08 | 8.30% | 0.01 units | 0.83%
+s4_b <- 0.083           # <-- CHANGE slope
+s4_dx <- 1              # <-- CHANGE change in x in UNITS (falls = negative)
+s4_pctx <- 10           # <-- CHANGE change in x in PERCENT (falls = negative)
+ans("[S4] y ~ x          dy (units)", s4_b * s4_dx)
+ans("[S4] log(y) ~ x     %dy (100*b*dx)", 100 * s4_b * s4_dx)
+ans("[S4] log(y) ~ x     %dy exact", 100 * (exp(s4_b * s4_dx) - 1))
+ans("[S4] y ~ log(x)     dy units (b/100*%dx)", s4_b / 100 * s4_pctx)
+ans("[S4] log(y)~log(x)  %dy (b*%dx)", s4_b * s4_pctx)
+s4_old <- 5.6; s4_new <- 6.6                                # <-- CHANGE a rate before/after (percent vs points)
+ans("[S4] percent change 100*(new-old)/old", 100 * (s4_new - s4_old) / s4_old)
+ans("[S4] percentage-POINT change new - old", s4_new - s4_old)
+
+## ======================================================================
+## [S5] PROBABILITY SOLVER: moments, transforms, Var of sums, probability tables
+## LOOKS LIKE: "E[X]=3, E[X^2]=27: sd of 3X-2?" / "Var(X)=8, Var(Y)=6, Cov=-2.9: Var(2X-2Y)?"
+##   / "joint distribution below: Cor(X,Y)?" / "Y takes 6, 14, 34 w.p. .5 .3 .2: E[3Y+4]?"  (Exam I Q18-21, PS8 #3-5)
+## DEFAULTS (Exam I): sd(3X-2) 12.73 | Var(2X-2Y) 79.20 | Cor -0.43 | E[3Y+4] 46.00
+s5_EX <- 3; s5_EX2 <- 27; s5_VarX <- NA                     # <-- CHANGE: E[X] and E[X^2] (or Var(X) directly)
+s5_a <- 3; s5_b <- -2                                       # <-- CHANGE: transform aX + b
+if (is.na(s5_VarX)) s5_VarX <- s5_EX2 - s5_EX^2
+ans("[S5] Var(X)", s5_VarX); ans("[S5] sd(X)", sqrt(s5_VarX))
+ans("[S5] E[aX+b]", s5_a * s5_EX + s5_b); ans("[S5] Var(aX+b) = a^2 Var", s5_a^2 * s5_VarX)
+ans("[S5] sd(aX+b) = |a| sd", abs(s5_a) * sqrt(s5_VarX))
+s5_vx <- 8; s5_vy <- 6; s5_cov <- -2.9; s5_c1 <- 2; s5_c2 <- -2   # <-- CHANGE: Var(c1 X + c2 Y), minus goes INTO c2
+ans("[S5] Var(c1X + c2Y)", s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
+ans("[S5] Cor(X,Y) = Cov/(sdX sdY)", s5_cov / sqrt(s5_vx * s5_vy))
+s5_x <- c(1, 4, 5, 6); s5_y <- c(4, 7, 4, 2); s5_p <- c(0.1, 0.4, 0.3, 0.2)   # <-- CHANGE a probability table
+s5_EXt <- sum(s5_x * s5_p); s5_EYt <- sum(s5_y * s5_p)
+s5_Vx <- sum(s5_x^2 * s5_p) - s5_EXt^2; s5_Vy <- sum(s5_y^2 * s5_p) - s5_EYt^2
+s5_C <- sum(s5_x * s5_y * s5_p) - s5_EXt * s5_EYt
+ans("[S5] table E[X]", s5_EXt); ans("[S5] table E[Y]", s5_EYt); ans("[S5] table E[XY]", sum(s5_x * s5_y * s5_p))
+ans("[S5] table Var(X)", s5_Vx); ans("[S5] table Var(Y)", s5_Vy)
+ans("[S5] table Cov(X,Y)", s5_C); ans("[S5] table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
+s5_v <- c(6, 14, 34); s5_pv <- c(0.5, 0.3, 0.2); s5_A <- 3; s5_B <- 4   # <-- CHANGE one-variable table, E[AY+B]
+s5_E <- sum(s5_v * s5_pv)
+ans("[S5] one-var E[Y]", s5_E); ans("[S5] one-var Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
+ans("[S5] one-var E[AY+B]", s5_A * s5_E + s5_B)
+
+## ======================================================================
+## [S6] SMALL-SAMPLE OLS SOLVER: type x and y, get EVERYTHING
+## LOOKS LIKE: "For x = (...), y = (...): slope? intercept? residual of obs 3? predict at x = 5?
+##   sum x*uhat? R^2? sample sd/cov/cor?"   (Exam I Q16-17,22-23,28; PS5-PS6; PS8 #6,#8)
+## DEFAULT (Exam I Q23) -> residual of obs 3 = 1.80
+s6_x <- c(4, 6, 7, 8, 10)                                   # <-- CHANGE
+s6_y <- c(4, 6, 7, 1, 8)                                    # <-- CHANGE
+s6_i <- 3; s6_x0 <- 7                                       # <-- CHANGE observation number; x to predict at
+s6_reg <- lm(s6_y ~ s6_x); s6_b <- s6_reg$coefficients
+ans("[S6] mean x", mean(s6_x)); ans("[S6] mean y", mean(s6_y))
+ans("[S6] sd x", sd(s6_x)); ans("[S6] sd y", sd(s6_y)); ans("[S6] var x", var(s6_x))
+ans("[S6] cov(x,y)", cov(s6_x, s6_y)); ans("[S6] cor(x,y)", cor(s6_x, s6_y))
+ans("[S6] slope b1", s6_b[2]); ans("[S6] intercept b0", s6_b[1])
+ans("[S6] prediction at x0", s6_b[1] + s6_b[2] * s6_x0)
+ans("[S6] fitted of obs i", s6_reg$fitted.values[s6_i]); ans("[S6] residual of obs i", s6_reg$residuals[s6_i])
+ans("[S6] sum of residuals (always 0)", sum(s6_reg$residuals)); ans("[S6] sum x*uhat (always 0)", sum(s6_x * s6_reg$residuals))
+ans("[S6] SST", sum((s6_y - mean(s6_y))^2)); ans("[S6] SSR", sum(s6_reg$residuals^2))
+ans("[S6] SSE", sum((s6_reg$fitted.values - mean(s6_y))^2)); ans("[S6] R^2", summary(s6_reg)$r.squared)
+
+## ======================================================================
+## [S7] LINE SOLVER: given an equation, prints prediction, change, ybar, and log versions
+## LOOKS LIKE: any "y-hat = b0 + b1 x1 + b2 x2 ..." question: predicted value / change /
+##   sample mean of y / % change / predicted $ when y is logged    (Q9 #8-9, PS11 #1, #6)
+## DEFAULTS (yhat = 4 + 2.9x1 - 0.6x2): pred at (1,2) 5.70 | change (1,-3) 4.70 | ybar at (5,2) 17.30
+s7_b0 <- 4                                                  # <-- CHANGE intercept
+s7_b  <- c(2.9, -0.6)                                       # <-- CHANGE slopes (keep signs)
+s7_at <- c(1, 2)                                            # <-- CHANGE x VALUES (for a prediction)
+s7_dx <- c(1, -3)                                           # <-- CHANGE x CHANGES (falls negative, fixed 0)
+s7_xbar <- c(5, 2)                                          # <-- CHANGE x MEANS (for ybar), if given
+s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
+ans("[S7] prediction (keeps b0)", s7_pred); ans("[S7] change (no b0)", s7_chg)
+ans("[S7] ybar = b0 + sum(b * xbar)", s7_b0 + sum(s7_b * s7_xbar))
+ans("[S7] IF y is logged: % change = 100*chg", 100 * s7_chg)
+ans("[S7] IF y is logged: prediction in $ = exp", exp(s7_pred))
+
 
 ## ======================================================================
 ## [U1] x multiplied or divided by c -> new slope
@@ -681,3 +851,17 @@ pick("[K16] t-stat", "(b-hat - a)/se: how many se's the estimate is from the nul
 pick("[K16] one-sided >", "reject H0 if t > c;  two-sided: reject if |t| > c")
 pick("[K16] p-value", "reject H0 if p < alpha; small p = evidence AGAINST H0")
 pick("[K16] high corr (not perfect)", "allowed; just raises Var(bj) (multicollinearity)")
+
+## [K17] SCENARIO BANK: the exam re-tells the same idea with new stories. Match the PATTERN.
+## OVB direction = sign(omitted affects y) x sign(omitted moves with x). Same -> UP, opposite -> DOWN.
+pick("[K17] ability, wage ~ educ", "ability raises wage (+), more able get more educ (+) -> UP")
+pick("[K17] land quality, yield ~ fertilizer", "(+) yield, more fertilizer on good land (+) -> UP")
+pick("[K17] motivation, wage ~ training", "(+) wage, motivated take more training (+) -> UP")
+pick("[K17] family income, score ~ class size", "(+) score, richer -> SMALLER classes (-) -> DOWN")
+pick("[K17] prior ability, score ~ tutoring", "(+) score, low-ability take MORE tutoring (-) -> DOWN")
+pick("[K17] exper, wage ~ educ (wage1)", "(+) wage, more educ -> less exper (-) -> DOWN (0.54 < 0.64)")
+pick("[K17] hsGPA, colGPA ~ ACT (gpa1)", "(+) colGPA, corr with ACT (+) -> UP (0.027 > 0.009)")
+pick("[K17] family income, bwght ~ cigs", "(+) bwght, smokers have lower income (-) -> DOWN (more negative)")
+pick("[K17] city size, crime ~ police", "correlation, not causation: big cities have more of both")
+## ZERO CONDITIONAL MEAN (MLR.4) story: "Z is part of U and Z moves with X" -> FAILS (X endogenous).
+## "Z is part of U but unrelated to X" (weather, random ID) -> still holds.
