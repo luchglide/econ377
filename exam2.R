@@ -84,6 +84,32 @@
 ################################################################################
 
 rm(list = ls())
+
+# STEP 0: SETUP CHECK (installs what's missing, then reports) ##################
+# What this script needs:
+#   1. wooldridge  - the course datasets. If it can't install, the CSV copies in
+#                    data/ are used instead, so the script still works.
+#   2. rstudioapi  - lets FIND() / GO() move your cursor to a block. Optional:
+#                    without it, they print the line number instead.
+#   3. The data/ folder next to this script (comes with the econ377 repo).
+# HOW: run this file once WHILE YOU HAVE INTERNET (at home the night before, AND
+#   on the lab PC before the exam starts). Missing packages install automatically.
+#   With no internet it just skips the install and uses data/.
+# If wooldridge won't install (older R), run this once in the Console:
+#   install.packages("https://cloud.r-project.org/src/contrib/Archive/wooldridge/wooldridge_1.4-3.tar.gz", repos = NULL, type = "source")
+# If data/ isn't found: Session -> Set Working Directory -> To Source File Location.
+for (pkg in c("wooldridge", "rstudioapi")) {
+  if (!requireNamespace(pkg, quietly = TRUE))
+    suppressWarnings(try(install.packages(pkg, repos = "https://cloud.r-project.org", quiet = TRUE), silent = TRUE))
+}
+cat("\n---- SETUP CHECK ----\n")
+cat(sprintf("  wooldridge package : %s\n", if (requireNamespace("wooldridge", quietly = TRUE)) "OK" else "not installed -> using data/ CSV copies"))
+cat(sprintf("  rstudioapi package : %s\n", if (requireNamespace("rstudioapi", quietly = TRUE)) "OK (FIND jumps to blocks)" else "not installed -> FIND prints line numbers"))
+cat(sprintf("  data/ folder       : %s\n", if (dir.exists("data")) "found" else
+  "NOT FOUND -> Session > Set Working Directory > To Source File Location, then rerun"))
+if (!requireNamespace("wooldridge", quietly = TRUE) && !dir.exists("data"))
+  cat("  !! No datasets available: fix the working directory (above) or install wooldridge.\n")
+cat("---------------------\n")
 ans  <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 2), nsmall = 2)))
 ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 4), nsmall = 4)))
 pick <- function(label, x) cat(sprintf(">>> PICK   %-38s %s\n", label, x))
