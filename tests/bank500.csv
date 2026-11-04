@@ -1,0 +1,501 @@
+id,text,tags,kind,style,fold
+1,"An OLS fit leaves residuals [3.0, 0.6, -1.0, 2.6, 2.8, 1.2] for the first 6 observations. What is the residual of the final observation?",O2,O2 missing residual,flipped,dev
+2,"sd(β̂₁) = 1.66. If the sample were 4 times larger with x spread the same way, what would sd(β̂₁) become?",V6 S2,V6 bigger sample,flipped,test
+3,"For omitted-variable bias to arise from leaving out product quality, what two conditions must hold?",K3 K15 B3,K3 OVB candidate,new story,dev
+4,Using lawsch85: Estimate lm(log(salary) ~ rank). What is the approximate percentage effect of 10 more units of rank?,D3 D8 L1 S4,D3 log-level data,hint removed,test
+5,Why does the coefficient on cigs change when faminc is added to the birth-weight regression?,K14 K15 B1,K14 ceteris paribus,new story,dev
+6,What does it mean for the OLS estimator to be unbiased?,K4,K4 unbiased,hint removed,test
+7,Which functional form implies a constant percentage effect of a one-unit change in x?,K9 S4,K9 log interpretation,hint removed,dev
+8,"Data set lawsch85. Variables: salary = median starting salary; rank = law school ranking; LSAT = median LSAT score. Regress log(salary) on rank and LSAT. By about what percent does salary change when rank increases by 2, holding LSAT fixed?",D8 D13 L4 D3,D8 log multiple data,hint removed,test
+9,"In a multiple regression, σ² = 64, SST_1 = 161, and regressing x1 on the other regressors gives R² = 0.46. Find Var(β̂₁).",V7 S2,V7 VIF,hint removed,dev
+10,"Use the gpa2 data set from the wooldridge package (colgpa = GPA after fall semester; hsize = high school graduating class size in 100s). If hsize increases by 5, by how much does the predicted colgpa change in the simple regression?",D1 D13,D1 simple lm,new dataset,test
+11,Interest rates are recorded as decimals rather than percents (divided by 100). The old slope was 0.14. What is the new slope?,S3 U1 U2 U3 K8,S3 units,flipped,dev
+12,X has mean 6 and variance 8. Find E[4X + -9] and Var[4X + -9].,S5 P1 P2 P3,S5 probability,flipped,test
+13,"With log(salary) = 4 + 0.438·ceoten, compute the exact percent change from 26 more years as CEO.",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+14,Data set k401k. Variables: prate = percent of eligible workers participating; totemp = total firm employment; age = age of the plan in years. Regress prate on totemp and age. What is the coefficient on totemp?,D7 D13 D1,D7 multiple data,merged steps,test
+15,Use the sleep75 data set from the wooldridge package (sleep = minutes of sleep per week; totwrk = minutes worked per week; age = age in years). Run lm(sleep ~ totwrk + age). Report the intercept.,D7 D13 D1,D7 multiple data,merged steps,dev
+16,"In the attend data, atndrte = percent of classes attended; priGPA = prior cumulative GPA. What is the sample standard deviation of atndrte? (round to the hundredths)",D0 D13,D0 stats,new dataset,test
+17,Every observation in the sample has the same value of x. What goes wrong with OLS?,K5 K11,K5 no variation,new story,dev
+18,"Create totexpend = expendA + expendB and regress voteA on expendA, expendB and totexpend. What does R report for totexpend?",D11 K11,D11 collinearity data,new story,test
+19,Omitting firm size from a regression of salary on years as CEO: is the slope biased up or down?,B3 K17 B2,B3/K17 direction,new story+canvas,dev
+20,colGPA-hat = 4.0 + -0.87 hsGPA + -2.94 ACT. What is the predicted GPA for hsGPA = 3.7 and ACT = 32?,S7 M1 M2 M3,S7 equation,flipped+canvas,test
+21,"In the ceosal1 data, salary = 1990 salary in thousands of dollars; roe = return on equity, percent. Regress log(salary) on roe. By approximately what percent does salary change when roe rises by 7?",D3 D8 L1 S4,D3 log-level data,hint removed+canvas,dev
+22,"n = 56, sample variance of the dependent variable = 10, SSR = 144. Compute R².",S1 O4 O5,S1 sums of squares,hint removed,test
+23,"Given R2 = 0.1 and SST = 394, find the explained sum of squares.",S1 O4 O5,S1 sums of squares,flipped,dev
+24,Select all changes that reduce sd(b1).,K7 V7,K7 what changes Var,hint removed+canvas,test
+25,"Under MLR.1–MLR.6, what is the distribution of (β̂ⱼ − βⱼ)/se(β̂ⱼ)?",K16 T1 T2,K16 assumptions/tests,hint removed,dev
+26,"Given R2 = 0.91 and SST = 688, find the explained sum of squares.",S1 O4 O5,S1 sums of squares,hint removed,test
+27,"n = 14, sample variance of the dependent variable = 18, SSR = 54. Compute R².",S1 O4 O5,S1 sums of squares,flipped,dev
+28,"From y-hat = -3.04 + 2.09x1 + -1.81x2, how much does y-hat change if x1 rises by 12 while x2 drops by 3?",S7 M1 M2 M3,S7 equation,flipped,test
+29,"Using lawsch85: Using the natural log of salary as the dependent variable and GPA as the regressor, interpret a 9-unit increase in GPA as a percent.",D3 D8 L1 S4,D3 log-level data,hint removed,dev
+30,Which assumptions are needed for OLS to be BLUE?,K16 T1 T2,K16 assumptions/tests,hint removed,test
+31,"Using wage1: Using the natural log of wage as the dependent variable and educ as the regressor, interpret a 9-unit increase in educ as a percent.",D3 D8 L1 S4,D3 log-level data,hint removed,dev
+32,"If the error variance doubles, what happens to the variance of the OLS slope?",K7 V7,K7 what changes Var,hint removed+canvas,test
+33,"Coefficient -0.005, standard error 0.426. Is it significant at the 10% level against a two-sided alternative?",T1 T2,T1/T2 t-tests,merged steps,dev
+34,"In the rdchem data, rd = R&D spending in millions; profmarg = profits as a percent of sales. Compute the estimated error variance from the regression of rd on profmarg.",D6 D13 D1,D6 se data,merged steps+canvas,test
+35,"From y-hat = 6.49 + 0.32x1 + -2.03x2, how much does y-hat change if x1 rises by 10 while x2 drops by 1?",S7 M1 M2 M3,S7 equation,flipped,dev
+36,Which assumptions together are called the classical linear model assumptions?,K16 T1 T2,K16 assumptions/tests,hint removed,test
+37,"σ = 3, SST_j = 59, R_j² = 0.36. Compute sd(β̂_j).",V7 S2,V7 VIF,hint removed,dev
+38,"Data: meap93 (math10 = percent passing the 10th grade math test; lnchprg = percent in the school lunch program; expend = expenditure per student). Compute b2 times delta1, where b2 is the expend coefficient in the multiple regression and delta1 is the slope from regressing expend on lnchprg.",D10 B1,D10 OVB data,merged steps+canvas,test
+39,β₂ is negative and x₂ is positively correlated with x₁. What is the sign of the bias in β̃₁?,B3,B3 sign table,hint removed,dev
+40,"If corr(x1, x2) is positivee and beta2 is positive, the simple slope is biased which way?",B3,B3 sign table,hint removed,test
+41,"Holding other things equal, a larger sample size makes Var(( _1 )):",K7 V7,K7 what changes Var,hint removed+canvas,dev
+42,What does the Gauss-Markov theorem say?,K16 T1 T2,K16 assumptions/tests,hint removed,test
+43,"If many researchers each draw their own random sample and estimate β₁, what does unbiasedness imply about their estimates?",K4,K4 unbiased,hint removed,dev
+44,"Using the data x = [10, 4, 9, 13, 7] and y = [6, 8, 12, 7, 12], find the intercept of the least squares line.",S6 O1 O3,S6 small sample,new story,test
+45,Including an irrelevant variable that is correlated with x1: effect on bias and variance of b1?,K13 K7,K13 too many vars,hint removed,dev
+46,"x = (3, 5, 6, 12, 14) and SSR = 480. What is se of the slope?",S2 V1 V2 V3 V4 V5,S2 variance,hint removed+canvas,test
+47,"log(ŷ) = 1.1 + 0.03x₁ − 0.083x₂. If x₁ rises by 4 and x₂ rises by 4, about what percent does ŷ change?",L4 S4 S7,L4 log multiple,merged steps,dev
+48,What does 'holding other factors fixed' mean for a coefficient in multiple regression?,K14 K15 B1,K14 ceteris paribus,new story,test
+49,Data: attend (atndrte = percent of classes attended; final = final exam score; priGPA = prior cumulative GPA). Regress atndrte on final and priGPA. What is the coefficient on final?,D7 D13 D1,D7 multiple data,new dataset,dev
+50,"Find the sample standard deviation of x = (4, 7, 12, 11, 10).",S6 O1 O3,S6 small sample,new story,test
+51,"β̂₁ = 0.25, β̂₂ = 1.58, δ̃₁ = 0.26. What is β̃₁?",B1 B2,B1/B2 OVB numbers,flipped,dev
+52,Data set gpa2. Variables: colgpa = GPA after fall semester; hsize = high school graduating class size in 100s. What is the sum of squared residuals from the regression of colgpa on hsize?,D1 D13,D1 simple lm,no code given,test
+53,"The simple regression slope is 0.08 and the multiple regression gives b1 = -0.03, b2 = -1.79. What is the slope from regressing x2 on x1?",B1 B2,B1/B2 OVB numbers,flipped,dev
+54,"( y ) = 6.31 + 0.28x₁ + 2.42x₂, the mean of x₁ is 12, and the mean of x₂ is 4. What is the mean of y?",S7 M1 M2 M3,S7 equation,flipped+canvas,test
+55,Load ceosal2 (salary = CEO compensation in $1000s; ceoten = years as CEO with the company; sales = firm sales in millions). Regress salary on ceoten and sales. What is the coefficient on ceoten?,D7 D13 D1,D7 multiple data,new dataset,dev
+56,Load bwght (bwght = birth weight in ounces; cigs = cigarettes smoked per day while pregnant). Measure bwght in dollars instead of thousands of dollars and rerun the regression of bwght on cigs. What is the new slope?,D2 S3 U1 U2,D2 units data,flipped+canvas,test
+57,"σ = 7, SST_j = 199, R_j² = 0.89. Compute sd(β̂_j).",V7 S2,V7 VIF,hint removed,dev
+58,"In the ceosal1 data, salary = 1990 salary in thousands of dollars; sales = firm sales in millions of dollars. Estimate salary = b0 + b1 log(sales) + u. By about how many units does predicted salary change for a 13 percent rise in sales?",D4 L3 S4,D4 level-log data,hint removed+canvas,test
+59,Add a variable that equals expendA + expendB to the regression of voteA. What happens to its coefficient?,D11 K11,D11 collinearity data,new story,dev
+60,"R² = 0.42, n = 102, k = 3. Compute adjusted R².",S1 T1 S2,adj R2 / df formula (coverage),new stat,test
+61,"Leaving out motivation, the coefficient on hours studied is expected to be too high or too low?",B3 K17 B2,B3/K17 direction,new story,dev
+62,Data set attend. Variables: atndrte = percent of classes attended; ACT = ACT score. What is the average atndrte in the sample? (round to the hundredths),D0 D13,D0 stats,new dataset+canvas,test
+63,The t statistic measures:,K16 T1 T2,K16 assumptions/tests,hint removed,dev
+64,"Match the model to its interpretation: level-level, log-level, level-log, log-log.",K9 S4,K9 log interpretation,hint removed+canvas,test
+65,Which of the following would make the zero conditional mean assumption fail in a regression of test score on class size?,K2 K12 K3,K2/K12 MLR.4,new story+canvas,dev
+66,"The fitted line is y = 2.69 + 2.27x with x in dollars. If x is measured in thousands of dollars instead, what is the new slope?",S3 U1 U2 U3 K8,S3 units,flipped,test
+67,"Using ceosal1: With log(salary) as the dependent variable and sales, roe as regressors, what is the percentage effect of sales rising by 2 and roe rising by 1?",D8 D13 L4 D3,D8 log multiple data,hint removed+canvas,dev
+68,"( _1 ) = 1.52, se = 0.71, df = 91. Construct a 95% confidence interval for ( _1 ).",T3,T3 CI,hint removed+canvas,test
+69,Ability is left out of the wage equation. Areas with more ability have more education. Which direction is the bias?,B3 K17 B2,B3/K17 direction,new story,dev
+70,city size is in the error term and is unrelated to police officers. Is police officers exogenous?,K2 K12 K3,K2/K12 MLR.4,new story,test
+71,Data set gpa1. Variables: colGPA = college GPA; hsGPA = high school GPA; skipped = lectures missed per week. Regress colGPA on hsGPA and skipped. What is the adjusted R-squared?,D13 D7 D1,adj R2 data (coverage),new stat,dev
+72,"Y equals 2, 4 or 17 with probabilities 0.49, 0.33 and 0.18. Find E(Y) and Var(Y).",S5 P1 P2 P3,S5 probability,flipped+canvas,test
+73,Data set meap93. Variables: math10 = percent passing the 10th grade math test; expend = expenditure per student. Regress log(math10) on log(expend). What is the estimated elasticity of math10 with respect to expend?,D5 L2 S4,D5 log-log data,hint removed,dev
+74,"In the bwght data, bwght = birth weight in ounces; cigs = cigarettes smoked per day while pregnant. What is the sample standard deviation of bwght? (round to the hundredths)",D0 D13,D0 stats,new dataset,test
+75,"Suppose ability affects wage and is left in the error term of a regression of wage on education. If people with more ability tend to have more education, does E(u|education) = 0 hold?",K2 K12 K3,K2/K12 MLR.4,new story,dev
+76,"Under SLR.1–SLR.5 with ( _ ) = 2, n = 51, and sample standard deviation of x equal to 1.94, find sd(( _1 )).",S2 V1 V2 V3 V4 V5,S2 variance,hint removed+canvas,test
+77,"Load hprice1 (price = house price in $1000s; sqrft = square feet). Using the natural log of price as the dependent variable and sqrft as the regressor, interpret a 10-unit increase in sqrft as a percent.",D3 D8 L1 S4,D3 log-level data,hint removed,dev
+78,"In a multiple regression, σ² = 196, SST_1 = 131, and regressing x1 on the other regressors gives R² = 0.45. Find Var(β̂₁).",V7 S2,V7 VIF,hint removed,test
+79,"log(wage) = 0.6 + 0.605·educ. About how much higher, in percent, is predicted wage for 15 more years of school?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed+canvas,dev
+80,"In the rdchem data, rd = R&D spending in millions; profmarg = profits as a percent of sales. What is the average rd in the sample? (round to the hundredths)",D0 D13,D0 stats,new dataset+canvas,test
+81,"In the ceosal2 data, salary = CEO compensation in $1000s; ceoten = years as CEO with the company. Find the sample mean of ceoten. (round to the hundredths)",D0 D13,D0 stats,new dataset,dev
+82,"A researcher quadruples the sample size. If the current standard error of the slope is 0.27, roughly what will it be?",V6 S2,V6 bigger sample,flipped,test
+83,Using meap93: Suppose salary is divided by 100 before running lm(math10 ~ salary). What is the new coefficient on salary?,D2 S3 U1 U2,D2 units data,flipped,dev
+84,Data: meap93 (math10 = percent passing the 10th grade math test; salary = average teacher salary). Estimate math10 = b0 + b1 log(salary) + u. By about how many units does predicted math10 change for a 16 percent rise in salary?,D4 L3 S4,D4 level-log data,hint removed,test
+85,A low R-squared means the OLS estimates are biased. True or false?,K10 K13 K16 S1,R2 concept (coverage),new concept+canvas,dev
+86,Data: gpa2 (colgpa = GPA after fall semester; hsize = high school graduating class size in 100s). What is the sample standard deviation of colgpa? (round to the hundredths),D0 D13,D0 stats,new dataset+canvas,test
+87,A regression with n = 25 and k = 2 slopes: what are the degrees of freedom for the residuals?,S1 T1 S2,adj R2 / df formula (coverage),new stat,dev
+88,"Use the joint probability table of X and Y below to compute Cov(X, Y). x: 1, 2; y: 0, 1; P = 0.1, 0.3, 0.4, 0.2.",S5 P1 P2 P3,S5 probability,flipped,test
+89,A low R-squared means the OLS estimates are biased. True or false?,K10 K13 K16 S1,R2 concept (coverage),new concept,dev
+90,A small p-value means:,K16 T1 T2,K16 assumptions/tests,hint removed,test
+91,"With 59 observations and SSR = 331, estimate ( _ )^2.",S2 V1 V2 V3 V4 V5,S2 variance,hint removed+canvas,dev
+92,Load wage1 (wage = average hourly earnings in dollars; exper = years of potential experience). Measure wage in dollars instead of thousands of dollars and rerun the regression of wage on exper. What is the new slope?,D2 S3 U1 U2,D2 units data,flipped,test
+93,"In the hprice1 data, price = house price in $1000s; lotsize = lot size in square feet; bdrms = number of bedrooms. Regress price on lotsize and bdrms. What is the adjusted R-squared?",D13 D7 D1,adj R2 data (coverage),new stat,dev
+94,R-squared is 0.62 and SSR = 565. What is the total sum of squares?,S1 O4 O5,S1 sums of squares,flipped,test
+95,Omitting x2 causes no bias in the coefficient on x1 when:,K15 B2 K14,K15 no bias,flipped,dev
+96,"( _1 ) = -0.48, se = 0.36, df = 75. Construct a 95% confidence interval for ( _1 ).",T3,T3 CI,hint removed+canvas,test
+97,"log(salary) = 10.09 + 4.64 log(sales), salary in $1000s. If salary were in dollars, what would the intercept be?",S3 U1 U2 U3 K8,S3 units,hint removed,dev
+98,Load wage1 (wage = average hourly earnings in dollars; educ = years of education). Suppose educ is divided by 100 before running lm(wage ~ educ). What is the new coefficient on educ?,D2 S3 U1 U2,D2 units data,flipped+canvas,test
+99,"With log(salary) = 4 + 1.324·ceoten, compute the exact percent change from 8 more years as CEO.",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+100,"In the gpa2 data, colgpa = GPA after fall semester; sat = combined SAT score. Find the correlation coefficient of sat and colgpa. (round to the hundredths)",D0 D13,D0 stats,new dataset,test
+101,Use the meap93 data set from the wooldridge package (math10 = percent passing the 10th grade math test; salary = average teacher salary; lnchprg = percent in the school lunch program). Compute the t ratio for the coefficient on salary and compare it with the 5% one-sided critical value.,D12 D13 T1,D12 t-test data,new dataset+canvas,dev
+102,Select all changes that reduce sd(b1).,K7 V7,K7 what changes Var,hint removed,test
+103,A one-tailed test at α = 0.05 with df = 132: what is the critical value?,T1 T2,T1/T2 t-tests,merged steps+canvas,dev
+104,Why are the OLS estimates called least squares estimates?,K1,K1 OLS criterion,hint removed,test
+105,"Five observations: x = [14, 7, 3, 6, 15], y = [10, 6, 6, 1, 9]. What is the residual for observation 1?",S6 O1 O3,S6 small sample,hint removed,dev
+106,"For the sample x = [11, 4, 15, 10, 5], y = [7, 10, 14, 5, 11], compute Σ x_i·( u )_i after regressing y on x.",S6 O1 O3,S6 small sample,new story+canvas,test
+107,ln(price) = 5 + 0.354 rooms. Each extra room changes price by roughly what percent?,S4 L1 L2 L3 K9 S7,S4 logs,hint removed+canvas,dev
+108,Data set wage1. Variables: wage = average hourly earnings in dollars; tenure = years with current employer. How many observations have tenure equal to zero?,D0,D0 other stat (coverage),new stat,test
+109,"In exam score = β₀ + β₁·tutoring hours + u, prior ability is part of u, and prior ability is correlated with tutoring hours. Which statement is correct?",K2 K12 K3,K2/K12 MLR.4,new story,dev
+110,"Use the ceosal1 data set from the wooldridge package (salary = 1990 salary in thousands of dollars; roe = return on equity, percent). Measure salary in dollars instead of thousands of dollars and rerun the regression of salary on roe. What is the new slope?",D2 S3 U1 U2,D2 units data,flipped,test
+111,An estimate of 0.293 has t = 0.41. What is its standard error?,T1 T2,T1/T2 t-tests,merged steps,dev
+112,ln(price) = 5 + 1.068 rooms. Each extra room changes price by roughly what percent?,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+113,All firms in the sample have the same number of employees. Can you estimate the effect of firm size?,K5 K11,K5 no variation,new story,dev
+114,"Use the sleep75 data set from the wooldridge package (sleep = minutes of sleep per week; age = age in years; educ = years of schooling). Verify formula (3.23) using sleep, age and educ: what is the simple regression slope on age?",D10 B1,D10 OVB data,merged steps,test
+115,σ² = 49 and SST_x = 56. What is the variance of the OLS slope?,S2 V1 V2 V3 V4 V5,S2 variance,merged steps,dev
+116,A regression with n = 142 and k = 3 slopes: what are the degrees of freedom for the residuals?,S1 T1 S2,adj R2 / df formula (coverage),new stat+canvas,test
+117,Which model gives the elasticity of y with respect to x directly?,K9 S4,K9 log interpretation,hint removed+canvas,dev
+118,Data set wage1. Variables: wage = average hourly earnings in dollars; female = =1 if female; exper = years of potential experience. What is the p-value for exper in the regression of wage on female and exper?,D12 D13 T1,D12 t-test data,new dataset,test
+119,Load attend (atndrte = percent of classes attended; ACT = ACT score; final = final exam score). Show that the OLS line passes through the means: compute the fitted atndrte at the mean of ACT and final.,D9 M3 D7,D9 at means data,flipped+canvas,dev
+120,"With 391 degrees of freedom, what is the 1% critical value for a one-sided test?",T1 T2,T1/T2 t-tests,flipped,test
+121,"Does R-squared change when x is divided by 1,000?",K8 S3 U1 U2 U3,K8 units MC,new story,dev
+122,log(rent) = 1 + 0.307·log(income). Interpret 0.307.,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+123,"Data set k401k. Variables: prate = percent of eligible workers participating; totemp = total firm employment. For the regression of prate on totemp, compute SST_x, the total variation in totemp.",D6 D13 D1,D6 se data,merged steps,dev
+124,"E(X) = 3, E(X²) = 24. What is sd(1X + -7)?",S5 P1 P2 P3,S5 probability,new story,test
+125,"log(y) = 9.91 + 2.01 x. If y is measured in cents rather than dollars, what is the new intercept?",S3 U1 U2 U3 K8,S3 units,flipped,dev
+126,"Using n = 57, k = 2 regressors and SSR = 276, what is sigma-hat?",S2 V1 V2 V3 V4 V5,S2 variance,merged steps,test
+127,"Data set attend. Variables: atndrte = percent of classes attended; final = final exam score. Using the simple regression of atndrte on final, how much does predicted atndrte change when final goes from 20 to 22?",D1 D13,D1 simple lm,no code given,dev
+128,An estimate of 0.046 has t = -2.81. What is its standard error?,T1 T2,T1/T2 t-tests,flipped,test
+129,A regression with n = 157 and k = 6 slopes: what are the degrees of freedom for the residuals?,S1 T1 S2,adj R2 / df formula (coverage),new stat+canvas,dev
+130,What is the t statistic for H0: beta1 = 1 if the estimate is 0.422 with standard error 0.112?,T1 T2,T1/T2 t-tests,merged steps,test
+131,R_j² = 0.65. What is the variance inflation factor?,V7 S2,V7 VIF,hint removed,dev
+132,"With 22 observations and SSR = 131, estimate σ².",S2 V1 V2 V3 V4 V5,S2 variance,hint removed,test
+133,All firms in the sample have the same number of employees. Can you estimate the effect of firm size?,K5 K11,K5 no variation,new story+canvas,dev
+134,Use the rdchem data set from the wooldridge package (rd = R&D spending in millions; profmarg = profits as a percent of sales). Regress log(rd) on log(profmarg). What is the estimated elasticity of rd with respect to profmarg?,D5 L2 S4,D5 log-log data,hint removed,test
+135,Why can't you use R² to decide whether to add a variable?,K10 K13 K16 S1,R2 concept (coverage),new concept,dev
+136,SST = 547 and the model leaves 207 unexplained. What fraction of the variation is explained?,S1 O4 O5,S1 sums of squares,flipped,test
+137,"In a log-log model, salary is converted from thousands of dollars to dollars. Which coefficient changes?",K8 S3 U1 U2 U3,K8 units MC,new story,dev
+138,The p-value is 0.105. At which significance levels do you reject H0?,T1 T2,T1/T2 t-tests,flipped,test
+139,log(rent) = 1 + 0.856·log(income). Interpret 0.856.,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+140,"Using ceosal2: If comten increases by 3, by how much does the predicted salary change in the simple regression?",D1 D13,D1 simple lm,no code given,test
+141,"The regression has σ̂ = 15, n = 60 and S_x² = 1.27. Compute the standard error of β̂₁.",S2 V1 V2 V3 V4 V5,S2 variance,hint removed,dev
+142,σ² = 324 and SST_x = 25. What is the variance of the OLS slope?,S2 V1 V2 V3 V4 V5,S2 variance,hint removed,test
+143,A regression has SSE = 394 and R² = 0.34. Find SSR.,S1 O4 O5,S1 sums of squares,flipped,dev
+144,Leaving out a variable that is uncorrelated with every included regressor: biased or not?,K15 B2 K14,K15 no bias,flipped,test
+145,Load attend (atndrte = percent of classes attended; ACT = ACT score; priGPA = prior cumulative GPA). Run lm(atndrte ~ ACT + priGPA). Report the intercept.,D7 D13 D1,D7 multiple data,merged steps,dev
+146,Load attend (atndrte = percent of classes attended; ACT = ACT score; final = final exam score). Test H0: beta_ACT = 0 against H1: beta_ACT > 0 at the 1% level. Do you reject?,D12 D13 T1,D12 t-test data,new dataset,test
+147,"The regression has ( _ ) = 14, n = 32 and S_x^2 = 2.48. Compute the standard error of ( _1 ).",S2 V1 V2 V3 V4 V5,S2 variance,merged steps+canvas,dev
+148,Why might E(u | tutoring hours) ≠ 0 in a simple regression of exam score on tutoring hours?,K2 K12 K3,K2/K12 MLR.4,new story,test
+149,"In the wage1 data, wage = average hourly earnings in dollars; exper = years of potential experience. Regress log(wage) on exper. By approximately what percent does wage change when exper rises by 2?",D3 D8 L1 S4,D3 log-level data,hint removed,dev
+150,Every observation in the sample has the same value of x. What goes wrong with OLS?,K5 K11,K5 no variation,new story,test
+151,E(( _1 )) = ( _1 ) means:,K4,K4 unbiased,hint removed+canvas,dev
+152,Using wage1: Regress exper on tenure. What is the slope (delta-tilde)?,D10 B1,D10 OVB data,merged steps+canvas,test
+153,"You regress sales on spending on TV ads, spending on radio ads, and total ad spending. What's the problem?",K11 K16,K11 collinearity,new story,dev
+154,"Predict y at x = 4 using the OLS line for x = [2, 15, 6, 12, 14], y = [15, 10, 6, 7, 7].",S6 O1 O3,S6 small sample,new story,test
+155,"In the ceosal2 data, salary = CEO compensation in $1000s; sales = firm sales in millions. Compute the estimated error variance from the regression of salary on sales.",D6 D13 D1,D6 se data,merged steps,dev
+156,"β̂₁ = 0.0, β̂₂ = 1.87, δ̃₁ = 0.21. What is β̃₁?",B1 B2,B1/B2 OVB numbers,flipped,test
+157,"Using sleep75: Regress sleep on totwrk. What is the standard error of the regression, sigma-hat?",D6 D13 D1,D6 se data,merged steps,dev
+158,"If Var(X) = 3, what is the standard deviation of -4X?",S5 P1 P2 P3,S5 probability,flipped,test
+159,Data: ceosal2 (salary = CEO compensation in $1000s; ceoten = years as CEO with the company; sales = firm sales in millions). Run lm(salary ~ ceoten + sales). Report the intercept.,D7 D13 D1,D7 multiple data,new dataset,dev
+160,Var(u|x) depends on x. What does this mean for OLS?,K6 K16,K6 heteroskedasticity,new story+canvas,test
+161,"Using meap93: Regress math10 on lnchprg alone, then on lnchprg and expend. How much does the coefficient on lnchprg change?",D10 B1,D10 OVB data,merged steps,dev
+162,"Leaving out x2 changes the slope on x1 from 0.65 to -0.28. If b2 = -0.79, what is delta1?",B1 B2,B1/B2 OVB numbers,flipped,test
+163,Does high but not perfect correlation between two regressors violate MLR.3?,K11 K16,K11 collinearity,new story,dev
+164,The rate rises from 18% to 21%. What is the percentage change? What is the change in percentage points?,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+165,Motivation is left out of the college GPA equation. Areas with more motivation have more hours studied. Which direction is the bias?,B3 K17 B2,B3/K17 direction,new story,dev
+166,Four candidate lines are fit to the same data. Line A has Σû = 0 and Σû² = 120; Line B has Σû = 0 and Σû² = 95; Line C has Σû = 3 and Σû² = 80; Line D has Σû = 0 and Σ|û| = 20. Which is the OLS line?,K1,K1 OLS criterion,hint removed,test
+167,"Y equals 1, 27 or 28 with probabilities 0.36, 0.25 and 0.39. Find E(Y) and Var(Y).",S5 P1 P2 P3,S5 probability,new story,dev
+168,"Load bwght (bwght = birth weight in ounces; faminc = family income in $1000s). In the regression of log(bwght) on log(faminc), by about what percent does bwght change when faminc rises by 22%?",D5 L2 S4,D5 log-log data,hint removed,test
+169,"E(X) = 2, E(X²) = 12. What is sd(2X + -5)?",S5 P1 P2 P3,S5 probability,flipped,dev
+170,"An OLS fit leaves residuals [0.1, -1.0, 1.8, 2.3, 2.3, 1.2] for the first 6 observations. What is the residual of the final observation?",O2,O2 missing residual,flipped,test
+171,Four candidate lines are fit to the same data. Line A has Σû = 0 and Σû² = 120; Line B has Σû = 0 and Σû² = 95; Line C has Σû = 3 and Σû² = 80; Line D has Σû = 0 and Σ|û| = 20. Which is the OLS line?,K1,K1 OLS criterion,hint removed,dev
+172,SST = 599 and the model leaves 398 unexplained. What fraction of the variation is explained?,S1 O4 O5,S1 sums of squares,hint removed+canvas,test
+173,"7 residuals: -1.1, -0.1, 1.3, 1.0, 1.5, -1.1, ?. What must the missing residual be?",O2,O2 missing residual,flipped,dev
+174,"log(y) = -3.85 + 4.98 x. If y is measured in cents rather than dollars, what is the new intercept?",S3 U1 U2 U3 K8,S3 units,flipped,test
+175,Including an irrelevant variable that is correlated with x1: effect on bias and variance of b1?,K13 K7,K13 too many vars,hint removed,dev
+176,Load wage1 (wage = average hourly earnings in dollars; educ = years of education; tenure = years with current employer). Compute the t ratio for the coefficient on educ and compare it with the 5% one-sided critical value.,D12 D13 T1,D12 t-test data,new dataset,test
+177,Ability is left out of the wage equation. Areas with more ability have more education. Which direction is the bias?,B3 K17 B2,B3/K17 direction,new story,dev
+178,"Find the sample standard deviation of x = (6, 9, 7, 5, 1).",S6 O1 O3,S6 small sample,hint removed+canvas,test
+179,Omitting ability from a regression of wage on education: is the slope biased up or down?,B3 K17 B2,B3/K17 direction,new story,dev
+180,Load meap93 (math10 = percent passing the 10th grade math test; expend = expenditure per student). What share of the variation in math10 is explained by expend? Give a percent.,D1 D13,D1 simple lm,new dataset,test
+181,A coefficient of 0.697 in a log-log demand equation means:,K9 S4,K9 log interpretation,hint removed,dev
+182,"In the hprice1 data, price = house price in $1000s; sqrft = square feet; bdrms = number of bedrooms. Estimate lm(log(price) ~ sqrft + bdrms). What is the predicted price (not log) when sqrft = 10 and bdrms = 1?",D8 D13 L4 D3,D8 log multiple data,hint removed+canvas,test
+183,Why might E(u | years as CEO) ≠ 0 in a simple regression of salary on years as CEO?,K2 K12 K3,K2/K12 MLR.4,new story,dev
+184,Why might E(u | hours worked) ≠ 0 in a simple regression of sleep on hours worked?,K2 K12 K3,K2/K12 MLR.4,new story,test
+185,Changing the units of the dependent variable in log(y) = ( _0 ) + ( _1 )x affects which estimates?,K8 S3 U1 U2 U3,K8 units MC,new story+canvas,dev
+186,"y-bar = 13, x-bar = 8, and the slope is 2.99. What is the intercept?",S7 M1 M2 M3,S7 equation,flipped,test
+187,What does 'holding other factors fixed' mean for a coefficient in multiple regression?,K14 K15 B1,K14 ceteris paribus,new story,dev
+188,"ŷ = -3.36 + 4.32x. If y is re-measured in thousands (divided by 1000), what are the new intercept and slope?",S3 U1 U2 U3 K8,S3 units,flipped,test
+189,wage-hat = 8.9 + 1.63 educ + 1.66 exper. Two workers differ by 3 years of education and have the same experience. What is the difference in predicted wage?,S7 M1 M2 M3,S7 equation,new story+canvas,dev
+190,"Data: ceosal1 (salary = 1990 salary in thousands of dollars; roe = return on equity, percent). Regress salary on log(roe). How much does salary change when roe increases by 3%?",D4 L3 S4,D4 level-log data,hint removed,test
+191,The sample has 4 observations and 5 explanatory variables. Which assumption fails?,K11 K16,K11 collinearity,new story+canvas,dev
+192,Using wage1: Is exper statistically significant at 1% against a one-sided alternative that its effect is negative?,D12 D13 T1,D12 t-test data,new dataset+canvas,test
+193,Load hprice1 (price = house price in $1000s; sqrft = square feet). Estimate lm(log(price) ~ sqrft). What is the approximate percentage effect of 10 more units of sqrft?,D3 D8 L1 S4,D3 log-level data,hint removed,dev
+194,Data: k401k (prate = percent of eligible workers participating; totemp = total firm employment). Estimate prate = b0 + b1 log(totemp) + u. By about how many units does predicted prate change for a 19 percent rise in totemp?,D4 L3 S4,D4 level-log data,hint removed,test
+195,Omitting number of young children from a regression of sleep on hours worked: is the slope biased up or down?,B3 K17 B2,B3/K17 direction,new story+canvas,dev
+196,What does 'holding other factors fixed' mean for a coefficient in multiple regression?,K14 K15 B1,K14 ceteris paribus,new story,test
+197,"log(( y )) = 1.1 + 0.095x₁ − 0.033x₂. If x₁ rises by 1 and x₂ rises by 2, about what percent does ( y ) change?",L4 S4 S7,L4 log multiple,merged steps+canvas,dev
+198,"Data set ceosal1. Variables: salary = 1990 salary in thousands of dollars; sales = firm sales in millions of dollars; roe = return on equity, percent. With log(salary) as the dependent variable and sales, roe as regressors, what is the percentage effect of sales rising by 1 and roe rising by 1?",D8 D13 L4 D3,D8 log multiple data,hint removed+canvas,test
+199,Use the rdchem data set from the wooldridge package (rd = R&D spending in millions; profmarg = profits as a percent of sales). What share of the variation in rd is explained by profmarg? Give a percent.,D1 D13,D1 simple lm,no code given,dev
+200,Using attend: Regress atndrte on ACT. What is the slope estimate?,D1 D13,D1 simple lm,no code given+canvas,test
+201,Data set k401k. Variables: prate = percent of eligible workers participating; totemp = total firm employment. Run lm(prate ~ log(totemp)). What is the predicted change in prate if totemp goes up 19%?,D4 L3 S4,D4 level-log data,hint removed,dev
+202,Which model gives the elasticity of y with respect to x directly?,K9 S4,K9 log interpretation,hint removed,test
+203,"With 314 degrees of freedom, what is the 1% critical value for a one-sided test?",T1 T2,T1/T2 t-tests,flipped,dev
+204,Using hprice1: Plug the sample averages of bdrms and assess into the fitted regression of price. What do you get?,D9 M3 D7,D9 at means data,flipped,test
+205,"y = 40 + 12.96 log(x). If x grows by 21 percent, how much does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+206,Load attend (atndrte = percent of classes attended; final = final exam score). How many observations are in the sample? (round to the hundredths),D0 D13,D0 stats,new dataset,test
+207,Data: gpa1 (colGPA = college GPA; skipped = lectures missed per week; ACT = ACT score). Regress colGPA on skipped and ACT. What is the predicted value of colGPA when both regressors are at their sample means?,D9 M3 D7,D9 at means data,flipped,dev
+208,Using wage1: Is educ statistically significant at 1% against a one-sided alternative that its effect is negative?,D12 D13 T1,D12 t-test data,new dataset,test
+209,Using attend: Compare the simple regression slope of atndrte on priGPA with the slope when ACT is added. Is the simple slope larger or smaller?,D10 B1,D10 OVB data,merged steps,dev
+210,"In hprice1, regress price on sqrft and a new variable sqm = sqrft/10.76. What does R report for sqm?",D11 K11,D11 collinearity data,new story,test
+211,A regression has SSE = 308 and R² = 0.42. Find SSR.,S1 O4 O5,S1 sums of squares,hint removed,dev
+212,"In the gpa1 data, colGPA = college GPA; ACT = ACT score; skipped = lectures missed per week. Regress colGPA on ACT and skipped. What is the adjusted R-squared?",D13 D7 D1,adj R2 data (coverage),new stat+canvas,test
+213,"The error term contains illness severity, which moves together with doctor visits. Is the key assumption for unbiasedness satisfied?",K2 K12 K3,K2/K12 MLR.4,new story,dev
+214,Why might E(u | doctor visits) ≠ 0 in a simple regression of health on doctor visits?,K2 K12 K3,K2/K12 MLR.4,new story,test
+215,"Will the simple regression of test score on class size overstate or understate the true effect, given that family income is omitted?",B3 K17 B2,B3/K17 direction,new story,dev
+216,Tenure is re-measured in months instead of years. The log-level slope was 3.88. What is the new slope?,S3 U1 U2 U3 K8,S3 units,flipped,test
+217,Data: rdchem (rd = R&D spending in millions; profmarg = profits as a percent of sales). Regress log(rd) on log(profmarg). What is the estimated elasticity of rd with respect to profmarg?,D5 L2 S4,D5 log-log data,hint removed+canvas,dev
+218,Using wage1: How many observations have tenure equal to zero?,D0,D0 other stat (coverage),new stat,test
+219,"If Var(X) = 3, what is the standard deviation of 2X?",S5 P1 P2 P3,S5 probability,flipped+canvas,dev
+220,"In the gpa1 data, colGPA = college GPA; ACT = ACT score; skipped = lectures missed per week. Verify formula (3.23) using colGPA, ACT and skipped: what is the simple regression slope on ACT?",D10 B1,D10 OVB data,merged steps,test
+221,"E(X) = 1, E(X²) = 14. What is sd(-5X + 4)?",S5 P1 P2 P3,S5 probability,flipped,dev
+222,Over-controlling: adding a variable that has no effect on y but is correlated with the regressors does what?,K13 K7,K13 too many vars,hint removed+canvas,test
+223,"Which is NOT an algebraic property of OLS: (a) residuals sum to 0, (b) cov(x, û) = 0, (c) cov(y, û) = 0, (d) line passes through means?",K10 K1,K10 properties,hint removed,dev
+224,True β₂ = -1.49; the regression of x₂ on x₁ has slope 0.51. What is the bias in the simple regression slope?,B1 B2,B1/B2 OVB numbers,flipped,test
+225,"In log(y) = β₀ + β₁ log(x), β̂₁ = 0.139. What does it mean?",K9 S4,K9 log interpretation,hint removed,dev
+226,Load crime1 (narr86 = number of arrests in 1986; avgsen = average sentence length in months). Compute the estimated error variance from the regression of narr86 on avgsen.,D6 D13 D1,D6 se data,merged steps,test
+227,Using meap93: Test H0: beta_lnchprg = 0 against H1: beta_lnchprg > 0 at the 1% level. Do you reject?,D12 D13 T1,D12 t-test data,new dataset,dev
+228,Why does the coefficient on cigs change when faminc is added to the birth-weight regression?,K14 K15 B1,K14 ceteris paribus,new story+canvas,test
+229,"log(salary) = 16.27 + 3.44 log(sales), salary in $1000s. If salary were in dollars, what would the intercept be?",S3 U1 U2 U3 K8,S3 units,flipped,dev
+230,Heteroskedasticity is present. Which of the following is correct about β̂₁?,K6 K16,K6 heteroskedasticity,new story,test
+231,"y-bar = 11, x-bar = 6, and the slope is 0.8. What is the intercept?",S7 M1 M2 M3,S7 equation,new story,dev
+232,"In birth weight = β₀ + β₁·cigarettes smoked + u, family income is part of u, and family income is correlated with cigarettes smoked. Which statement is correct?",K2 K12 K3,K2/K12 MLR.4,new story,test
+233,"Under MLR.1–MLR.6, what is the distribution of (β̂ⱼ − βⱼ)/se(β̂ⱼ)?",K16 T1 T2,K16 assumptions/tests,hint removed,dev
+234,x is converted from years to months. What happens to the OLS slope in a level-level regression?,K8 S3 U1 U2 U3,K8 units MC,new story,test
+235,"Use the ceosal2 data set from the wooldridge package (salary = CEO compensation in $1000s; comten = years with the company; ceoten = years as CEO with the company). Regress log(salary) on comten and ceoten. By about what percent does salary change when comten increases by 3, holding ceoten fixed?",D8 D13 L4 D3,D8 log multiple data,hint removed,dev
+236,"y = 40 + 1.62 log(x). If x grows by 10 percent, how much does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+237,Why is a sample where x is more spread out better for estimating the slope?,K7 V7,K7 what changes Var,hint removed,dev
+238,Var(u|x) depends on x. What does this mean for OLS?,K6 K16,K6 heteroskedasticity,new story,test
+239,Which functional form implies a constant percentage effect of a one-unit change in x?,K9 S4,K9 log interpretation,hint removed,dev
+240,"Data set ceosal1. Variables: salary = 1990 salary in thousands of dollars; roe = return on equity, percent; sales = firm sales in millions of dollars. Estimate lm(log(salary) ~ roe + sales). What is the predicted salary (not log) when roe = 12 and sales = 8?",D8 D13 L4 D3,D8 log multiple data,hint removed+canvas,test
+241,"In the hprice1 data, price = house price in $1000s; sqrft = square feet; lotsize = lot size in square feet. Compute the t ratio for the coefficient on sqrft and compare it with the 1% one-sided critical value.",D12 D13 T1,D12 t-test data,new dataset,dev
+242,"Load discrim (psoda = price of a medium soda; prpblck = proportion black in the zip code). Estimate a constant elasticity model of psoda on prpblck. If prpblck falls by 25 percent, what happens to psoda in percent?",D5 L2 S4,D5 log-log data,hint removed,test
+243,Doubling n (same spread in x) changes sd(b1) = 0.44 to what?,V6 S2,V6 bigger sample,flipped+canvas,dev
+244,"log(ŷ) = 1.1 + 0.032x₁ − 0.051x₂. If x₁ rises by 1 and x₂ rises by 4, about what percent does ŷ change?",L4 S4 S7,L4 log multiple,merged steps,test
+245,Using attend: Regress final on priGPA. What is the slope (delta-tilde)?,D10 B1,D10 OVB data,merged steps,dev
+246,"x = (4, 6, 8, 9, 12) and SSR = 424. What is se of the slope?",S2 V1 V2 V3 V4 V5,S2 variance,hint removed,test
+247,"The fitted line is y = 5.49 + 2.06x with x in dollars. If x is measured in thousands of dollars instead, what is the new slope?",S3 U1 U2 U3 K8,S3 units,hint removed,dev
+248,"Use the sleep75 data set from the wooldridge package (sleep = minutes of sleep per week; educ = years of schooling). After regressing sleep on educ, what is the residual for the second observation?",D1 D13,D1 simple lm,new dataset+canvas,test
+249,Data set ceosal1. Variables: salary = 1990 salary in thousands of dollars; sales = firm sales in millions of dollars. What is the fitted value for the 10th observation in the regression of salary on sales?,D1 D13,D1 simple lm,new dataset,dev
+250,"y-bar = 16, x-bar = 11, and the slope is -1.13. What is the intercept?",S7 M1 M2 M3,S7 equation,flipped+canvas,test
+251,Using gpa1: What share of the variation in colGPA is explained by hsGPA? Give a percent.,D1 D13,D1 simple lm,new dataset,dev
+252,"The error term contains owning a car, which moves together with distance from campus. Is the key assumption for unbiasedness satisfied?",K2 K12 K3,K2/K12 MLR.4,new story+canvas,test
+253,ŷ = 8.09 + 2.1x₁ + 0.68x₂. Predict y when x₁ = 8 and x₂ = 9.,S7 M1 M2 M3,S7 equation,new story,dev
+254,Load k401k (prate = percent of eligible workers participating; totemp = total firm employment; age = age of the plan in years). Run lm(prate ~ totemp + age). Report the intercept.,D7 D13 D1,D7 multiple data,merged steps,test
+255,"( y ) = 7.49 + -2.27x₁ + -2.44x₂, the mean of x₁ is 2, and the mean of x₂ is 10. What is the mean of y?",S7 M1 M2 M3,S7 equation,new story+canvas,dev
+256,"x = (3, 6, 9, 11, 14) and SSR = 449. What is se of the slope?",S2 V1 V2 V3 V4 V5,S2 variance,merged steps,test
+257,Data: lawsch85 (salary = median starting salary; rank = law school ranking; LSAT = median LSAT score). Regress salary on rank and LSAT. What is the coefficient on rank?,D7 D13 D1,D7 multiple data,merged steps,dev
+258,Tenure is re-measured in months instead of years. The log-level slope was 1.49. What is the new slope?,S3 U1 U2 U3 K8,S3 units,flipped,test
+259,"In the meap93 data, math10 = percent passing the 10th grade math test; salary = average teacher salary; expend = expenditure per student. Compare the simple regression slope of math10 on salary with the slope when expend is added. Is the simple slope larger or smaller?",D10 B1,D10 OVB data,merged steps,dev
+260,"y = 40 + 13.42 log(x). If x grows by 23 percent, how much does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+261,"( y ) = 0.73 + -2.45x₁ + 0.42x₂, the mean of x₁ is 6, and the mean of x₂ is 11. What is the mean of y?",S7 M1 M2 M3,S7 equation,flipped+canvas,dev
+262,R_j² = 0.78. What is the variance inflation factor?,V7 S2,V7 VIF,hint removed,test
+263,"The short regression slope is -0.53, the long regression slope is -0.14. What is β̂₂·δ̃₁?",B1 B2,B1/B2 OVB numbers,flipped,dev
+264,"Data points (x, y): (15,12), (6,10), (3,1), (13,15), (1,1). What is R^2 of the OLS fit?",S6 O1 O3,S6 small sample,hint removed+canvas,test
+265,"Using Table 3.2: β₂ < 0 and Corr(x₁,x₂) > 0. Upward or downward bias?",B3,B3 sign table,hint removed,dev
+266,"log(y) = 2.1 + 1.326 log(x). If x rises 12%, by how many percent does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed+canvas,test
+267,Data set wage1. Variables: wage = average hourly earnings in dollars; tenure = years with current employer. Suppose tenure is divided by 100 before running lm(wage ~ tenure). What is the new coefficient on tenure?,D2 S3 U1 U2,D2 units data,flipped,dev
+268,Interest rates are recorded as decimals rather than percents (divided by 100). The old slope was 4.59. What is the new slope?,S3 U1 U2 U3 K8,S3 units,hint removed+canvas,test
+269,Load bwght (bwght = birth weight in ounces; cigs = cigarettes smoked per day while pregnant). What is the largest value of bwght in the sample?,D0,D0 other stat (coverage),new stat+canvas,dev
+270,"In y = β₀ + β₁ ln(x), β̂₁ = 34.0. A 27% increase in x changes y by how much?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+271,motivation is in the error term and is unrelated to hours studied. Is hours studied exogenous?,K2 K12 K3,K2/K12 MLR.4,new story+canvas,dev
+272,Does the OLS regression line always pass through the point of sample means?,K10 K1,K10 properties,hint removed,test
+273,"Using hprice1: With log(price) as the dependent variable and assess, sqrft as regressors, what is the percentage effect of assess rising by 1 and sqrft rising by 1?",D8 D13 L4 D3,D8 log multiple data,hint removed,dev
+274,ŷ = -1.02 + 2.1x₁ + -2.25x₂. Predict y when x₁ = 10 and x₂ = 6.,S7 M1 M2 M3,S7 equation,new story,test
+275,"y = 40 + 3.11 log(x). If x grows by 30 percent, how much does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+276,"Data points (x, y): (3,2), (15,11), (10,13), (13,15), (5,13). What is R² of the OLS fit?",S6 O1 O3,S6 small sample,new story,test
+277,A regression has SSE = 757 and R² = 0.89. Find SSR.,S1 O4 O5,S1 sums of squares,hint removed,dev
+278,log(rent) = 1 + 1.147·log(income). Interpret 1.147.,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+279,"β̂₁ = 1.45, se = 0.75, df = 92. Construct a 95% confidence interval for β₁.",T3,T3 CI,hint removed,dev
+280,"For omitted-variable bias to arise from leaving out motivation, what two conditions must hold?",K3 K15 B3,K3 OVB candidate,new story,test
+281,"In a log-log model, salary is converted from thousands of dollars to dollars. Which coefficient changes?",K8 S3 U1 U2 U3,K8 units MC,new story,dev
+282,"In a regression of crime rate on police officers, which omitted factor is most likely to cause bias: (a) city size, (b) the person's ID number, (c) the weather on the survey day, (d) a coin flip?",K3 K15 B3,K3 OVB candidate,new story,test
+283,"Y equals 15, 26 or 28 with probabilities 0.29, 0.52 and 0.19. Find E(Y) and Var(Y).",S5 P1 P2 P3,S5 probability,new story,dev
+284,Using ceosal1: Measure salary in dollars instead of thousands of dollars and rerun the regression of salary on sales. What is the new slope?,D2 S3 U1 U2,D2 units data,flipped+canvas,test
+285,R_j² = 0.84. What is the variance inflation factor?,V7 S2,V7 VIF,hint removed,dev
+286,Use the lawsch85 data set from the wooldridge package (salary = median starting salary; rank = law school ranking; GPA = median college GPA). Estimate lm(log(salary) ~ rank + GPA). What is the predicted salary (not log) when rank = 3 and GPA = 9?,D8 D13 L4 D3,D8 log multiple data,hint removed,test
+287,"Under SLR.1–SLR.5 with ( _ ) = 5, n = 14, and sample standard deviation of x equal to 1.86, find sd(( _1 )).",S2 V1 V2 V3 V4 V5,S2 variance,merged steps+canvas,dev
+288,Data: k401k (prate = percent of eligible workers participating; totemp = total firm employment). Find the sample mean of totemp. (round to the hundredths),D0 D13,D0 stats,new dataset+canvas,test
+289,"β̂₁ = -0.01, β̂₂ = -0.67, δ̃₁ = 0.33. What is β̃₁?",B1 B2,B1/B2 OVB numbers,flipped,dev
+290,"With 11 observations and SSR = 572, estimate σ².",S2 V1 V2 V3 V4 V5,S2 variance,hint removed,test
+291,SST = 465 and the model leaves 430 unexplained. What fraction of the variation is explained?,S1 O4 O5,S1 sums of squares,flipped,dev
+292,"The OLS residuals from a regression with an intercept are -0.6, -1.9, -1.0, 2.2, 1.7, 0.1 and one more. Find the last residual.",O2,O2 missing residual,flipped,test
+293,"Load sleep75 (sleep = minutes of sleep per week; totwrk = minutes worked per week; age = age in years). Verify formula (3.23) using sleep, totwrk and age: what is the simple regression slope on totwrk?",D10 B1,D10 OVB data,merged steps,dev
+294,"Data: wage1 (wage = average hourly earnings in dollars; tenure = years with current employer). Using the natural log of wage as the dependent variable and tenure as the regressor, interpret a 5-unit increase in tenure as a percent.",D3 D8 L1 S4,D3 log-level data,hint removed,test
+295,σ² = 25 and SST_x = 96. What is the variance of the OLS slope?,S2 V1 V2 V3 V4 V5,S2 variance,merged steps,dev
+296,"Leaving out land quality, the coefficient on fertilizer is expected to be too high or too low?",B3 K17 B2,B3/K17 direction,new story,test
+297,"Will the simple regression of salary on years as CEO overstate or understate the true effect, given that firm size is omitted?",B3 K17 B2,B3/K17 direction,new story,dev
+298,"sd(β̂₁) = 0.98. If the sample were 8 times larger with x spread the same way, what would sd(β̂₁) become?",V6 S2,V6 bigger sample,flipped,test
+299,"The OLS residuals from a regression with an intercept are -2.5, 0.4, -0.2, 1.7, -1.8 and one more. Find the last residual.",O2,O2 missing residual,flipped+canvas,dev
+300,"In a log-log model, salary is converted from thousands of dollars to dollars. Which coefficient changes?",K8 S3 U1 U2 U3,K8 units MC,new story,test
+301,What happens to se(β̂₁) when the x values are bunched closely together?,K7 V7,K7 what changes Var,hint removed,dev
+302,"Holding other things equal, a larger sample size makes Var(( _1 )):",K7 V7,K7 what changes Var,hint removed+canvas,test
+303,"After multiplying x by 1000, the slope becomes 0.0047. What was the original slope?",S3 U1 U2 U3 K8,S3 units,hint removed,dev
+304,The explained sum of squares is 88 and the residual sum of squares is 329. What is the R-squared?,S1 O4 O5,S1 sums of squares,flipped+canvas,test
+305,"Find the sample correlation between x = [13, 1, 4, 11, 7] and y = [5, 11, 6, 13, 7].",S6 O1 O3,S6 small sample,hint removed+canvas,dev
+306,Which property describes the center of the sampling distribution of ( _1 ) under the first four Gauss-Markov assumptions?,K4,K4 unbiased,hint removed+canvas,test
+307,The p-value is 0.038. At which significance levels do you reject H0?,T1 T2,T1/T2 t-tests,flipped+canvas,dev
+308,Use the wage1 data set from the wooldridge package (wage = average hourly earnings in dollars; female = =1 if female). Regress wage on female. What is the slope estimate?,D1 D13,D1 simple lm,no code given+canvas,test
+309,"Data: bwght (bwght = birth weight in ounces; motheduc = mother's years of education; faminc = family income in $1000s). Compute b2 times delta1, where b2 is the faminc coefficient in the multiple regression and delta1 is the slope from regressing faminc on motheduc.",D10 B1,D10 OVB data,merged steps,dev
+310,Using gpa1: How many observations are in the sample? (round to the hundredths),D0 D13,D0 stats,new dataset,test
+311,What is the cost of adding irrelevant variables to a model?,K13 K7,K13 too many vars,hint removed,dev
+312,Load k401k (prate = percent of eligible workers participating; mrate = firm match rate). Run lm(prate ~ log(mrate)). What is the predicted change in prate if mrate goes up 19%?,D4 L3 S4,D4 level-log data,hint removed+canvas,test
+313,"Using rdchem: Using the simple regression of rd on sales, how much does predicted rd change when sales goes from 7 to 8?",D1 D13,D1 simple lm,no code given,dev
+314,"Which variable, if left out, would bias the estimated effect of job training on earnings?",K3 K15 B3,K3 OVB candidate,new story,test
+315,Load hprice1 (price = house price in $1000s; lotsize = lot size in square feet; bdrms = number of bedrooms). Regress price on lotsize and bdrms. What is the adjusted R-squared?,D13 D7 D1,adj R2 data (coverage),new stat,dev
+316,Using mlb1: Run the OLS regression of salary on gamesyr. What is the R-squared?,D1 D13,D1 simple lm,no code given,test
+317,"Use the joint probability table of X and Y below to compute Cov(X, Y). x: 1, 2; y: 0, 1; P = 0.1, 0.3, 0.4, 0.2.",S5 P1 P2 P3,S5 probability,flipped,dev
+318,Load k401k (prate = percent of eligible workers participating; mrate = firm match rate; age = age of the plan in years). What is the R-squared of the regression of prate on mrate and age?,D7 D13 D1,D7 multiple data,merged steps,test
+319,"Create totexpend = expendA + expendB and regress voteA on expendA, expendB and totexpend. What does R report for totexpend?",D11 K11,D11 collinearity data,new story,dev
+320,"If many researchers each draw their own random sample and estimate β₁, what does unbiasedness imply about their estimates?",K4,K4 unbiased,hint removed,test
+321,True or false: R² can decrease when you add an explanatory variable.,K10 K13 K16 S1,R2 concept (coverage),new concept,dev
+322,"With log(salary) = 4 + 0.144·ceoten, compute the exact percent change from 13 more years as CEO.",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+323,"In wage = β₀ + β₁ educ + β₂ exper, what does β₁ measure?",K14 K15 B1,K14 ceteris paribus,new story,dev
+324,"If corr(x1, x2) is positivee and beta2 is negative, the simple slope is biased which way?",B3,B3 sign table,hint removed+canvas,test
+325,The sample has 4 observations and 5 explanatory variables. Which assumption fails?,K11 K16,K11 collinearity,new story,dev
+326,Is the sum of the residuals zero if the regression has no intercept?,K10 K1,K10 properties,hint removed+canvas,test
+327,"Match the model to its interpretation: level-level, log-level, level-log, log-log.",K9 S4,K9 log interpretation,hint removed,dev
+328,Omitting x2 causes no bias in the coefficient on x1 when:,K15 B2 K14,K15 no bias,flipped,test
+329,Which assumptions together are called the classical linear model assumptions?,K16 T1 T2,K16 assumptions/tests,hint removed+canvas,dev
+330,"Data points (x, y): (9,4), (2,11), (8,8), (11,8), (10,13). What is R² of the OLS fit?",S6 O1 O3,S6 small sample,hint removed,test
+331,Using gpa1: Estimate colGPA = b0 + b1 ACT + u by OLS. Report b0.,D1 D13,D1 simple lm,new dataset,dev
+332,What does the Gauss-Markov theorem say?,K16 T1 T2,K16 assumptions/tests,hint removed,test
+333,"log(ŷ) = 1.1 + 0.063x₁ − 0.077x₂. If x₁ rises by 3 and x₂ rises by 1, what is the approximate percentage change in y?",L4 S4 S7,L4 log multiple,merged steps,dev
+334,"In the meap93 data, math10 = percent passing the 10th grade math test; salary = average teacher salary. Run lm(math10 ~ log(salary)). What is the predicted change in math10 if salary goes up 8%?",D4 L3 S4,D4 level-log data,hint removed,test
+335,Data set bwght. Variables: bwght = birth weight in ounces; motheduc = mother's years of education. Compute the estimated error variance from the regression of bwght on motheduc.,D6 D13 D1,D6 se data,merged steps,dev
+336,"In the ceosal1 data, salary = 1990 salary in thousands of dollars; roe = return on equity, percent. Create roedec = roe/100 and regress salary on roedec. Report the slope.",D2 S3 U1 U2,D2 units data,flipped+canvas,test
+337,Temperature is changed from Celsius to Fahrenheit in a regression of energy use on temperature. What happens to the slope?,K8 S3 U1 U2 U3,K8 units MC,new story,dev
+338,"In the lawsch85 data, salary = median starting salary; LSAT = median LSAT score; GPA = median college GPA. Run lm(salary ~ LSAT + GPA). Report the intercept.",D7 D13 D1,D7 multiple data,merged steps+canvas,test
+339,Heteroskedasticity is present. Which of the following is correct about β̂₁?,K6 K16,K6 heteroskedasticity,new story,dev
+340,"β̂ = 1.183, se = 0.392, n = 134, k = 2. Test H₀: β = 0 against H₁: β > 0 at 5%.",T1 T2,T1/T2 t-tests,flipped,test
+341,"log(( y )) = 1.1 + 0.079x₁ − 0.023x₂. If x₁ rises by 3 and x₂ rises by 2, what is the approximate percentage change in y?",L4 S4 S7,L4 log multiple,merged steps+canvas,dev
+342,ŷ = 9.3 + -0.79x₁ + -0.48x₂. Predict y when x₁ = 7 and x₂ = 7.,S7 M1 M2 M3,S7 equation,new story,test
+343,SST = 827 and the model leaves 143 unexplained. What fraction of the variation is explained?,S1 O4 O5,S1 sums of squares,flipped,dev
+344,Data set mlb1. Variables: salary = 1993 season salary; gamesyr = games per year in the league. What is the average salary in the sample? (round to the hundredths),D0 D13,D0 stats,new dataset,test
+345,Why might E(u | job training) ≠ 0 in a simple regression of earnings on job training?,K2 K12 K3,K2/K12 MLR.4,new story+canvas,dev
+346,Does the OLS regression line always pass through the point of sample means?,K10 K1,K10 properties,hint removed,test
+347,Data set k401k. Variables: prate = percent of eligible workers participating; totemp = total firm employment; age = age of the plan in years. Regress prate on totemp and age. What is the t statistic for age?,D12 D13 T1,D12 t-test data,new dataset,dev
+348,Load gpa1 (colGPA = college GPA; hsGPA = high school GPA; skipped = lectures missed per week). Estimate colGPA = b0 + b1 hsGPA + b2 skipped + u. What is the predicted colGPA for hsGPA = 13 and skipped = 7?,D7 D13 D1,D7 multiple data,merged steps,test
+349,A model includes income in dollars and income in thousands of dollars. What happens?,K11 K16,K11 collinearity,new story,dev
+350,"sd(( _1 )) = 1.42. If the sample were 3 times larger with x spread the same way, what would sd(( _1 )) become?",V6 S2,V6 bigger sample,flipped+canvas,test
+351,Using sleep75: Compute the t ratio for the coefficient on educ and compare it with the 5% one-sided critical value.,D12 D13 T1,D12 t-test data,new dataset,dev
+352,"In the gpa1 data, colGPA = college GPA; skipped = lectures missed per week; hsGPA = high school GPA. Holding hsGPA fixed, how much does predicted colGPA change when skipped rises by 1?",D7 D13 D1,D7 multiple data,merged steps+canvas,test
+353,Use the gpa1 data set from the wooldridge package (colGPA = college GPA; ACT = ACT score; hsGPA = high school GPA). Plug the sample averages of ACT and hsGPA into the fitted regression of colGPA. What do you get?,D9 M3 D7,D9 at means data,flipped,dev
+354,"Data set mlb1. Variables: salary = 1993 season salary; gamesyr = games per year in the league. For the regression of salary on gamesyr, compute SST_x, the total variation in gamesyr.",D6 D13 D1,D6 se data,merged steps,test
+355,Which assumption says Var(u | x) = σ² for all x?,K6 K16,K6 heteroskedasticity,new story,dev
+356,Which assumptions together are called the classical linear model assumptions?,K16 T1 T2,K16 assumptions/tests,hint removed+canvas,test
+357,A simple regression on n = 11 has SSR = 91 and SST_x = 200. What is se(b1)?,S2 V1 V2 V3 V4 V5,S2 variance,merged steps,dev
+358,"E(X) = 5, E(X²) = 32. What is sd(4X + -8)?",S5 P1 P2 P3,S5 probability,new story,test
+359,"With 31 observations and SSR = 465, estimate σ².",S2 V1 V2 V3 V4 V5,S2 variance,merged steps,dev
+360,True or false: the average of the fitted values equals the average of y.,K10 K1,K10 properties,hint removed,test
+361,Omitting family income from a regression of test score on class size: is the slope biased up or down?,B3 K17 B2,B3/K17 direction,new story,dev
+362,Using hprice1: How many observations have assess equal to zero?,D0,D0 other stat (coverage),new stat+canvas,test
+363,"Five observations: x = [15, 5, 8, 14, 6], y = [15, 6, 5, 5, 3]. What is the residual for observation 3?",S6 O1 O3,S6 small sample,new story,dev
+364,Data set attend. Variables: atndrte = percent of classes attended; ACT = ACT score; priGPA = prior cumulative GPA. Plug the sample averages of ACT and priGPA into the fitted regression of atndrte. What do you get?,D9 M3 D7,D9 at means data,flipped,test
+365,"Data: hprice1 (price = house price in $1000s; sqrft = square feet). Estimate a constant elasticity model of price on sqrft. If sqrft falls by 19 percent, what happens to price in percent?",D5 L2 S4,D5 log-log data,hint removed,dev
+366,"Data: ceosal1 (salary = 1990 salary in thousands of dollars; roe = return on equity, percent). Compute the sample variance of roe. (round to the hundredths)",D0 D13,D0 stats,new dataset+canvas,test
+367,"Load meap93 (math10 = percent passing the 10th grade math test; expend = expenditure per student; lnchprg = percent in the school lunch program). Using the regression of math10 on expend and lnchprg, what is the effect on math10 of expend rising by 2 and lnchprg falling by 1?",D7 D13 D1,D7 multiple data,new dataset,dev
+368,Data set sleep75. Variables: sleep = minutes of sleep per week; age = age in years. What share of the variation in sleep is explained by age? Give a percent.,D1 D13,D1 simple lm,no code given,test
+369,"Using attend: Using sigma-hat and the total sum of squares of priGPA, compute se(b1) by hand for the regression of atndrte on priGPA.",D6 D13 D1,D6 se data,merged steps+canvas,dev
+370,A regression has SSE = 51 and R² = 0.73. Find SSR.,S1 O4 O5,S1 sums of squares,flipped,test
+371,"From y-hat = -1.63 + -2.6x1 + 2.47x2, how much does y-hat change if x1 rises by 9 while x2 drops by 5?",S7 M1 M2 M3,S7 equation,flipped+canvas,dev
+372,Leaving out a variable that is uncorrelated with every included regressor: biased or not?,K15 B2 K14,K15 no bias,flipped,test
+373,"Using Table 3.2: ( _2 ) > 0 and Corr(x₁,x₂) > 0. Upward or downward bias?",B3,B3 sign table,hint removed+canvas,dev
+374,"If β₁ = 0.95, β₂ = -1.49 and δ₁ = -0.82, what is the expected value of the slope when x₂ is omitted?",B1 B2,B1/B2 OVB numbers,flipped,test
+375,"Which is NOT an algebraic property of OLS: (a) residuals sum to 0, (b) cov(x, û) = 0, (c) cov(y, û) = 0, (d) line passes through means?",K10 K1,K10 properties,hint removed,dev
+376,"Leaving out owning a car, the coefficient on distance from campus is expected to be too high or too low?",B3 K17 B2,B3/K17 direction,new story,test
+377,"With 356 degrees of freedom, what is the 1% critical value for a one-sided test?",T1 T2,T1/T2 t-tests,flipped,dev
+378,Data: meap93 (math10 = percent passing the 10th grade math test; lnchprg = percent in the school lunch program; expend = expenditure per student). Regress math10 on lnchprg and expend. What is the coefficient on lnchprg?,D7 D13 D1,D7 multiple data,new dataset,test
+379,Which change makes the slope estimate more precise?,K7 V7,K7 what changes Var,hint removed+canvas,dev
+380,Which assumption rules out an exact linear relationship among the explanatory variables?,K11 K16,K11 collinearity,new story+canvas,test
+381,Load sleep75 (sleep = minutes of sleep per week; totwrk = minutes worked per week). Compute the estimated error variance from the regression of sleep on totwrk.,D6 D13 D1,D6 se data,merged steps,dev
+382,Which of the following would make the zero conditional mean assumption fail in a regression of earnings on job training?,K2 K12 K3,K2/K12 MLR.4,new story+canvas,test
+383,The p-value is 0.111. At which significance levels do you reject H0?,T1 T2,T1/T2 t-tests,flipped+canvas,dev
+384,"Find the sample correlation between x = [2, 15, 10, 8, 13] and y = [12, 5, 13, 7, 12].",S6 O1 O3,S6 small sample,new story,test
+385,"( _1 ) = 0.28, ( _2 ) = 0.56, ( _1 ) = -0.54. What is ( _1 )?",B1 B2,B1/B2 OVB numbers,flipped+canvas,dev
+386,"Load ceosal1 (salary = 1990 salary in thousands of dollars; roe = return on equity, percent; sales = firm sales in millions of dollars). With log(salary) as the dependent variable and roe, sales as regressors, what is the percentage effect of roe rising by 4 and sales rising by 1?",D8 D13 L4 D3,D8 log multiple data,hint removed,test
+387,Using discrim: Regress log(psoda) on log(income). What is the estimated elasticity of psoda with respect to income?,D5 L2 S4,D5 log-log data,hint removed,dev
+388,"If Var(X) = 9, what is the standard deviation of -3X?",S5 P1 P2 P3,S5 probability,flipped,test
+389,"Data: hprice1 (price = house price in $1000s; lotsize = lot size in square feet). Estimate a constant elasticity model of price on lotsize. If lotsize falls by 29 percent, what happens to price in percent?",D5 L2 S4,D5 log-log data,hint removed,dev
+390,"E(X) = 2, E(X²) = 16. What is sd(2X + -3)?",S5 P1 P2 P3,S5 probability,new story,test
+391,Does high but not perfect correlation between two regressors violate MLR.3?,K11 K16,K11 collinearity,new story+canvas,dev
+392,"A simulation draws 5,000 samples and computes the slope each time. Under SLR.1–SLR.4, what is the average of those slopes close to?",K4,K4 unbiased,hint removed,test
+393,"Data set attend. Variables: atndrte = percent of classes attended; final = final exam score. If final increases by 16, by how much does the predicted atndrte change in the simple regression?",D1 D13,D1 simple lm,no code given,dev
+394,Which statements about OLS fitted values and residuals are always true? Select all.,K10 K1,K10 properties,hint removed,test
+395,"For omitted-variable bias to arise from leaving out land quality, what two conditions must hold?",K3 K15 B3,K3 OVB candidate,new story+canvas,dev
+396,"β̂₁ = -0.94, β̂₂ = 1.73, δ̃₁ = 0.61. What is β̃₁?",B1 B2,B1/B2 OVB numbers,flipped,test
+397,"Predict y at x = 10 using the OLS line for x = [5, 12, 1, 4, 2], y = [6, 4, 11, 13, 13].",S6 O1 O3,S6 small sample,hint removed+canvas,dev
+398,Data: bwght (bwght = birth weight in ounces; cigs = cigarettes smoked per day while pregnant). Suppose cigs is divided by 100 before running lm(bwght ~ cigs). What is the new coefficient on cigs?,D2 S3 U1 U2,D2 units data,flipped,test
+399,Which assumption is needed for unbiasedness but NOT for Gauss-Markov efficiency?,K16 T1 T2,K16 assumptions/tests,hint removed,dev
+400,"With log(salary) = 4 + 1.453·ceoten, compute the exact percent change from 21 more years as CEO.",S4 L1 L2 L3 K9 S7,S4 logs,hint removed+canvas,test
+401,Data set k401k. Variables: prate = percent of eligible workers participating; totemp = total firm employment. Estimate prate = b0 + b1 totemp + u by OLS. Report b0.,D1 D13,D1 simple lm,no code given,dev
+402,"If y is multiplied by 100, what happens to the slope, intercept and R²?",K8 S3 U1 U2 U3,K8 units MC,new story,test
+403,"6 residuals: 2.0, 2.4, -2.5, 2.9, -0.5, ?. What must the missing residual be?",O2,O2 missing residual,flipped,dev
+404,"With 49 observations and SSR = 509, estimate σ².",S2 V1 V2 V3 V4 V5,S2 variance,hint removed,test
+405,A coefficient of 1.315 in a log-log demand equation means:,K9 S4,K9 log interpretation,hint removed,dev
+406,ln(price) = 5 + 0.69 rooms. Each extra room changes price by roughly what percent?,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+407,Which of the following would make the zero conditional mean assumption fail in a regression of health on doctor visits?,K2 K12 K3,K2/K12 MLR.4,new story,dev
+408,"sd(β̂₁) = 0.83. If the sample were 6 times larger with x spread the same way, what would sd(β̂₁) become?",V6 S2,V6 bigger sample,flipped,test
+409,"( y ) = -2.08 + 4.68x. If y is re-measured in thousands (divided by 1000), what are the new intercept and slope?",S3 U1 U2 U3 K8,S3 units,hint removed+canvas,dev
+410,Data set crime1. Variables: narr86 = number of arrests in 1986; avgsen = average sentence length in months; pcnv = proportion of prior arrests leading to conviction. What is the R-squared of the regression of narr86 on avgsen and pcnv?,D7 D13 D1,D7 multiple data,new dataset,test
+411,Using attend: How many observations are in the sample? (round to the hundredths),D0 D13,D0 stats,new dataset,dev
+412,A simple regression on n = 58 has SSR = 221 and SST_x = 175. What is se(b1)?,S2 V1 V2 V3 V4 V5,S2 variance,merged steps,test
+413,Interest rates are recorded as decimals rather than percents (divided by 100). The old slope was 4.46. What is the new slope?,S3 U1 U2 U3 K8,S3 units,hint removed,dev
+414,Why might E(u | square footage) ≠ 0 in a simple regression of house price on square footage?,K2 K12 K3,K2/K12 MLR.4,new story+canvas,test
+415,"y-bar = 17, x-bar = 12, and the slope is 1.72. What is the intercept?",S7 M1 M2 M3,S7 equation,new story,dev
+416,"The regression has ( _ ) = 20, n = 30 and S_x^2 = 6.56. Compute the standard error of ( _1 ).",S2 V1 V2 V3 V4 V5,S2 variance,merged steps+canvas,test
+417,colGPA-hat = 5.16 + 1.32 hsGPA + 2.52 ACT. What is the predicted GPA for hsGPA = 3.8 and ACT = 23?,S7 M1 M2 M3,S7 equation,new story+canvas,dev
+418,"Using Table 3.2: β₂ > 0 and Corr(x₁,x₂) < 0. Upward or downward bias?",B3,B3 sign table,hint removed,test
+419,"A researcher regresses earnings on job training but leaves out motivation. Motivation raises earnings, and motivation is positively correlated with job training. The estimated effect of job training is most likely:",B3 K17 B2,B3/K17 direction,new story+canvas,dev
+420,"log(( y )) = 1.1 + 0.09x₁ − 0.076x₂. If x₁ rises by 2 and x₂ rises by 2, about what percent does ( y ) change?",L4 S4 S7,L4 log multiple,merged steps+canvas,test
+421,Load rdchem (rd = R&D spending in millions; sales = firm sales in millions). Find the sample mean of sales. (round to the hundredths),D0 D13,D0 stats,new dataset,dev
+422,"Data points (x, y): (9,5), (14,10), (3,12), (7,14), (4,15). What is R² of the OLS fit?",S6 O1 O3,S6 small sample,new story,test
+423,"5 residuals: -2.1, 0.9, 2.6, -2.3, ?. What must the missing residual be?",O2,O2 missing residual,flipped,dev
+424,Which of these regressions cannot be estimated because of perfect collinearity?,K11 K16,K11 collinearity,new story,test
+425,"y-bar = 7, x-bar = 2, and the slope is -1.63. What is the intercept?",S7 M1 M2 M3,S7 equation,flipped,dev
+426,Data: bwght (bwght = birth weight in ounces; motheduc = mother's years of education). Regress log(bwght) on log(motheduc). What is the estimated elasticity of bwght with respect to motheduc?,D5 L2 S4,D5 log-log data,hint removed,test
+427,prior ability is in the error term and is unrelated to tutoring hours. Is tutoring hours exogenous?,K2 K12 K3,K2/K12 MLR.4,new story,dev
+428,Load sleep75 (sleep = minutes of sleep per week; age = age in years; educ = years of schooling). Is educ statistically significant at 10% against a one-sided alternative that its effect is negative?,D12 D13 T1,D12 t-test data,new dataset,test
+429,Data: k401k (prate = percent of eligible workers participating; mrate = firm match rate; totemp = total firm employment). What is the R-squared of the regression of prate on mrate and totemp?,D7 D13 D1,D7 multiple data,merged steps+canvas,dev
+430,"β̂₁ = 1.09, se = 0.6, df = 208. Construct a 95% confidence interval for β₁.",T3,T3 CI,hint removed,test
+431,"Predict y at x = 5 using the OLS line for x = [4, 13, 3, 8, 1], y = [9, 2, 10, 13, 6].",S6 O1 O3,S6 small sample,new story,dev
+432,"Regress voteA on expendA, expendB and their sum. Why is one coefficient NA?",D11 K11,D11 collinearity data,new story,test
+433,"Load ceosal1 (salary = 1990 salary in thousands of dollars; roe = return on equity, percent). Regress log(salary) on roe. By approximately what percent does salary change when roe rises by 2?",D3 D8 L1 S4,D3 log-level data,hint removed,dev
+434,"Y equals 3, 11 or 21 with probabilities 0.14, 0.4 and 0.46. Find E(Y) and Var(Y).",S5 P1 P2 P3,S5 probability,new story,test
+435,"In the meap93 data, math10 = percent passing the 10th grade math test; expend = expenditure per student. In the regression of log(math10) on log(expend), by about what percent does math10 change when expend rises by 2%?",D5 L2 S4,D5 log-log data,hint removed+canvas,dev
+436,"Will the simple regression of college GPA on hours studied overstate or understate the true effect, given that motivation is omitted?",B3 K17 B2,B3/K17 direction,new story,test
+437,"Data set crime1. Variables: narr86 = number of arrests in 1986; ptime86 = months in prison in 1986. For the regression of narr86 on ptime86, compute SST_x, the total variation in ptime86.",D6 D13 D1,D6 se data,merged steps,dev
+438,"Will the simple regression of wage on education overstate or understate the true effect, given that ability is omitted?",B3 K17 B2,B3/K17 direction,new story,test
+439,"log(y) = 2.1 + 0.52 log(x). If x rises 7%, by how many percent does y change?",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+440,"Data set wage1. Variables: wage = average hourly earnings in dollars; female = =1 if female; tenure = years with current employer. Compute b2 times delta1, where b2 is the tenure coefficient in the multiple regression and delta1 is the slope from regressing tenure on female.",D10 B1,D10 OVB data,merged steps,test
+441,"Data: mlb1 (salary = 1993 season salary; years = years in the major leagues; gamesyr = games per year in the league). Regress log(salary) on years and gamesyr. By about what percent does salary change when years increases by 2, holding gamesyr fixed?",D8 D13 L4 D3,D8 log multiple data,hint removed,dev
+442,Data set lawsch85. Variables: salary = median starting salary; LSAT = median LSAT score. Find the correlation coefficient of LSAT and salary. (round to the hundredths),D0 D13,D0 stats,new dataset,test
+443,"ŷ = 8.56 + 3.6x. If y is re-measured in thousands (divided by 1000), what are the new intercept and slope?",S3 U1 U2 U3 K8,S3 units,flipped,dev
+444,The fitted line is y = 6.36 + 1.44x and x-bar = 12. What is y-bar?,S7 M1 M2 M3,S7 equation,flipped+canvas,test
+445,"A researcher regresses salary on years as CEO but leaves out firm size. Firm size raises salary, and firm size is positively correlated with years as CEO. The estimated effect of years as CEO is most likely:",B3 K17 B2,B3/K17 direction,new story,dev
+446,Using bwght: Regress faminc on motheduc. What is the slope (delta-tilde)?,D10 B1,D10 OVB data,merged steps,test
+447,Use the ceosal1 data set from the wooldridge package (salary = 1990 salary in thousands of dollars; sales = firm sales in millions of dollars). Run lm(salary ~ log(sales)). What is the predicted change in salary if sales goes up 15%?,D4 L3 S4,D4 level-log data,hint removed,dev
+448,"Data set hprice1. Variables: price = house price in $1000s; bdrms = number of bedrooms; sqrft = square feet. Regress price on bdrms alone, then on bdrms and sqrft. How much does the coefficient on bdrms change?",D10 B1,D10 OVB data,merged steps,test
+449,neighborhood quality is in the error term and is unrelated to square footage. Is square footage exogenous?,K2 K12 K3,K2/K12 MLR.4,new story,dev
+450,"n = 25, sample variance of the dependent variable = 12, SSR = 195. Compute R².",S1 O4 O5,S1 sums of squares,flipped,test
+451,Can you include both experience and experience squared in the same regression?,K11 K16,K11 collinearity,new story+canvas,dev
+452,The scatter of savings around the regression line fans out at higher incomes. Which statement is true?,K6 K16,K6 heteroskedasticity,new story,test
+453,"Use the sleep75 data set from the wooldridge package (sleep = minutes of sleep per week; totwrk = minutes worked per week; age = age in years). Holding age fixed, how much does predicted sleep change when totwrk rises by 8?",D7 D13 D1,D7 multiple data,new dataset+canvas,dev
+454,"sd(( _1 )) = 1.72. If the sample were 9 times larger with x spread the same way, what would sd(( _1 )) become?",V6 S2,V6 bigger sample,flipped+canvas,test
+455,Load attend (atndrte = percent of classes attended; final = final exam score; priGPA = prior cumulative GPA). Estimate atndrte = b0 + b1 final + b2 priGPA + u. What is the predicted atndrte for final = 17 and priGPA = 12?,D7 D13 D1,D7 multiple data,merged steps,dev
+456,Use the hprice1 data set from the wooldridge package (price = house price in $1000s; assess = assessed value in $1000s). Regress price on log(assess). How much does price change when assess increases by 25%?,D4 L3 S4,D4 level-log data,hint removed,test
+457,True or false: the sample covariance between the regressors and the OLS residuals is zero.,K10 K1,K10 properties,hint removed,dev
+458,"In a multiple regression, σ² = 36, SST_1 = 61, and regressing x1 on the other regressors gives R² = 0.1. Find Var(β̂₁).",V7 S2,V7 VIF,hint removed,test
+459,"Data: sleep75 (sleep = minutes of sleep per week; age = age in years). What is the predicted sleep when age = 3, using the OLS line of sleep on age?",D1 D13,D1 simple lm,no code given,dev
+460,"With 177 degrees of freedom, what is the 1% critical value for a one-sided test?",T1 T2,T1/T2 t-tests,merged steps,test
+461,"Data: hprice1 (price = house price in $1000s; lotsize = lot size in square feet). In the regression of log(price) on log(lotsize), by about what percent does price change when lotsize rises by 26%?",D5 L2 S4,D5 log-log data,hint removed,dev
+462,"x takes the values 4, 5, 6, 9, 11, and the error standard deviation is 2. Find the standard deviation of the slope estimator.",S2 V1 V2 V3 V4 V5,S2 variance,merged steps,test
+463,"With log(salary) = 4 + 0.69·ceoten, compute the exact percent change from 16 more years as CEO.",S4 L1 L2 L3 K9 S7,S4 logs,hint removed,dev
+464,Using ceosal2: Compute the estimated error variance from the regression of salary on sales.,D6 D13 D1,D6 se data,merged steps,test
+465,"For x = (5, 14, 1, 11, 2) and y = (9, 9, 3, 12, 15), compute the OLS slope.",S6 O1 O3,S6 small sample,new story,dev
+466,"Using Table 3.2: β₂ < 0 and Corr(x₁,x₂) < 0. Upward or downward bias?",B3,B3 sign table,hint removed,test
+467,Load wage1 (wage = average hourly earnings in dollars; exper = years of potential experience; tenure = years with current employer). Estimate lm(log(wage) ~ exper + tenure). What is the predicted wage (not log) when exper = 11 and tenure = 9?,D8 D13 L4 D3,D8 log multiple data,hint removed,dev
+468,"Using wage1: Regress wage on exper alone, then on exper and female. How much does the coefficient on exper change?",D10 B1,D10 OVB data,merged steps,test
+469,Using wage1: Compare the simple regression slope of wage on educ with the slope when female is added. Is the simple slope larger or smaller?,D10 B1,D10 OVB data,merged steps,dev
+470,An estimate of 1.352 has t = -2.21. What is its standard error?,T1 T2,T1/T2 t-tests,merged steps,test
+471,"Given X = x, Y takes values [7, 13, 29] with probabilities 0.45, 0.36, 0.19. Find E[2Y + -7 | X = x].",S5 P1 P2 P3,S5 probability,flipped,dev
+472,log(rent) = 1 + 0.745·log(income). Interpret 0.745.,S4 L1 L2 L3 K9 S7,S4 logs,hint removed,test
+473,Doubling n (same spread in x) changes sd(b1) = 1.72 to what?,V6 S2,V6 bigger sample,flipped,dev
+474,Load gpa1 (colGPA = college GPA; hsGPA = high school GPA; ACT = ACT score). Compare the simple regression slope of colGPA on hsGPA with the slope when ACT is added. Is the simple slope larger or smaller?,D10 B1,D10 OVB data,merged steps,test
+475,Use the wage1 data set from the wooldridge package (wage = average hourly earnings in dollars; educ = years of education). What is the fitted value for the second observation in the regression of wage on educ?,D1 D13,D1 simple lm,new dataset,dev
+476,Data: meap93 (math10 = percent passing the 10th grade math test; salary = average teacher salary). Regress math10 on log(salary). How much does math10 change when salary increases by 3%?,D4 L3 S4,D4 level-log data,hint removed,test
+477,"If Var(X) = 10, what is the standard deviation of -4X?",S5 P1 P2 P3,S5 probability,flipped,dev
+478,"Load k401k (prate = percent of eligible workers participating; age = age of the plan in years). If age increases by 11, by how much does the predicted prate change in the simple regression?",D1 D13,D1 simple lm,no code given,test
+479,"σ = 12, SST_j = 205, R_j² = 0.73. Compute sd(β̂_j).",V7 S2,V7 VIF,hint removed,dev
+480,"With 28 degrees of freedom, what is the 1% critical value for a one-sided test?",T1 T2,T1/T2 t-tests,merged steps+canvas,test
+481,"Coefficient 1.277, standard error 0.489. Is it significant at the 10% level against a two-sided alternative?",T1 T2,T1/T2 t-tests,flipped,dev
+482,The fitted line is y = 1.81 + -1.87x and x-bar = 6. What is y-bar?,S7 M1 M2 M3,S7 equation,new story,test
+483,Load gpa1 (colGPA = college GPA; ACT = ACT score; hsGPA = high school GPA). Is hsGPA statistically significant at 10% against a one-sided alternative that its effect is negative?,D12 D13 T1,D12 t-test data,new dataset,dev
+484,"β̂ = 1.995, se = 0.579, n = 38, k = 2. Test H₀: β = 0 against H₁: β > 0 at 5%.",T1 T2,T1/T2 t-tests,flipped,test
+485,Data: crime1 (narr86 = number of arrests in 1986; ptime86 = months in prison in 1986; pcnv = proportion of prior arrests leading to conviction). Estimate narr86 = b0 + b1 ptime86 + b2 pcnv + u. What is the predicted narr86 for ptime86 = 10 and pcnv = 18?,D7 D13 D1,D7 multiple data,merged steps,dev
+486,Data set attend. Variables: atndrte = percent of classes attended; priGPA = prior cumulative GPA; final = final exam score. Regress atndrte on priGPA and final. What is the coefficient on priGPA?,D7 D13 D1,D7 multiple data,merged steps,test
+487,"A researcher regresses crop yield on fertilizer but leaves out land quality. Land quality raises crop yield, and land quality is positively correlated with fertilizer. The estimated effect of fertilizer is most likely:",B3 K17 B2,B3/K17 direction,new story,dev
+488,"Suppose motivation affects college GPA and is left in the error term of a regression of college GPA on hours studied. If people with more motivation tend to have more hours studied, does E(u|hours studied) = 0 hold?",K2 K12 K3,K2/K12 MLR.4,new story,test
+489,"Data: ceosal1 (salary = 1990 salary in thousands of dollars; sales = firm sales in millions of dollars; roe = return on equity, percent). With log(salary) as the dependent variable and sales, roe as regressors, what is the percentage effect of sales rising by 3 and roe rising by 1?",D8 D13 L4 D3,D8 log multiple data,hint removed,dev
+490,"Suppose illness severity affects health and is left in the error term of a regression of health on doctor visits. If people with more illness severity tend to have more doctor visits, does E(u|doctor visits) = 0 hold?",K2 K12 K3,K2/K12 MLR.4,new story,test
+491,"Find the sample standard deviation of x = (12, 13, 2, 11, 14).",S6 O1 O3,S6 small sample,new story,dev
+492,An estimate of -1.771 has t = 2.51. What is its standard error?,T1 T2,T1/T2 t-tests,merged steps+canvas,test
+493,Data: hprice1 (price = house price in $1000s; lotsize = lot size in square feet). What is the largest value of price in the sample?,D0,D0 other stat (coverage),new stat,dev
+494,An estimate of -0.489 has t = -2.33. What is its standard error?,T1 T2,T1/T2 t-tests,merged steps,test
+495,The fitted line is y = 4.52 + -2.47x and x-bar = 6. What is y-bar?,S7 M1 M2 M3,S7 equation,new story+canvas,dev
+496,"In the ceosal1 data, salary = 1990 salary in thousands of dollars; roe = return on equity, percent. Suppose roe is divided by 100 before running lm(salary ~ roe). What is the new coefficient on roe?",D2 S3 U1 U2,D2 units data,flipped,test
+497,Load meap93 (math10 = percent passing the 10th grade math test; lnchprg = percent in the school lunch program; salary = average teacher salary). Compute the t ratio for the coefficient on lnchprg and compare it with the 1% one-sided critical value.,D12 D13 T1,D12 t-test data,new dataset,dev
+498,wage-hat = -0.02 + 2.6 educ + 2.91 exper. Two workers differ by 8 years of education and have the same experience. What is the difference in predicted wage?,S7 M1 M2 M3,S7 equation,flipped,test
+499,Use the rdchem data set from the wooldridge package (rd = R&D spending in millions; sales = firm sales in millions). Find the sample mean of sales. (round to the hundredths),D0 D13,D0 stats,new dataset+canvas,dev
+500,Using mlb1: Estimate lm(log(salary) ~ years). What is the approximate percentage effect of 7 more units of years?,D3 D8 L1 S4,D3 log-level data,hint removed+canvas,test

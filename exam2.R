@@ -160,14 +160,14 @@ for (d in c("wage1", "wage2", "ceosal1", "ceosal2", "bwght", "gpa1", "gpa2", "vo
 
 ## ---- FIND(): type words from the question, get the block tag -----------------
 CATALOG <- list(
-  c("S1",  "SOLVER sums of squares: any of SST, SSE, SSR, R^2, n + S_y^2", "sst sse ssr r2 r-squared explained unexplained fraction total sum squares residual sample variance n observations"),
+  c("S1",  "SOLVER sums of squares: any of SST, SSE, SSR, R^2, n + S_y^2", "sst sse ssr r2 r-squared explained unexplained fraction total sum squares residual sample variance n observations adjusted adj"),
   c("S2",  "SOLVER Var/sd/se of the slope from any mix of sigma, SSR, n, SST_x, x, S_X", "variance sd se standard error standard deviation sigma ssr sst_x sample variance x n observations var(b1 vif"),
   c("S3",  "SOLVER units: rescale y and/or x in any of the 4 log models", "units measured instead multiplied divided 1000 100 dollars thousands percent decimal new slope intercept log-log log-level level-log"),
   c("S4",  "SOLVER logs: prints the answer for all 4 log models + percent vs points", "log log-log log-level level-log percent units elasticity percentage points rises falls about"),
   c("S5",  "SOLVER probability: E[X], Var, sd(aX+b), Var(aX+bY), tables, Cor", "e[x] e[x^2] expected var(x) var(y) cov(x,y) sd(ax+b) joint distribution probability table cor(x,y) takes values with probabilities"),
   c("S6",  "SOLVER small sample: type x and y, get slope, intercept, residuals, R^2, cor ...", "sample x= y= regress by hand slope intercept residual observation predict sum sample standard deviation covariance correlation"),
   c("S7",  "SOLVER equation: prediction, change, ybar, % change, exp() for logged y", "yhat equation predicted value change rises falls sample mean ybar means intercept percent dollars"),
-  c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns"),
+  c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns min max minimum maximum largest smallest median fraction share proportion women dummy covariance variance"),
   c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained sum of squares"),
   c("D2",  "Data: measure y or x in other units, new slope", "data units measured instead dollars thousands slope rescale percent decimal"),
   c("D3",  "Data: log-level, % change in y", "data log-level log percent change rises points"),
@@ -209,7 +209,7 @@ CATALOG <- list(
   c("P1",  "sd(aX+b) from E[X] and E[X^2]", "e[x] e[x^2] standard deviation 3x"),
   c("P2",  "Var(aX+bY) with a covariance", "var(x) var(y) cov(x,y) var(2x"),
   c("P3",  "correlation from a joint probability table", "joint distribution p(x=x cor(x,y) table probability"),
-  c("T1",  "t-statistic, critical values, p-values, decisions", "t statistic se estimate reject critical value alpha df h0 h1 one-sided two-sided p-value"),
+  c("T1",  "t-statistic, critical values, p-values, decisions", "t statistic se estimate reject critical value alpha df h0 h1 one-sided two-sided p-value degrees of freedom df n-k-1 critical value given"),
   c("T2",  "decision from a given t and c, or a p-value", "given t critical value reject fail p-value alpha"),
   c("T3",  "confidence interval", "confidence interval ci 95 lower upper"),
   c("T4",  "F-statistic", "f statistic joint restricted unrestricted"),
@@ -218,10 +218,10 @@ CATALOG <- list(
   c("K3",  "MC: which variable causes omitted-variable bias", "most likely contribute omitted-variable bias ability family income id random"),
   c("K4",  "MC: what unbiased means", "unbiased theorem 2.1 e[b1 averaged many samples researchers"),
   c("K5",  "MC: x has no variation (SLR.3)", "every worker exactly same value goes wrong no variation"),
-  c("K6",  "MC: heteroskedasticity (spread grows with x)", "spread grows heteroskedasticity homoskedasticity slr5 mlr5"),
+  c("K6",  "MC: heteroskedasticity (spread grows with x)", "spread grows heteroskedasticity homoskedasticity slr5 mlr5 var(u|x) fans out spread variance of the error grows"),
   c("K7",  "MC: what makes Var / se of b1 larger or smaller", "makes var larger smaller se spread out bunched sample error variance correlated other regressors"),
   c("K8",  "MC: what happens to b0, b1, R^2 when units change", "multiplied measured instead happens slope intercept r2 divided units cents months"),
-  c("K9",  "MC: what does the slope mean in a log model", "what does mean 1% rise associated log elasticity interpretation"),
+  c("K9",  "MC: what does the slope mean in a log model", "what does mean 1% rise associated log elasticity interpretation constant elasticity constant percentage functional form interpret"),
   c("K10", "MC: properties always true after OLS", "always true residuals average sample means covariance select all properties"),
   c("K11", "MC: perfect collinearity / MLR.3 violations", "perfect collinearity mlr3 violate cannot estimate dollars cents exact total"),
   c("K12", "MC: what makes MLR.4 fail", "mlr4 fail endogenous left out functional form"),
@@ -244,8 +244,125 @@ GO <- function(tag) {
   invisible(n)
 }
 ## ---- matcher used by FIND() and ASK(): keywords + similarity to real past questions
+##      + "question shape" rules (dataset named? log( where? x = (...) list? sigma? H0?)
+.norm <- function(s) {                                   # Greek / Canvas symbols -> words
+  s <- paste(s, collapse = " ")
+  sub <- list(c("\u2080", "0"), c("\u2081", "1"), c("\u2082", "2"), c("\u2083", "3"), c("\u2c7c", "j"), c("\u2096", "k"))
+  for (p in sub) s <- gsub(p[1], p[2], s, fixed = TRUE, useBytes = TRUE)
+  s <- gsub("\\(\\s*_([0-9jk])\\s*\\)", " b\\1 ", s)            # Canvas copy: ( _1 ) -> b1
+  s <- gsub("\\(\\s*_\\s*\\)\\s*\\^?\\s*2", " sigma^2 ", s)                # Canvas copy: ( _ )^2 -> sigma^2
+  rep <- list(c("\u03b2\u0302", " beta hat "), c("\u03b2\u0303", " beta tilde "), c("\u03b4\u0303", " delta tilde "),
+           c("\u03c3\u0302", " sigma hat "), c("\u03b2", " beta "), c("\u03b4", " delta "), c("\u03c3", " sigma "),
+           c("\u00b2", "^2"), c("\u00fb", " uhat "), c("\u0177", " yhat "), c("\u2212", "-"), c("\u00b7", " * "),
+           c("\u2260", " != "), c("\u03a3", " sum "), c("\u0302", " hat "), c("\u0303", " tilde "), c("\u2265", ">="), c("\u2264", "<="))
+  for (p in rep) s <- gsub(p[1], p[2], s, fixed = TRUE, useBytes = TRUE)
+  s <- gsub("[^ -~]", " ", s, useBytes = TRUE)                  # any other symbol -> space (works in every locale)
+  s <- gsub("\\(\\s*\\)", " ", s)
+  s <- gsub("(hat|tilde|beta|delta|sigma) ([0-9jk])\\b", "\\1\\2", s)
+  tolower(gsub("\\s+", " ", s))
+}
+.DSNAMES <- local({ nm <- c("wage1", "wage2", "ceosal1", "ceosal2", "bwght", "gpa1", "gpa2", "vote1", "campus", "rdchem",
+  "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain")
+  if (requireNamespace("wooldridge", quietly = TRUE)) { p <- tryCatch(data(package = "wooldridge")$results[, "Item"], error = function(e) c())
+    nm <- unique(c(nm, grep("[0-9]", tolower(p), value = TRUE))) }
+  nm })
+.dataset_in <- function(s) {                                # which wooldridge dataset does the question name?
+  for (d in .DSNAMES) {
+    if (grepl("[0-9]", d) && grepl(paste0("\\b", d, "\\b"), s)) return(d)
+    if (grepl(paste0("(data:?|using|load|data set|dataset|in the)\\s*\\(?", d, "\\b|\\b", d, "\\s+(data|dataset)\\b"), s)) return(d)
+  }
+  if (grepl("^data:|\\bdata set\\b|\\bdataset\\b|\\blm\\(|wooldridge|^same regression|using the same regression", s)) return("?")
+  NA }
+.strip_desc <- function(s, d) {                             # drop "salary = CEO pay in $1000s;" definitions
+  cols <- tryCatch(tolower(names(get(d, envir = globalenv()))), error = function(e) c())
+  s <- gsub("\\([^()]*=[^()]*\\)", " ", s)
+  if (length(cols)) s <- gsub(paste0("\\b(", paste(cols, collapse = "|"), ")\\s*=\\s*(?!b0|beta)[a-z=][^;.()]*[;.]?"), " ", s, perl = TRUE)
+  sub("^.*variables:", "", s)
+}
+.rules <- function(raw) {                                   # bonus per tag from the question's shape
+  s <- .norm(raw); b <- c(); add <- function(tags, v = 1) for (t in tags) b[t] <<- max(c(b[t], 0), na.rm = TRUE) + v
+  has <- function(p) grepl(p, s, perl = TRUE)
+  ds <- .dataset_in(s)
+  if (!is.na(ds)) {                                          # ---------- PART III: real data ----------
+    q <- if (ds != "?") .strip_desc(s, ds) else s
+    h <- function(p) grepl(p, q, perl = TRUE)
+    logy <- h("(regress|lm\\(|estimate|of|with)\\s*(the\\s*)?(natural\\s*)?log\\s*(\\(|of\\s)\\s*\\w+\\)?\\s*(~|on|as the dependent|=)|log\\(\\w+\\)\\s*(~|as the dependent|=)|natural log of \\w+ as the dependent|log\\(\\w+\\) as the dependent")
+    logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity")
+    if (h("log-log|constant[- ]elasticity|elasticity of")) { logy <- TRUE; logx <- TRUE } else if (h("log-level")) { logy <- TRUE; logx <- FALSE } else if (h("level-log")) { logy <- FALSE; logx <- TRUE }
+    two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors")
+    if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
+    else if (h("t[ -]?stat|t ratio|significan|reject|p-value|critical value|h0|null hypothesis|one-sided|two-sided|h1:")) add("D12", 1.6)
+    else if (h("\\balone\\b|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
+    else if (h("standard error of the regression|sigma|error variance|sst_?x|total variation in|total sum of squares of|se\\(|standard error of the slope|standard error of b|by hand")) add(c("D6"), 1.6)
+    else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)")) add("D9", 1.6)
+    else if (h("instead of|divided by|multipl|in cents|re-express|/\\s*100|/\\s*1000|rescal|in dollars rather|measured in")) add("D2", 1.6)
+    else if (logy && logx) { add("D5", 1.6); if (two) add("D8", 0.8) }
+    else if (logy && two) add(c("D8"), 1.6)
+    else if (logy) add(c("D3"), 1.6)
+    else if (logx && two) { add("D7", 1.6); add("D4", 0.6) }
+    else if (logx) add(c("D4"), 1.6)
+    else if (two) add(c("D7"), 1.6)
+    else if (!h("regress|\\blm\\(|ols|fitted|predicted|slope|residual|r-squared|r\\^2|explained|estimate|sum of squared")) add("D0", 1.6)
+    else add("D1", 1.6)
+    if (h("adjusted r|everything|all the output")) add("D13", 0.8)
+    return(list(bonus = b, gate = "data"))
+  }
+  logeq <- has("\\b(log|ln)\\s*\\(|log-log|log-level|level-log|constant[- ]elasticity|elasticity")
+  num <- grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
+  # ---------- PART II: numbers in the question ----------
+  if (has("residuals?[^.?]*-?[0-9.]+\\s*,\\s*-?[0-9.]+") && has("one more|missing|final|last|\\?\\s*[.,]|, \\?|(sixth|fifth|seventh|last) residual")) add("O2", 1.6)
+  if (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]|sample (standard deviation|variance|mean) of x")) add(c("S6"), 1.4)
+  pts <- has("\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)\\s*,\\s*\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)") || (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]"))
+  if (pts) add("S6", 1.8)
+  if (has("\\bx\\s*=\\s*[\\[(]|x takes the values|x values") && has("sigma|error (standard deviation|variance)|ssr")) add(c("S2"), 1.6)
+  if (has("correlation") && has("covariance|cov\\s*\\(|s_?\\{?xy")) add("S5", 1.8)
+  if (has("lies exactly on|all .* on the (ols )?line|perfect(ly)? fit")) add("S1", 1.6)
+  if (has("e\\s*[(\\[]\\s*x|e\\s*[(\\[]\\s*y|var\\s*\\(\\s*[xy]\\b\\s*\\)\\s*=\\s*-?[0-9]|cov\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=\\s*-?[0-9]|probabilit|joint (distribution|probability)|takes (the )?values|sd\\s*\\(\\s*-?[0-9]*\\s*x\\b|deviation of -?[0-9]*x|var\\[")) add(c("S5"), 1.6)
+  if (has("\\bvif\\b|inflation|r_?j\\b|r_?j\\^2|regressing x_?[0-9] on (all )?the other|on all other explanatory")) add("V7", 1.8)
+  if (has("times (larger|as large)|doubl|quadrupl|tripl|sample size (doubles|is)|sample were")) add(c("V6"), 1.4)
+  nnum <- length(gregexpr("=\\s*-?[0-9]*\\.?[0-9]+", s)[[1]]) * grepl("=\\s*-?[0-9]*\\.?[0-9]+", s)
+  if (nnum >= 2 && has("delta|tilde|3\\.23|short regression|long regression|omit|leaving out|left out|bias")) add(c("B1", "B2"), 1.6)
+  if (has("confidence interval")) add("T3", 1.6)
+  ttest <- has("t[ -]?stat|\\bt\\s*=|critical|degrees of freedom|\\bdf\\b|p-value|h0|null|reject|significan|one-sided|two-sided|one-tailed")
+  if (num && ttest) add(c("T1", "T2"), 1.7)
+  if (has("equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ (to|and)|their sum|total of the two")) add(c("D11", "K11"), 1.6)
+  if (has("sign of the bias|upward or downward|biased which way|(positive|negative)(ly)? correlated|corr\\s*\\([^)]*\\)\\s*[<>]|beta2 (is )?(positive|negative|[<>])")) add("B3", 1.6)
+  ssonly <- has("\\bssr\\b") && has("observations|\\bn\\s*=") && !has("\\bsse\\b|\\bsst\\b|r\\^2|r-squared|r2\\b|explained|variance of (y|the dependent)")
+  if (num && ssonly) add("S2", 1.8)
+  if (num && !ssonly && !pts && has("\\bsse\\b|\\bssr\\b|\\bsst\\b(?!_?x)|r\\^2|r-squared|r2\\b|explained|sum of squares|sample variance of (y|the dependent)") &&
+      !has("sigma|se\\s*\\(|sd\\s*\\(|standard error|sst_?x|vif")) add(c("S1"), 1.4)
+  if (num && !ttest && !has("correlation") && has("sigma|sst_?x|sst_?[0-9j]|se\\s*\\(|sd\\s*\\(|standard error|standard deviation of the slope|variance of the (ols )?slope|error variance|var\\s*\\(\\s*b|s_?x")) add(c("S2"), 1.2)
+  if (has("measured in|instead|divided by|multiplied by|re-measured|in cents|in thousands|decimals?\\b|in months|converted|units"))
+    add(if (num && !has("what happens|which (statement|estimates|coefficient)|does .* change|affects")) c("S3") else c("K8"), 1.4)
+  if (num && logeq && has("percent|%|how much|by how many|change") && !has("what does .* mean|interpret|in which model"))
+    { if (has("x_?2\\b|, x\\b")) { add("L4", 1.8); add("S4", 1.0) } else add("S4", 1.4) }
+  if (num && !logeq && has("by (about )?what percent") && has("x_?2\\b")) add("L4", 1.4)
+  if (num && has("percentage[- ]point|from [0-9.]+% to [0-9.]+%|rises from [0-9.]+%|falls from [0-9.]+%")) add("S4", 1.4)
+  if (num && !logeq && has("yhat|y-hat|-hat\\s*=|\\bhat\\s*=|=\\s*-?[0-9.]+\\s*[+-]\\s*[0-9.]+\\s*\\*?\\s*[a-z]|y-bar|ybar|mean of y|sample mean of y|intercept\\?")) add(c("S7"), 1.2)
+  # ---------- PART I: concepts / multiple choice ----------
+  if (has("part of u|error term|e\\s*\\(\\s*u|zero conditional|exogenous|endogenous|mlr\\.?\\s*4|slr\\.?\\s*4|key assumption")) add(c("K2", "K12"), 1.6)
+  if (has("leav(es|ing) out|left out|omit|leave out") && has("bias|overstate|understate|too (high|low)|upward|downward|direction|up or down|likely:|most likely|slope (on \\w+ )?is:|correlated")) add(c("B3", "K17"), 1.4)
+  if (has("which (omitted )?(variable|factor).*(bias|left out)|most likely to (cause|contribute)|two conditions|omitted factor")) add("K3", 1.4)
+  if (has("theorem 2\\.1|e\\s*\\[\\s*b1\\s*\\]\\s*=|e\\s*\\(\\s*b1\\s*\\)\\s*=")) add("K4", 1.6)
+  if (has("unbiased|many (random )?samples|simulation|center of the sampling|e\\s*\\(\\s*b1\\s*\\)\\s*=|beta hat 1\\s*\\)\\s*=|e\\s*\\(\\s*\\(?\\s*b1")) add("K4", 1.2)
+  if (has("same (value|number)|does not vary|no variation|everyone in the sample has|all .* have the same")) add("K5", 1.4)
+  if (has("heteroskedast|homoskedast|var\\s*\\(\\s*u|spread .* (grows|fans|increases)|fans out|variance of the error grows")) add("K6", 2.0)
+  if (!num && !has("which assumption|var\\s*\\(\\s*u") && has("standard error|var\\s*\\(|variance|precise|precision|sd\\s*\\(") && has("increase|reduce|decrease|larger|smaller|which|what happens|more precise|better|doubles")) add("K7", 1.2)
+  if ((!num && has("elasticity|functional form|percentage effect|match the model|means:")) || (logeq && has("mean(s)?\\s*[:?]|interpret")) || has("interpret|what does (the )?-?[0-9.]+ ?(\\w+ )?mean|what does (the )?(slope|coefficient|estimate|beta\\w*|b1) .*mean|in which model|which model")) { add("K9", 1.8); if (has("means\\s*:|mean\\?|interpret")) num <- FALSE }
+  if (has("constant percentage|functional form implies|elasticity of y with respect")) add("K9", 0.6)
+  if (has("always (true|holds)|algebraic propert|residuals sum|pass(es)? through|average of the fitted|true or false: the (sample covariance|average)|not an algebraic")) add("K10", 1.4)
+  if (has("perfect(ly)? collinear|exact linear|mlr\\.?\\s*3|(dollars|cents|thousands|years|months) and (its |the )?\\w* ?\\w* in (cents|dollars|thousands|months|years)|in dollars and .*thousands|total ad|total .*spending|more explanatory variables than|observations and [0-9]+ explanatory|squared in the same|high but not perfect")) add("K11", 2.0)
+  if (has("irrelevant|every (available )?variable|too many|over-?control")) add("K13", 2.0)
+  if (has("holding (\\w+ )?(other )?(\\w+ )?(fixed|constant)(?! in)") && !has("holding everything else fixed|which change makes")) add("K14", 1.0)
+  if (has("ceteris paribus|partialling|partial(l)?ing-out|measure\\?|why does the coefficient .* change|controlling for|simple and multiple .* (same|equal)")) add("K14", 1.3)
+  if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y")) add("K15", 1.9)
+  if (!num && has("\\bblue\\b|gauss-markov|normality|mlr\\.?\\s*6|classical linear|t statistic measures|distribution of|p-value (means|is)|small p-value|statistically significant|reject h|when do you reject")) add("K16", 1.4)
+  if (has("minimi[sz]e|least squares estimates|candidate lines")) add("K1", 1.6)
+  if (!num && has("r-squared|r\\^2|r2\\b")) add(c("K10", "K13"), 0.8)
+  list(bonus = b, gate = if (num) "numbers" else "concept")
+}
 .tok <- function(s) {
-  s <- tolower(gsub("\\([^()]*=[^()]*\\)", " ", s))            # drop "(var = definition)" lists
+  s <- .norm(s); s <- gsub("\\([^()]*=[^()]*\\)", " ", s)            # drop "(var = definition)" lists
   w <- strsplit(gsub("[^a-z0-9\\^\\-]+", " ", s), " +")[[1]]
   stop <- c("the","of","in","by","a","an","and","to","is","what","does","when","how","are","at","on","for","with",
     "its","that","this","be","as","or","if","about","run","use","give","round","hundredths","regression","regress",
@@ -283,15 +400,21 @@ GO <- function(tag) {
   sims <- sapply(ix$vec, function(v) sum(v[names(qv)] * qv, na.rm = TRUE))
   tapply(sims, ix$tags, function(s) { s <- sort(s, decreasing = TRUE); s[1] + 0.3 * ifelse(length(s) > 1, s[2], 0) })
 }
-FIND <- function(words) {
-  a <- .kw_scores(words); b <- .knn_scores(words)
+FIND <- function(words, go = TRUE) {
+  words <- paste(words, collapse = " "); nw <- .norm(words)
+  a <- .kw_scores(nw); b <- .knn_scores(nw); r <- .rules(words)
   if (!length(b)) b <- setNames(0, names(a)[1])
   tags <- union(names(a), names(b)); A <- a[tags]; B <- b[tags]; A[is.na(A)] <- 0; B[is.na(B)] <- 0
-  if (max(A) == 0 && max(B) == 0) { cat("No match. Try other words from the question.\n"); return(invisible()) }
-  sc <- A / max(A, 1e-9) + B / max(B, 1e-9)
-  if (grepl("data", tolower(words), fixed = TRUE)) sc[grepl("^D", tags)] <- sc[grepl("^D", tags)] * 1.15
-  if (grepl("bias|overstat|understat|omit", tolower(words))) { bt <- tags %in% c("B1","B2","B3","K3","K12","K15","K17"); sc[bt] <- sc[bt] * 1.3 }
+  R <- setNames(rep(0, length(tags)), tags); R[intersect(names(r$bonus), tags)] <- r$bonus[intersect(names(r$bonus), tags)]
+  if (max(A) == 0 && max(B) == 0 && max(R) == 0) { cat("No match. Try other words from the question.\n"); return(invisible()) }
+  sc <- A / max(A, 1e-9) + B / max(B, 1e-9) + R
+  isD <- grepl("^D", tags)
+  if (r$gate == "data") sc[!isD] <- sc[!isD] * 0.35
+  if (r$gate == "numbers") { sc[isD] <- sc[isD] * 0.5; sc[grepl("^K", tags)] <- sc[grepl("^K", tags)] * 0.8 }
+  if (r$gate == "concept") sc[isD | grepl("^[SOVPT]", tags)] <- sc[isD | grepl("^[SOVPT]", tags)] * 0.6
+  if (grepl("omit|overstat|understat|bias", nw)) { bt <- tags %in% c("B1","B2","B3","K3","K12","K15","K17"); sc[bt] <- sc[bt] * 1.15 }
   o <- names(sort(sc, decreasing = TRUE))[1:4]
+  if (!go) return(invisible(o))
   title <- setNames(sapply(CATALOG, `[`, 2), sapply(CATALOG, `[`, 1))
   for (t in o) cat(sprintf("  [%s]  %-72s\n", t, title[t]))
   GO(o[1])
@@ -382,6 +505,11 @@ ans("[D0] n = nrow(data)", nrow(d0_data))
 ans("[D0] mean(data$x)", mean(d0_data$roe))                 # <-- CHANGE column
 ans("[D0] sd(data$x)", sd(d0_data$roe))                     # <-- CHANGE column
 ans("[D0] cor(data$x, data$y)", cor(d0_data$salary, d0_data$roe))   # <-- CHANGE columns
+ans("[D0] var(data$x)", var(d0_data$roe)); ans("[D0] cov(data$x, data$y)", cov(d0_data$salary, d0_data$roe))
+ans("[D0] min", min(d0_data$roe)); ans("[D0] max", max(d0_data$roe)); ans("[D0] median", median(d0_data$roe))
+## 0/1 column (female, smoker...): mean = SHARE with 1, e.g. mean(wage1$female) = 0.48 -> 48% women.
+## "How many have x > 20?"  ->  sum(d0_data$roe > 20)      "...equal to 0?"  ->  sum(d0_data$roe == 0)
+ans("[D0] how many rows with x > 20", sum(d0_data$roe > 20))  # <-- CHANGE condition
 
 ## ======================================================================
 ## [D1] simple regression: slope, prediction, change, R^2, residual of a row ----
@@ -568,6 +696,7 @@ cat("\n#################### PART 2 - NUMBERS IN THE QUESTION ###################
 ## SSE = EXPLAINED, SSR = RESIDUAL (unexplained). DEFAULT (Exam I Q25) -> SSR 615.00
 s1_SST <- NA; s1_SSE <- 135; s1_SSR <- NA; s1_R2 <- 0.18     # <-- CHANGE: given numbers, NA otherwise
 s1_n <- NA; s1_S2y <- NA                                     # <-- CHANGE: n and sample variance of y, if given
+s1_k <- NA                                                   # <-- CHANGE: number of slopes k, only for ADJUSTED R^2
 for (s1_i in 1:4) {
   if (is.na(s1_SST) && !is.na(s1_n) && !is.na(s1_S2y)) s1_SST <- (s1_n - 1) * s1_S2y
   if (is.na(s1_SST) && !is.na(s1_SSE) && !is.na(s1_SSR)) s1_SST <- s1_SSE + s1_SSR
@@ -582,6 +711,7 @@ ans("[S1] SST (total)", s1_SST); ans("[S1] SSE (EXPLAINED)", s1_SSE); ans("[S1] 
 ans("[S1] R^2 (explained share)", s1_R2); ans("[S1] R^2 in percent", 100 * s1_R2)
 ans("[S1] 1 - R^2 (UNEXPLAINED share)", 1 - s1_R2)
 if (!is.na(s1_n)) ans("[S1] sample variance of y = SST/(n-1)", s1_SST / (s1_n - 1))
+if (!is.na(s1_n) && !is.na(s1_k)) ans("[S1] ADJUSTED R^2 = 1-(1-R2)(n-1)/(n-k-1)", 1 - (1 - s1_R2) * (s1_n - 1) / (s1_n - s1_k - 1))
 
 ## ======================================================================
 ## [S2] VARIANCE / SD / SE SOLVER for the OLS slope ----
@@ -949,6 +1079,7 @@ ans("[P3] Cor(X,Y)", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^2) * (sum(p3_y^2 
 ## DEFAULT -> t 10.80
 t1_b <- 0.54; t1_se <- 0.05; t1_h0 <- 0                     # <-- CHANGE estimate, se, null value
 t1_df <- 522; t1_alpha <- 0.05                              # <-- CHANGE df = n - k - 1, alpha
+## Given n and k instead of df?  df = n - k - 1 (e.g. n = 526, k = 3 -> 522). Given b and t, not se? se = b / t.
 t1_t <- (t1_b - t1_h0) / t1_se
 ans("[T1] t", t1_t)
 ans("[T1] c one-sided", qt(1 - t1_alpha, t1_df)); ans("[T1] c two-sided", qt(1 - t1_alpha / 2, t1_df))
@@ -1082,7 +1213,6 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "K6",
   "D6",
   "D6",
-  "K9",
   "L1",
   "D5",
   "K4",
@@ -1102,6 +1232,7 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "B1",
   "B2",
   "B3",
+  "D10",
   "L4",
   "D8",
   "D8",
