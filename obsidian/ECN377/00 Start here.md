@@ -20,3 +20,7 @@ Exam II: **Wed Nov 11** (in class, open notes + R, no AI/internet). Likely cover
 ## Interactive lessons (save answers so Claude can see what to reteach)
 - Lesson 1: https://claude.ai/artifact/2wixtDbG5DgR6EBLVvAdAG
 - Lesson 2: https://claude.ai/artifact/PmkGSC2TyoCZdppG49vQQZ
+- Lesson 3, units and logs: https://claude.ai/artifact/1pdakkuJR57E3C5B5YcRyj
+- Lesson 4, multiple regression and OVB: https://claude.ai/artifact/EHwgYo8BiLZArkGbb1SZsp
+- Lesson 5, Gauss–Markov and t-tests: https://claude.ai/artifact/9NzVZRGbbs7eBqie6n42TM
+- Mock Exam II: https://claude.ai/artifact/7BXNAJhL8G87JqaTGnkNDj
