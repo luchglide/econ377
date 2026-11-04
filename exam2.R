@@ -89,7 +89,7 @@
 
 # START HERE: HOW TO GET TO THE RIGHT BLOCK IN 10 SECONDS ######################
 #  Way 1 (fastest): run this whole file once (Cmd/Ctrl+Shift+Enter). Then
-#        highlight the WHOLE question in Canvas, Ctrl+C, and type ASK() in the
+#        highlight the WHOLE question in Canvas, Cmd+C (Mac) / Ctrl+C (Windows), type ASK() in the
 #        Console. It finds the block and JUMPS your cursor there. ASK() does NOT
 #        solve it: you type the question's numbers into the # <-- CHANGE lines.
 #        Or paste it inside QUOTES: ASK("...the whole question...")
@@ -285,10 +285,12 @@ GO <- function(tag) {
 }
 FIND <- function(words) {
   a <- .kw_scores(words); b <- .knn_scores(words)
+  if (!length(b)) b <- setNames(0, names(a)[1])
   tags <- union(names(a), names(b)); A <- a[tags]; B <- b[tags]; A[is.na(A)] <- 0; B[is.na(B)] <- 0
   if (max(A) == 0 && max(B) == 0) { cat("No match. Try other words from the question.\n"); return(invisible()) }
   sc <- A / max(A, 1e-9) + B / max(B, 1e-9)
   if (grepl("data", tolower(words), fixed = TRUE)) sc[grepl("^D", tags)] <- sc[grepl("^D", tags)] * 1.15
+  if (grepl("bias|overstat|understat|omit", tolower(words))) { bt <- tags %in% c("B1","B2","B3","K3","K12","K15","K17"); sc[bt] <- sc[bt] * 1.3 }
   o <- names(sort(sc, decreasing = TRUE))[1:4]
   title <- setNames(sapply(CATALOG, `[`, 2), sapply(CATALOG, `[`, 1))
   for (t in o) cat(sprintf("  [%s]  %-72s\n", t, title[t]))
@@ -296,18 +298,23 @@ FIND <- function(words) {
   cat(sprintf("  Not it? GO(\"%s\")  or  GO(\"%s\")\n", o[2], o[3]))
   invisible(o)
 }
-## ASK(): copy the WHOLE question (Ctrl+C), then type ASK() in the Console.
+## ASK(): copy the WHOLE question (Mac: Cmd+C, Windows: Ctrl+C), then type ASK() in the Console.
 ASK <- function(question = NULL) {
-  # Two ways:  ASK()                -> reads the question you copied (Ctrl+C)
+  # Two ways:  ASK()                -> reads the question you copied (Mac Cmd+C / Windows Ctrl+C)
   #            ASK("paste it here")  -> uses the text inside the quotes
   if (!is.null(question)) txt <- paste(question, collapse = " ") else
   txt <- tryCatch({
     if (.Platform$OS.type == "windows") paste(utils::readClipboard(), collapse = " ")
-    else if (Sys.info()[["sysname"]] == "Darwin") paste(readLines(pipe("pbpaste"), warn = FALSE), collapse = " ")
+    else if (Sys.info()[["sysname"]] == "Darwin") paste(suppressWarnings(system2("pbpaste", stdout = TRUE, stderr = FALSE)), collapse = " ")
     else paste(readLines(pipe("xclip -o -selection clipboard"), warn = FALSE), collapse = " ")
   }, error = function(e) "")
-  if (!nzchar(trimws(txt))) { cat("Nothing on the clipboard. Highlight the question, Ctrl+C, then ASK().\n"); return(invisible()) }
-  cat("Question:", substr(gsub("\\s+", " ", txt), 1, 110), "...\n")
+  key <- if (Sys.info()[["sysname"]] == "Darwin") "Cmd+C" else "Ctrl+C"
+  clean <- trimws(gsub("\\s+", " ", txt))
+  if (length(strsplit(clean, " ")[[1]]) < 3 || nchar(clean) < 12) {
+    cat(sprintf("ASK got only: \"%s\" (not a full question)\n", substr(clean, 1, 40)))
+    cat(sprintf("Highlight the WHOLE question, press %s, then ASK() again.\n", key))
+    cat("Or put it in quotes:  ASK(\"...the question...\")\n"); return(invisible()) }
+  cat("Question:", substr(clean, 1, 110), "...\n")
   FIND(txt)
 }
 
