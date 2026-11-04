@@ -1,486 +1,683 @@
 # =======================================================================
 # ECN 377 - EXAM II SCRIPT (Wed Nov 11). Round every answer to hundredths.
-# Covers D13 + D15-D23: units & logs, unbiasedness & OVB, Var/se of OLS,
-# multiple regression, Gauss-Markov, t-tests (one/two-sided), p-values,
-# confidence intervals, F-test. Part E has a quick Exam I refresher.
+# Built from EVERY question on PS8-PS11 and Quizzes 7-10 (the exam is drawn from
+# them, like Exam I was drawn from PS1-PS7), plus D21-D22 t-tests.
 # =======================================================================
-# SETUP (before the exam, internet is off once it starts):
+# SETUP (before the exam; internet is off once it starts):
 #   1. Pull this repo, open it as an RStudio project (so data/ is found).
 #   2. Run the WHOLE file once: Ctrl+Shift+Enter (Mac: Cmd+Shift+Enter).
-#      Every block prints ">>> ANSWER"; each comment says what the default
-#      numbers should give. If they match, you're set.
-# DURING THE EXAM:
-#   1. Ctrl+F the tag in the table of contents (e.g. "[C9]").
-#   2. Change ONLY the lines marked  # <-- CHANGE.
-#   3. Highlight the block, Ctrl+Enter. Read the ">>> ANSWER" / ">>> PICK" lines.
-# SIGN RULE: "falls/decreases/drops" -> type the change as NEGATIVE.
-# TIME RULE: Exam I ran out of time. Do Part III (real data) with [B2] first;
-#            one REG() line answers most of those questions at once.
+#      Every block prints its default answer; each comment says what it should be.
+#
+# DURING THE EXAM, for each question:
+#   1. FIND IT. In the Console type FIND("") with words from the question, e.g.
+#        FIND("log percent falls")      FIND("dollars log predicted")
+#        FIND("residual row")           FIND("sd sample variance n")
+#      It lists the matching block tags, best first. (Or Ctrl+F the tag.)
+#   2. Each block starts with LOOKS LIKE: (a real question of that type).
+#      Check it matches.
+#   3. Change ONLY the lines marked  # <-- CHANGE.
+#   4. Highlight the block, Ctrl+Enter, copy the ">>> ANSWER" line.
+#
+# ORDER ON THE EXAM: Part 1 real data first (fast points), then Part 2,
+# then Part 3 multiple choice. Never leave a blank. Stuck > 3 min: move on.
+# SIGN RULE: "falls/decreases/drops" -> NEGATIVE change. Keep minus signs.
+# PREDICTION keeps the intercept. CHANGE drops it.
 # =======================================================================
-# TABLE OF CONTENTS (Ctrl+F the tag)
-#  PART B - REAL DATA (wooldridge)
-#   [B0] one-liners: nrow, mean(data$x), cor(data$x, data$y)
-#   [B2a] plain lm() lines: slope, prediction, change, R^2, residual
-#   [B1] n, mean, sd, correlation of variables          STATS()
-#   [B2] regression report: coefs, se, t, p, CI, R^2,   REG()
-#        SST/SSE/SSR, sigma-hat, prediction, change,
-#        residual of row i, t-test of b = a
-#   [B3] omitted-variable bias with data (3.23 check)   OVB()
-#   [B4] F-test, restricted vs unrestricted model       FTEST()
-#  PART C - HAND FORMULAS (numbers typed in the question)
-#   [C1] reading log models (level/log combos)
-#   [C2] units of measurement (rescale y or x)
-#   [C3] MLR prediction (keeps intercept; exp() for log y)
-#   [C4] MLR predicted change (intercept drops)
-#   [C5] SST_X, Var(b1), sd/se(b1), VIF
-#   [C6] sd(b1) when sample is k times as large / sigma changes
-#   [C7] sigma^2-hat = SSR/(n-k-1)
-#   [C8] OVB formula (3.23), bias = b2*delta1, sign table
-#   [C9] t-test from b, se (and h0) -> t, critical values, p, decisions
-#   [C10] decision from a given t and c, or a given p-value
-#   [C11] critical value table (qt)
-#   [C12] confidence interval; back out b and se from a CI
-#   [C13] F-statistic (R^2 form and SSR form)
-#  PART D - CONCEPTS (multiple choice / true-false)
-#  PART E - EXAM I REFRESHER (the question types missed on Exam I)
+# PART 1 - REAL DATA (wooldridge)               PART 2 - NUMBERS IN THE QUESTION
+#  [D0] n, mean, sd, cor of columns              [U1] x rescaled -> new slope
+#  [D1] simple lm: slope, prediction, change,    [U2] y rescaled -> new slope/intercept
+#       R^2, residual of a row, SST/SSE/SSR      [U3] log(y) model, y rescaled -> intercept
+#  [D2] rescale a column, rerun (units)          [L1] log-level  %dy = 100*b*dx
+#  [D3] log-level % change from data             [L2] log-log    %dy = b*%dx
+#  [D4] level-log change from data               [L3] level-log  dy = b/100*%dx
+#  [D5] log-log % change from data               [L4] log-level MLR % (several x's)
+#  [D6] sigma-hat, SST_x, se by hand             [M1] MLR prediction (keep intercept)
+#  [D7] MLR: coef, prediction, change            [M2] MLR change (drop intercept)
+#  [D8] log(y) MLR: % change, $ prediction exp() [M3] ybar from the line and the means
+#  [D9] prediction at the means = mean(y)        [O1] residual of observation i (small data)
+#  [D10] OVB in data: simple, multiple, delta    [O2] missing residual
+#  [D11] perfect collinearity -> NA              [O3] sum of x*uhat (always 0)
+#  [D12] t-stat + one-sided test from data       [O4] SSR from SSE and R^2
+#  [D13] REG(): everything at once               [O5] SST from n and S^2
+#                                                [V1] Var(b1) = sigma^2/SST
+# PART 3 - MULTIPLE CHOICE                       [V2] sd/se from sigma, n, S_X (or S_X^2)
+#  [K1]-[K16] answers keyed to the question      [V3] sd from sigma and raw x values
+#  wording (assumptions, OVB stories, units,     [V4] sigma^2-hat = SSR/(n-k-1)
+#  log interpretation, Var direction,            [V5] se from SSR, n, SST_x
+#  collinearity, t-tests ...)                    [V6] sd when sample is k times as large
+#                                                [V7] MLR Var with Rj^2 (VIF)
+#                                                [B1] OVB formula (3.23), solve for any
+#                                                [B2] Bias = beta2 * delta1
+#                                                [B3] direction of bias (sign table)
+#                                                [P1] sd(aX+b) from E[X], E[X^2]
+#                                                [P2] Var(aX+bY)
+#                                                [P3] Cor from a joint probability table
+#                                                [T1] t-stat, critical values, decisions
+#                                                [T2] decision from given t and c, or p
+#                                                [T3] confidence interval   [T4] F-stat
 # =======================================================================
 
 rm(list = ls())
-ans  <- function(label, x) cat(sprintf(">>> ANSWER %-36s %s\n", label, format(round(unname(x), 2), nsmall = 2)))
-pick <- function(label, x) cat(sprintf(">>> PICK   %-36s %s\n", label, x))
-ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-36s %s\n", label, format(round(unname(x), 4), nsmall = 4)))
-info <- function(label, x) cat(sprintf("    %-43s %s\n", label, x))
-## Loads a wooldridge dataset by name. Falls back to data/<name>.csv offline.
+ans  <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 2), nsmall = 2)))
+ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 4), nsmall = 4)))
+pick <- function(label, x) cat(sprintf(">>> PICK   %-38s %s\n", label, x))
+info <- function(label, x) cat(sprintf("    %-45s %s\n", label, x))
 get_data <- function(name) {
   if (requireNamespace("wooldridge", quietly = TRUE)) {
     e <- new.env(); data(list = name, package = "wooldridge", envir = e); get(name, e)
   } else read.csv(file.path("data", paste0(name, ".csv")))
 }
-for (d in c("wage1", "ceosal1", "bwght", "gpa1", "campus", "rdchem", "mlb1", "meap93"))
+for (d in c("wage1", "ceosal1", "bwght", "gpa1", "vote1", "campus", "rdchem", "mlb1"))
   assign(d, get_data(d))
-## Any other dataset:  hprice1 <- get_data("hprice1")
+## Any other dataset: hprice1 <- get_data("hprice1")
 
-## ---- STATS(): n, mean, sd, var, min, max, and correlations -------------------
-STATS <- function(data, vars) {
-  cat(sprintf("\n--- STATS: dataset has n = %d rows ---\n", nrow(data)))
-  for (v in vars) {
-    x <- data[[v]]
-    cat(sprintf(">>> ANSWER %-14s n=%d  mean=%.2f  sd=%.2f  var=%.2f  min=%.2f  max=%.2f\n",
-                v, sum(!is.na(x)), mean(x, na.rm = TRUE), sd(x, na.rm = TRUE),
-                var(x, na.rm = TRUE), min(x, na.rm = TRUE), max(x, na.rm = TRUE)))
-  }
-  if (length(vars) > 1) {
-    cat("    correlation matrix:\n"); print(round(cor(data[vars], use = "complete.obs"), 4))
-    cat("    covariance matrix:\n");  print(round(cov(data[vars], use = "complete.obs"), 4))
-  }
+## ---- FIND(): type words from the question, get the block tag -----------------
+CATALOG <- list(
+  c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns"),
+  c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained"),
+  c("D2",  "Data: measure y or x in other units, new slope", "data units measured instead dollars thousands slope rescale percent decimal"),
+  c("D3",  "Data: log-level, % change in y", "data log-level log percent change rises points"),
+  c("D4",  "Data: level-log, change in y units", "data level-log log sales rise percent thousand dollars"),
+  c("D5",  "Data: log-log, % change (elasticity)", "data log-log log percent elasticity rises"),
+  c("D6",  "Data: sigma-hat, SST_x, standard error by hand", "data sigma standard error regression sst_x total sum squares explanatory se hand"),
+  c("D7",  "Data, multiple regression: coefficient, predicted value, change holding fixed", "data multiple educ exper tenure predicted hourly wage worker years holding fixed change coefficient"),
+  c("D8",  "Data, log(y) multiple regression: % change or predicted $ with exp()", "data log multiple percent predicted dollars exp hourly wage holding fixed"),
+  c("D9",  "Data: predicted y at the means = mean of y", "data means mean predicted at sample means same why"),
+  c("D10", "Data: omitted-variable bias, simple vs multiple, delta1, b2*delta1", "data omitted left out simple multiple delta slope regress on compute b2 bias add cigs faminc"),
+  c("D11", "Data: perfect collinearity, R reports NA", "data na reports coefficient total exact linear function collinearity"),
+  c("D12", "Data: t-statistic, one-sided/two-sided test", "data t statistic test reject h0 null positive significant critical"),
+  c("D13", "Data: REG() prints everything for one regression", "data regression everything all report"),
+  c("U1",  "x multiplied/divided by c: new slope", "x divided multiplied 1000 100 new slope percent decimal units"),
+  c("U2",  "y multiplied by c: new slope/intercept", "y multiplied 1000 dollars cents new slope intercept units"),
+  c("U3",  "log(y) model, y rescaled: new intercept", "log intercept new measured dollars thousands log(1000)"),
+  c("L1",  "log-level: %dy = 100*b*dx", "log-level log percent change rises falls by about months year"),
+  c("L2",  "log-log: %dy = b*%dx (elasticity)", "log-log log percent elasticity rises falls"),
+  c("L3",  "level-log: dy = (b/100)*%dx", "level-log log units how many percent rises"),
+  c("L4",  "log-level multiple regression: % change with several x's", "log multiple percent x1 x2 rises falls both"),
+  c("M1",  "multiple regression prediction (keep intercept)", "multiple predicted value yhat at x1 x2 plug"),
+  c("M2",  "multiple regression change (drop intercept)", "multiple change rises falls by how much x1 x2 intercept"),
+  c("M3",  "ybar from the fitted line and the means", "sample mean ybar means intercept slope passes through point"),
+  c("O1",  "OLS residual of one observation (small sample)", "sample residual observation third fourth regress by hand"),
+  c("O2",  "missing residual (residuals sum to 0)", "residuals one more missing fifth sixth"),
+  c("O3",  "sum of x_i * uhat_i (always 0)", "sum x residuals compute property"),
+  c("O4",  "SSR from SSE and R^2", "explained sum squares sse r2 r-squared find ssr residuals"),
+  c("O5",  "SST from n and sample variance", "total sum squares sst sample variance n observations"),
+  c("V1",  "Var(b1) = sigma^2 / SST_x", "variance error variance sst var theorem 2.2"),
+  c("V2",  "sd/se of b1 from sigma (or sigma-hat), n, S_X or S_X^2", "sd se standard error standard deviation sample variance x n observations sigma"),
+  c("V3",  "sd of b1 from sigma and raw x values", "sd standard deviation x values sigma five"),
+  c("V4",  "sigma^2-hat = SSR / (n-k-1)", "estimate error variance sigma2 ssr n observations"),
+  c("V5",  "se(b1) from SSR, n, SST_x", "standard error se ssr sst_x n observations"),
+  c("V6",  "sd(b1) when the sample is k times as large", "times as large sample sd spread same way"),
+  c("V7",  "multiple regression Var(bj) with Rj^2 / VIF", "variance inflation vif multicollinearity rj2 r-squared other"),
+  c("B1",  "OVB formula (3.23): solve for any piece", "formula 3.23 simple multiple slope delta b1tilde find"),
+  c("B2",  "Bias = beta2 * delta1", "bias beta2 delta1 omit e[b1tilde]"),
+  c("B3",  "direction of omitted-variable bias (sign table)", "biased upward downward overstates understates omitted direction sign"),
+  c("P1",  "sd(aX+b) from E[X] and E[X^2]", "e[x] e[x^2] standard deviation 3x"),
+  c("P2",  "Var(aX+bY) with a covariance", "var(x) var(y) cov(x,y) var(2x"),
+  c("P3",  "correlation from a joint probability table", "joint distribution p(x=x cor(x,y) table probability"),
+  c("T1",  "t-statistic, critical values, p-values, decisions", "t statistic se estimate reject critical value alpha df h0 h1 one-sided two-sided p-value"),
+  c("T2",  "decision from a given t and c, or a p-value", "given t critical value reject fail p-value alpha"),
+  c("T3",  "confidence interval", "confidence interval ci 95 lower upper"),
+  c("T4",  "F-statistic", "f statistic joint restricted unrestricted"),
+  c("K",   "MULTIPLE CHOICE concepts: see [K1]-[K16]", "which statement correct means what happens mean assumption fails violate select all")
+)
+FIND <- function(words) {
+  stop <- c("the","of","in","by","a","an","and","to","is","what","does","when","how","are","at","on",
+            "for","with","its","that","this","be","as","or","if","about","run","use","give","round","hundredths",
+            "regression","regress","data","find","value","values","x","y","which","statement","correct")
+  w <- unique(tolower(strsplit(gsub("[?.:;()\"']", " ", words), "[ ,]+")[[1]]))
+  w <- w[nchar(w) > 1 & !(w %in% stop)]
+  txt <- sapply(CATALOG, function(e) tolower(paste(e[1], e[2], e[3])))
+  hit <- sapply(w, function(x) grepl(x, txt, fixed = TRUE))
+  if (!length(w)) { cat("Type a few words from the question.\n"); return(invisible()) }
+  hit <- matrix(hit, nrow = length(txt))
+  idf <- log((length(txt) + 1) / (colSums(hit) + 0.5))      # rare words count more
+  sc <- as.vector(hit %*% pmax(idf, 0))
+  o <- order(-sc); o <- o[sc[o] > 0][1:min(5, sum(sc > 0))]
+  if (!length(o) || is.na(o[1])) { cat("No match. Try other words from the question.\n"); return(invisible()) }
+  for (i in o) cat(sprintf("  [%s]  %-72s\n", CATALOG[[i]][1], CATALOG[[i]][2]))
+  cat("  -> best match first. Ctrl+F the [tag] in this script.\n")
 }
 
-## ---- REG(): one call answers most real-data questions ---------------------------
-## formula : y ~ x1 + x2 ...   (log(y), log(x) allowed)
-## at      : list(x1 = , x2 = )  predicted value at these x's (missing x's -> their mean)
-## from,to : list(...)           predicted CHANGE from one set of x's to another
-## row     : row number          actual, fitted and residual of that observation
-## test    : "x1"                t-test of H0: b = h0 at significance alpha
+## ---- STATS(), REG(), OVB(), FTEST(): one-call reports --------------------------
+STATS <- function(data, vars) {
+  cat(sprintf("\n--- STATS: dataset has n = %d rows ---\n", nrow(data)))
+  for (v in vars) { x <- data[[v]]
+    cat(sprintf(">>> ANSWER %-14s n=%d  mean=%.2f  sd=%.2f  var=%.2f\n", v, sum(!is.na(x)),
+                mean(x, na.rm = TRUE), sd(x, na.rm = TRUE), var(x, na.rm = TRUE))) }
+  if (length(vars) > 1) { cat("    correlation matrix:\n"); print(round(cor(data[vars], use = "complete.obs"), 4)) }
+}
 REG <- function(formula, data, at = NULL, from = NULL, to = NULL, row = NULL,
                 test = NULL, h0 = 0, alpha = 0.05, level = 0.95) {
-  fit <- lm(formula, data = data)
-  s   <- summary(fit); ct <- coef(s)
-  n   <- nobs(fit); df <- fit$df.residual; k <- length(coef(fit)) - 1
+  fit <- lm(formula, data = data); s <- summary(fit); ct <- coef(s)
+  n <- nobs(fit); df <- fit$df.residual; k <- length(coef(fit)) - 1
   yname <- deparse(formula[[2]]); logy <- grepl("^log\\(", yname)
-  ci  <- confint(fit, level = level)
-  cat(sprintf("\n===== REG: %s   (n = %d, k = %d, df = n-k-1 = %d) =====\n",
-              deparse(formula), n, k, df))
+  ci <- confint(fit, level = level)
+  cat(sprintf("\n===== REG: %s   (n = %d, k = %d, df = n-k-1 = %d) =====\n", deparse(formula), n, k, df))
   tab <- cbind(estimate = ct[, 1], se = ct[, 2], t = ct[, 3], p = ct[, 4], ci)
-  colnames(tab)[5:6] <- paste0(c("CI_low_", "CI_high_"), level * 100)
-  print(round(tab, 4))
-  yv  <- model.response(model.frame(fit))
-  SSR <- sum(resid(fit)^2); SST <- sum((yv - mean(yv))^2); SSE <- SST - SSR
-  ans("R^2", s$r.squared); ans("R^2 in percent", 100 * s$r.squared)
-  ans("adjusted R^2", s$adj.r.squared)
-  ans("SST (total)", SST); ans("SSE (EXPLAINED)", SSE); ans("SSR (RESIDUAL)", SSR)
-  ans("sigma-hat = sqrt(SSR/(n-k-1))", s$sigma); ans("sigma^2-hat", s$sigma^2)
-  if (k > 0) ans("overall F-stat (all slopes = 0)", s$fstatistic[1])
+  colnames(tab)[5:6] <- paste0(c("CI_low_", "CI_high_"), level * 100); print(round(tab, 4))
+  yv <- model.response(model.frame(fit)); SSR <- sum(resid(fit)^2); SST <- sum((yv - mean(yv))^2)
+  ans("R^2", s$r.squared); ans("R^2 in percent", 100 * s$r.squared); ans("adjusted R^2", s$adj.r.squared)
+  ans("SST (total)", SST); ans("SSE (EXPLAINED)", SST - SSR); ans("SSR (RESIDUAL)", SSR)
+  ans("sigma-hat = sqrt(SSR/(n-k-1))", s$sigma)
   vars <- all.vars(formula)[-1]
   base <- lapply(model.frame(lm(reformulate(vars, yname), data = data))[vars], mean)
   pred <- function(vals) { nd <- base; nd[names(vals)] <- vals; predict(fit, as.data.frame(nd)) }
-  if (!is.null(at)) {
-    miss <- setdiff(vars, names(at))
+  if (!is.null(at)) { miss <- setdiff(vars, names(at))
     if (length(miss)) info("WARNING: set to their mean:", paste(miss, collapse = ", "))
-    p <- pred(at); ans(paste0("prediction of ", yname), p)
-    if (logy) ans("prediction in levels = exp(above)", exp(p))
-  }
-  if (!is.null(from) && !is.null(to)) {
-    dd <- pred(to) - pred(from); ans(paste0("change in ", yname), dd)
-    if (logy) { ans("% change in y (approx 100*change)", 100 * dd)
-                ans("% change in y (exact)", 100 * (exp(dd) - 1)) }
-  }
-  if (!is.null(row)) {
-    r <- as.character(row)
-    ans(paste0("row ", row, " actual ", yname), yv[r])
-    ans(paste0("row ", row, " fitted value"), fitted(fit)[r])
-    ans(paste0("row ", row, " residual (actual-fitted)"), resid(fit)[r])
-  }
-  if (!is.null(test)) {
-    b <- ct[test, 1]; se <- ct[test, 2]; t <- (b - h0) / se
+    p <- pred(at); ans(paste0("prediction of ", yname), p); if (logy) ans("prediction in levels = exp(above)", exp(p)) }
+  if (!is.null(from) && !is.null(to)) { dd <- pred(to) - pred(from); ans(paste0("change in ", yname), dd)
+    if (logy) { ans("% change in y (approx 100*change)", 100 * dd); ans("% change in y (exact)", 100 * (exp(dd) - 1)) } }
+  if (!is.null(row)) { r <- as.character(row); ans(paste0("row ", row, " actual"), yv[r])
+    ans(paste0("row ", row, " fitted"), fitted(fit)[r]); ans(paste0("row ", row, " residual"), resid(fit)[r]) }
+  if (!is.null(test)) { b <- ct[test, 1]; se <- ct[test, 2]; t <- (b - h0) / se
     c2 <- qt(1 - alpha / 2, df); c1 <- qt(1 - alpha, df)
     cat(sprintf("--- t-test on %s:  H0: b = %g,  alpha = %g ---\n", test, h0, alpha))
-    ans("t = (b - h0)/se", t)
-    ans("two-sided critical value c", c2); ans("one-sided critical value c", c1)
-    ans("p-value two-sided  (H1: b != h0)", 2 * pt(-abs(t), df))
-    ans("p-value one-sided  (H1: b >  h0)", pt(t, df, lower.tail = FALSE))
-    ans("p-value one-sided  (H1: b <  h0)", pt(t, df))
+    ans("t = (b - h0)/se", t); ans("critical c two-sided", c2); ans("critical c one-sided", c1)
+    ans("p-value two-sided", 2 * pt(-abs(t), df)); ans("p-value one-sided H1: b > h0", pt(t, df, lower.tail = FALSE))
     pick("H1: b != h0", ifelse(abs(t) > c2, "REJECT H0", "fail to reject H0"))
     pick("H1: b >  h0", ifelse(t > c1, "REJECT H0", "fail to reject H0"))
-    pick("H1: b <  h0", ifelse(t < -c1, "REJECT H0", "fail to reject H0"))
-  }
+    pick("H1: b <  h0", ifelse(t < -c1, "REJECT H0", "fail to reject H0")) }
   invisible(fit)
 }
-
-## ---- OVB(): simple vs multiple slope and formula (3.23) -------------------------
-## y on x1 alone vs y on x1 + x2. delta1 = slope of x2 on x1.
-OVB <- function(y, x1, x2, data) {
-  simple <- coef(lm(reformulate(x1, y), data = data))[x1]
-  multi  <- coef(lm(reformulate(c(x1, x2), y), data = data))
-  delta1 <- coef(lm(reformulate(x1, x2), data = data))[x1]
-  cat(sprintf("\n===== OVB: %s on %s, omitted/added %s =====\n", y, x1, x2))
-  ans4("b1-tilde (simple, x2 left out)", simple)
-  ans4("b1-hat (multiple, x2 included)", multi[x1])
-  ans4("b2-hat (coef on x2 in multiple)", multi[x2])
-  ans4("delta1 (slope of x2 on x1)", delta1)
-  ans4("b2-hat * delta1 (= bias part)", multi[x2] * delta1)
-  ans4("check: b1-tilde - b1-hat", simple - multi[x1])
-}
-
-## ---- FTEST(): H0: the variables dropped in 'restricted' all have b = 0 -----------
 FTEST <- function(unrestricted, restricted, data, alpha = 0.05) {
   dat <- data[complete.cases(data[all.vars(unrestricted)]), ]
   fu <- lm(unrestricted, data = dat); fr <- lm(restricted, data = dat)
-  SSRu <- sum(resid(fu)^2); SSRr <- sum(resid(fr)^2)
-  q <- fr$df.residual - fu$df.residual; dfu <- fu$df.residual
+  SSRu <- sum(resid(fu)^2); SSRr <- sum(resid(fr)^2); q <- fr$df.residual - fu$df.residual; dfu <- fu$df.residual
   Fs <- ((SSRr - SSRu) / q) / (SSRu / dfu); cF <- qf(1 - alpha, q, dfu)
-  cat(sprintf("\n===== F-test: q = %d restrictions, df = %d =====\n", q, dfu))
-  ans("SSR restricted", SSRr); ans("SSR unrestricted", SSRu)
-  ans("R^2 restricted", summary(fr)$r.squared); ans("R^2 unrestricted", summary(fu)$r.squared)
-  ans("F-statistic", Fs); ans("critical value c", cF)
-  ans("p-value", pf(Fs, q, dfu, lower.tail = FALSE))
+  ans("F-statistic", Fs); ans("critical value c", cF); ans("p-value", pf(Fs, q, dfu, lower.tail = FALSE))
   pick("decision", ifelse(Fs > cF, "REJECT H0 (jointly significant)", "fail to reject H0"))
 }
 
-cat("\n#################### PART B - REAL DATA ####################\n")
-## These defaults are the actual Exam I Part III questions. The correct
-## Canvas answers are in the comments, so they double as a self-check.
+cat("\n#################### PART 1 - REAL DATA ####################\n")
 
-## [B0] one-line answers straight from a dataset (Exam I Q29, Q30, Q31) ---------
-## dataset$column pulls ONE column. Swap in the dataset and column names from the
-## question. Use the question's dataset, not wage1 out of habit (Q29: 526 was wage1's n).
-## A correlation NEVER comes from lm(): lm() gives the intercept/slope (Q31: 963.19
-## was the intercept). A correlation must land between -1 and 1.
-b0_data <- ceosal1                                   # <-- CHANGE dataset
-ans("[B0] n = nrow(data)", nrow(b0_data))                                   # 209
-ans("[B0] mean(data$x)", mean(b0_data$roe))                                 # 17.18  <-- CHANGE column
-ans("[B0] sd(data$x)", sd(b0_data$roe))                                     #        <-- CHANGE column
-ans("[B0] cor(data$x, data$y)", cor(b0_data$salary, b0_data$roe))           # 0.11   <-- CHANGE columns
-ans("[B0] cov(data$x, data$y)", cov(b0_data$salary, b0_data$roe))           #        <-- CHANGE columns
+## ======================================================================
+## [D0] n, mean, sd, correlation of columns
+## LOOKS LIKE: "Data: ceosal1. How many CEOs are in the sample?" / "sample mean of roe?"
+##   / "sample correlation between salary and roe?"          (Exam I Q29-Q31)
+## A correlation NEVER comes from lm(). It must be between -1 and 1.
+## DEFAULTS -> 209, 17.18, 0.11
+d0_data <- ceosal1                                          # <-- CHANGE dataset
+ans("[D0] n = nrow(data)", nrow(d0_data))
+ans("[D0] mean(data$x)", mean(d0_data$roe))                 # <-- CHANGE column
+ans("[D0] sd(data$x)", sd(d0_data$roe))                     # <-- CHANGE column
+ans("[D0] cor(data$x, data$y)", cor(d0_data$salary, d0_data$roe))   # <-- CHANGE columns
 
-## [B1] n, mean, correlation --------------------------------------------------
-## ceosal1: n = 209, mean roe = 17.18, cor(salary, roe) = 0.11
-STATS(ceosal1, c("salary", "roe"))                             # <-- CHANGE dataset, variables
+## ======================================================================
+## [D1] simple regression: slope, prediction, change, R^2, residual of a row
+## LOOKS LIKE: "Data: wage1. Run reg <- lm(wage ~ tenure). What is the OLS slope? /
+##   predicted wage at 10 years of tenure? / change from 3 to 16 years? / % of
+##   variation explained? / residual of the worker in row 12?"  (Exam I, PS8 #11, Q7 #11)
+## DEFAULTS -> slope 0.18 | pred 6.76 | change 2.31 | R^2% 12.03 | row 12 resid 3.14
+d1_reg <- lm(wage ~ tenure, data = wage1)                   # <-- CHANGE y ~ x, data
+d1_b <- d1_reg$coefficients
+ans("[D1] slope b[2]", d1_b[2])
+ans("[D1] intercept b[1]", d1_b[1])
+ans("[D1] prediction b[1] + b[2]*x", d1_b[1] + d1_b[2] * 10)             # <-- CHANGE x
+ans("[D1] change b[2]*(new - old)", d1_b[2] * (16 - 3))                   # <-- CHANGE new, old
+ans("[D1] R^2 percent", 100 * summary(d1_reg)$r.squared)
+ans("[D1] residual of row i", d1_reg$residuals[12])                      # <-- CHANGE row
+d1_y <- model.response(model.frame(d1_reg))
+ans("[D1] SSE (explained)", sum((d1_reg$fitted.values - mean(d1_y))^2))
+ans("[D1] SSR (residual)", sum(d1_reg$residuals^2))
+ans("[D1] SST (total)", sum((d1_y - mean(d1_y))^2))
 
-## [B2a] the plain lm() lines, one answer each (Exam I Q32-Q36) -----------------
-## The same answers REG() prints below, written out so you can see where each comes from.
-## Full walkthrough of every Exam I question: exam1_solutions.R
-reg <- lm(wage ~ tenure, data = wage1)               # <-- CHANGE y ~ x, data
-b <- reg$coefficients                                # b[1] = intercept, b[2] = slope
-ans("[B2a] slope b[2]", b[2])                                    # Q32: 0.18
-ans("[B2a] prediction b[1] + b[2]*x", b[1] + b[2] * 10)          # Q33: 6.76  <-- CHANGE x (KEEP intercept)
-ans("[B2a] change b[2]*(new - old)", b[2] * (16 - 3))            # Q34: 2.31  <-- CHANGE new, old (NO intercept)
-ans("[B2a] R^2 percent", 100 * summary(reg)$r.squared)           # Q35: 12.03
-ans("[B2a] residual of row i", reg$residuals[2])                 # Q36: -2.11 <-- CHANGE row
-ans("[B2a] SSE explained", sum((reg$fitted.values - mean(wage1$wage))^2))   # <-- CHANGE y column
+## ======================================================================
+## [D2] measure y (or x) in other units, rerun -> new slope
+## LOOKS LIKE: "Data: ceosal1. Run lm(salary ~ sales). If salary is measured in dollars
+##   instead of thousands of dollars, what is the OLS slope?"  (PS8 #16)
+## y times c -> slope times c.  x times c -> slope divided by c.  R^2 never changes.
+## DEFAULT -> 15.47
+d2_data <- ceosal1                                          # <-- CHANGE dataset
+d2_data$ynew <- d2_data$salary * 1000                       # <-- CHANGE column and factor (or leave y alone)
+d2_data$xnew <- d2_data$sales * 1                           # <-- CHANGE column and factor (1 = unchanged)
+ans("[D2] new slope", coef(lm(ynew ~ xnew, data = d2_data))[2])
 
-## [B2] regression report -------------------------------------------------------
-## wage1, wage on tenure: slope 0.18 | wage at tenure 10 = 6.76 | change 3 -> 16 = 2.31
-## | R^2 % = 12.03 | residual of row 2 = -2.11
-REG(wage ~ tenure, data = wage1,                               # <-- CHANGE formula, data
-    at = list(tenure = 10),                                    # <-- CHANGE (or delete line)
-    from = list(tenure = 3), to = list(tenure = 16),           # <-- CHANGE (or delete line)
-    row = 2)                                                   # <-- CHANGE (or delete line)
-## bwght, bwght on faminc: SSE (explained) = 6819.05 | change from +17 income = 2.01
-REG(bwght ~ faminc, data = bwght, from = list(faminc = 0), to = list(faminc = 17))
+## ======================================================================
+## [D3] log-level from data: % change in y = 100 * b * dx
+## LOOKS LIKE: "Data: wage1. Run lm(log(wage) ~ exper). By about what percent does
+##   predicted wage change with 10 more years of experience?"  (PS8 #21, PS9 #6, Q8 #6)
+## DEFAULT -> 4.36   (ceosal1 log(salary) ~ roe, roe +5 -> 6.93; +7 -> 9.70)
+d3_reg <- lm(log(wage) ~ exper, data = wage1)               # <-- CHANGE log(y) ~ x, data
+d3_dx <- 10                                                 # <-- CHANGE change in x (falls = negative)
+ans("[D3] % change in y", 100 * d3_reg$coefficients[2] * d3_dx)
 
-## Exam II style. Example 4.1: is the return to experience positive (H1: b > 0)?
-## exper: t = 2.39 > c = 1.65 -> reject. Example 3.2 prediction at 16/4/2 = 6.16
-REG(log(wage) ~ educ + exper + tenure, data = wage1,
-    at = list(educ = 16, exper = 4, tenure = 2),
-    from = list(educ = 12), to = list(educ = 13),              # +1 educ, others fixed
-    test = "exper", h0 = 0, alpha = 0.05)
-## Example 4.4 style (campus): H0: elasticity = 1. t = (1.27 - 1)/0.11 = 2.46
-REG(log(crime) ~ log(enroll), data = campus, test = "log(enroll)", h0 = 1)
-## Example 4.8 (rdchem): 95% CI for log(sales) is [0.96, 1.21] -> 1 is inside
-REG(log(rd) ~ log(sales) + profmarg, data = rdchem, level = 0.95)
+## ======================================================================
+## [D4] level-log from data: change in y = (b/100) * %dx
+## LOOKS LIKE: "Data: ceosal1. Run lm(salary ~ log(sales)). By about how many thousand
+##   dollars does predicted salary change when sales rise by 10%?"  (PS9 #7)
+## DEFAULT -> 26.29
+d4_reg <- lm(salary ~ log(sales), data = ceosal1)           # <-- CHANGE y ~ log(x), data
+d4_pctx <- 10                                               # <-- CHANGE % change in x
+ans("[D4] change in y (units of y)", d4_reg$coefficients[2] / 100 * d4_pctx)
 
-## [B3] omitted-variable bias with data -------------------------------------------
-## Example 3.1/3.3 gpa1: ACT alone 0.0271; with hsGPA 0.0094; delta1 = 0.0389
-OVB(y = "colGPA", x1 = "ACT", x2 = "hsGPA", data = gpa1)      # <-- CHANGE names, data
+## ======================================================================
+## [D5] log-log from data: % change in y = b * %dx (elasticity)
+## LOOKS LIKE: "Data: bwght. Run the log-log regression of log(bwght) on log(faminc).
+##   By about what percent does birth weight change when income rises by 15%?" (Q9 #3, PS10 #3)
+## DEFAULT -> 0.31   (20% -> 0.41)
+d5_reg <- lm(log(bwght) ~ log(faminc), data = bwght)        # <-- CHANGE log(y) ~ log(x), data
+d5_pctx <- 15                                               # <-- CHANGE % change in x
+ans("[D5] % change in y", d5_reg$coefficients[2] * d5_pctx)
 
-## [B4] F-test -----------------------------------------------------------------
-## Example 4.9 (mlb1): drop bavg, hrunsyr, rbisyr -> F = 9.55, reject
-FTEST(log(salary) ~ years + gamesyr + bavg + hrunsyr + rbisyr,   # <-- CHANGE unrestricted
-      log(salary) ~ years + gamesyr,                             # <-- CHANGE restricted
-      data = mlb1)
+## ======================================================================
+## [D6] sigma-hat, SST_x, standard error by hand
+## LOOKS LIKE: "Data: wage1. Run lm(wage ~ educ). What is sigma-hat?" / "SST_X for educ?"
+##   / "Compute se(b1) by hand from sigma-hat and SST_X"  (PS9 #18-19, PS10 #10)
+## DEFAULTS -> sigma-hat 3.38 | SST_x 4025.43 | se 0.05
+d6_reg <- lm(wage ~ educ, data = wage1)                     # <-- CHANGE y ~ x, data
+d6_x <- wage1$educ                                          # <-- CHANGE the x column
+d6_sig <- sqrt(sum(d6_reg$residuals^2) / d6_reg$df.residual)
+d6_SST <- sum((d6_x - mean(d6_x))^2)
+ans("[D6] sigma-hat = sqrt(SSR/(n-2))", d6_sig)
+ans("[D6] sigma^2-hat", d6_sig^2)
+ans("[D6] SST_x = sum((x - mean)^2)", d6_SST)
+ans("[D6] se(b1) = sigma-hat/sqrt(SST_x)", d6_sig / sqrt(d6_SST))
+ans("[D6] check: R's Std. Error", summary(d6_reg)$coefficients[2, 2])
 
-cat("\n#################### PART C - HAND FORMULAS ####################\n")
+## ======================================================================
+## [D7] multiple regression: coefficient, predicted value, change holding others fixed
+## LOOKS LIKE: "Data: wage1. Regress wage on educ, exper and tenure. Predicted hourly
+##   wage of a worker with 16 educ, 5 exper, 2 tenure?" / "change when exper rises by
+##   10, holding educ and tenure fixed?"   (Q9 #10-11, PS10 #14-15)
+## DEFAULTS -> pred 7.16 | change 0.22
+d7_reg <- lm(wage ~ educ + exper + tenure, data = wage1)    # <-- CHANGE y ~ x1 + x2 + x3, data
+d7_b <- d7_reg$coefficients
+print(round(d7_b, 4))
+d7_at <- c(16, 5, 2)                                        # <-- CHANGE x VALUES, same order as formula
+d7_dx <- c(0, 10, 0)                                        # <-- CHANGE x CHANGES (fixed = 0)
+ans("[D7] predicted y (keeps intercept)", d7_b[1] + sum(d7_b[-1] * d7_at))
+ans("[D7] change in y (no intercept)", sum(d7_b[-1] * d7_dx))
 
-## [C1] reading log models ------------------------------------------------------
-## Find where the log is: logged side = PERCENT, unlogged side = UNITS.
-## Defaults b1 = 0.083: level-level 0.08 | log-level 8.30% | level-log 0.01 | log-log 0.83%
-c1_b1   <- 0.083   # <-- CHANGE slope
-c1_dx   <- 1       # <-- CHANGE change in x in UNITS (falls = negative)
-c1_pctx <- 10      # <-- CHANGE change in x in PERCENT (falls = negative)
-ans("[C1] IF y ~ x:          dy (units)", c1_b1 * c1_dx)
-ans("[C1] IF log(y) ~ x:     %dy approx", 100 * c1_b1 * c1_dx)
-ans("[C1] IF log(y) ~ x:     %dy exact", 100 * (exp(c1_b1 * c1_dx) - 1))
-ans("[C1] IF y ~ log(x):     dy (units)", c1_b1 / 100 * c1_pctx)
-ans("[C1] IF log(y)~log(x):  %dy", c1_b1 * c1_pctx)
-pick("[C1] words: y ~ log(x)", "1% rise in x -> b1/100 UNITS of y")
-pick("[C1] words: log(y) ~ x", "1 unit rise in x -> 100*b1 PERCENT in y")
-pick("[C1] words: log(y)~log(x)", "1% rise in x -> b1 PERCENT in y (elasticity)")
+## ======================================================================
+## [D8] log(y) multiple regression: % change, or predicted DOLLARS with exp()
+## LOOKS LIKE: "Run lm(log(wage) ~ educ + exper + tenure). By about what percent does
+##   wage change when exper rises 2 and tenure rises 1?" / "predicted hourly wage, in
+##   dollars, at 12 educ, 10 exper, 3 tenure?"   (PS11 #2-3, PS10 #16-17)
+## "in dollars" + log(y) -> exp().  DEFAULTS -> 3.03% | $4.46
+d8_reg <- lm(log(wage) ~ educ + exper + tenure, data = wage1)   # <-- CHANGE
+d8_b <- d8_reg$coefficients
+d8_dx <- c(0, 2, 1)                                         # <-- CHANGE x CHANGES (fixed = 0)
+d8_at <- c(12, 10, 3)                                       # <-- CHANGE x VALUES
+ans("[D8] % change in y = 100*sum(b*dx)", 100 * sum(d8_b[-1] * d8_dx))
+ans("[D8] predicted log(y) (NOT dollars)", d8_b[1] + sum(d8_b[-1] * d8_at))
+ans("[D8] predicted y in $ = exp(...)", exp(d8_b[1] + sum(d8_b[-1] * d8_at)))
 
-## [C2] units of measurement -----------------------------------------------------
-## y times cy, x times cx (salary $000s -> $: cy = 1000; roe % -> decimal: cx = 1/100).
-## Defaults (963.191 + 18.501 roe), cy = 1000: new b0 = 963191, new b1 = 18501
-c2_b0 <- 963.191   # <-- CHANGE
-c2_b1 <- 18.501    # <-- CHANGE
-c2_cy <- 1000      # <-- CHANGE what y is MULTIPLIED by (1 if y unchanged)
-c2_cx <- 1         # <-- CHANGE what x is MULTIPLIED by (1 if x unchanged; /100 -> 1/100)
-ans("[C2] level y: new intercept = cy*b0", c2_cy * c2_b0)
-ans("[C2] level y: new slope = cy*b1/cx", c2_cy * c2_b1 / c2_cx)
-ans("[C2] log(y): new intercept = b0+log(cy)", c2_b0 + log(c2_cy))
-ans("[C2] log(y): new slope = b1/cx", c2_b1 / c2_cx)
-pick("[C2] R^2 after any rescaling", "UNCHANGED (also t-stats unchanged)")
+## ======================================================================
+## [D9] predicted y at the sample means = mean of y
+## LOOKS LIKE: "Run lm(colGPA ~ ACT + hsGPA). Compute predicted colGPA at ACT = mean(ACT)
+##   and hsGPA = mean(hsGPA). Why is it the same as mean(colGPA)?"   (PS11 #5)
+## DEFAULT -> 3.06 (OLS passes through the point of means)
+d9_reg <- lm(colGPA ~ ACT + hsGPA, data = gpa1)             # <-- CHANGE
+d9_b <- d9_reg$coefficients
+ans("[D9] prediction at the means", d9_b[1] + d9_b[2] * mean(gpa1$ACT) + d9_b[3] * mean(gpa1$hsGPA))  # <-- CHANGE columns
+ans("[D9] mean of y (same)", mean(gpa1$colGPA))             # <-- CHANGE column
 
-## [C3] MLR prediction (KEEP the intercept) --------------------------------------
-## Default (Example 3.2, log wage): log-hat = 1.82, wage = exp(...) = 6.15
-c3_b <- c(0.284, 0.092, 0.0041, 0.022)  # <-- CHANGE b0, b1, b2, ... (keep minus signs)
-c3_x <- c(16, 4, 2)                      # <-- CHANGE x1, x2, ... (same order)
-c3_logy <- TRUE                          # <-- CHANGE TRUE if left side is log(y)
-c3_yhat <- c3_b[1] + sum(c3_b[-1] * c3_x)
-ans("[C3] yhat", c3_yhat)
-if (c3_logy) ans("[C3] y in levels = exp(yhat)", exp(c3_yhat))
+## ======================================================================
+## [D10] omitted-variable bias in data
+## LOOKS LIKE: "Data: bwght. lm(bwght ~ cigs) slope?" / "add faminc: slope on cigs?"
+##   / "regress faminc on cigs for delta1, compute b2*delta1"   (PS11 #12-14, PS10 #21)
+## Order matters: simple = y ~ x1; multiple = y ~ x1 + x2 (left-out x2 SECOND); aux = x2 ~ x1
+## DEFAULTS -> simple -0.51 | multiple -0.46 | b2 0.09 | delta1 -0.54 | b2*delta1 -0.05
+d10_simple <- lm(bwght ~ cigs, data = bwght)                # <-- CHANGE y ~ x1
+d10_multi  <- lm(bwght ~ cigs + faminc, data = bwght)       # <-- CHANGE y ~ x1 + x2
+d10_aux    <- lm(faminc ~ cigs, data = bwght)               # <-- CHANGE x2 ~ x1
+ans("[D10] simple slope on x1 (b1-tilde)", d10_simple$coefficients[2])
+ans("[D10] multiple slope on x1 (b1-hat)", d10_multi$coefficients[2])
+ans("[D10] b2-hat (x2 in multiple)", d10_multi$coefficients[3])
+ans("[D10] delta1 (slope of x2 on x1)", d10_aux$coefficients[2])
+ans("[D10] b2-hat * delta1", d10_multi$coefficients[3] * d10_aux$coefficients[2])
+ans("[D10] check: simple - multiple", d10_simple$coefficients[2] - d10_multi$coefficients[2])
 
-## [C4] MLR predicted change (intercept DROPS) -------------------------------------
-## Default: 0.6 educ + 0.07 exper, +1 educ, exper fixed -> 0.60
-c4_b  <- c(0.6, 0.07)        # <-- CHANGE slopes only (keep minus signs)
-c4_dx <- c(1, 0)             # <-- CHANGE changes (held fixed = 0, falls = negative)
-c4_logy <- FALSE             # <-- CHANGE TRUE if left side is log(y)
-ans("[C4] change in yhat", sum(c4_b * c4_dx))
-if (c4_logy) ans("[C4] % change in y = 100*change", 100 * sum(c4_b * c4_dx))
+## ======================================================================
+## [D11] perfect collinearity: R reports NA
+## LOOKS LIKE: "vote1: totexpend <- expendA + expendB; lm(voteA ~ expendA + expendB +
+##   totexpend). What does R report for totexpend?"   (PS11 #8)
+## ANSWER: NA - R drops it because it's an exact linear function of the others (MLR.3 fails).
+d11_v <- vote1; d11_v$totexpend <- d11_v$expendA + d11_v$expendB
+print(coef(lm(voteA ~ expendA + expendB + totexpend, data = d11_v)))
+pick("[D11] coefficient on the exact combination", "NA (dropped: perfect collinearity)")
 
-## [C5] SST_X, Var(b1), sd/se(b1) ---------------------------------------------------
-## Var(bj) = sigma^2 / (SST_j * (1 - R_j^2)).  SST_X = (n-1)*S_X^2 = sum((x-mean)^2)
-## Default (D16): sigma 4, n 26, S_X^2 4 -> SST_X = 100, Var = 0.16, sd = 0.40
-c5_n     <- 26        # <-- CHANGE n
-c5_SX2   <- 4         # <-- CHANGE sample VARIANCE of X. Given the SD? type it squared: 1.7^2
-c5_x     <- NULL      # <-- CHANGE OR raw x values, e.g. c(2,3,4,5,9) (overrides n and SX2)
-c5_sigma <- 4         # <-- CHANGE sigma (or sigma-hat). Given sigma^2? type sqrt(66)
-c5_SSR   <- NA        # <-- CHANGE OR give SSR: sigma-hat = sqrt(SSR/(n-k-1)) (overrides sigma)
-c5_k     <- 1         # <-- CHANGE number of slopes (1 in simple regression)
-c5_Rj2   <- 0         # <-- CHANGE MLR only: R^2 of x_j on the other x's (0 for simple)
-if (!is.null(c5_x)) { c5_n <- length(c5_x); c5_SST <- sum((c5_x - mean(c5_x))^2)
-} else c5_SST <- (c5_n - 1) * c5_SX2
-if (!is.na(c5_SSR)) c5_sigma <- sqrt(c5_SSR / (c5_n - c5_k - 1))
-ans("[C5] SST_X", c5_SST)
-ans("[C5] sigma (or sigma-hat) used", c5_sigma)
-ans("[C5] VIF = 1/(1-Rj^2)", 1 / (1 - c5_Rj2))
-ans("[C5] Var(b1)", c5_sigma^2 / (c5_SST * (1 - c5_Rj2)))
-ans("[C5] sd(b1) = se(b1)", c5_sigma / sqrt(c5_SST * (1 - c5_Rj2)))
+## ======================================================================
+## [D12] t-statistic and test from data (D21-D22)
+## LOOKS LIKE: "Run lm(log(wage) ~ educ + exper + tenure). Test H0: b_exper = 0 vs
+##   H1: b_exper > 0 at 5%."   (Example 4.1)
+## DEFAULTS -> t 2.39 | c(one-sided 5%) 1.65 -> reject
+d12_reg <- lm(log(wage) ~ educ + exper + tenure, data = wage1)   # <-- CHANGE
+d12_var <- "exper"                                          # <-- CHANGE variable name (in quotes)
+d12_h0 <- 0; d12_alpha <- 0.05                              # <-- CHANGE null value, alpha
+d12_s <- summary(d12_reg)$coefficients
+d12_t <- (d12_s[d12_var, "Estimate"] - d12_h0) / d12_s[d12_var, "Std. Error"]
+d12_df <- d12_reg$df.residual
+ans4("[D12] estimate", d12_s[d12_var, "Estimate"]); ans4("[D12] se", d12_s[d12_var, "Std. Error"])
+ans("[D12] t = (b - h0)/se", d12_t); ans("[D12] df = n-k-1", d12_df)
+ans("[D12] c one-sided = qt(1-a, df)", qt(1 - d12_alpha, d12_df))
+ans("[D12] c two-sided = qt(1-a/2, df)", qt(1 - d12_alpha / 2, d12_df))
+ans("[D12] p-value two-sided", 2 * pt(-abs(d12_t), d12_df))
+pick("[D12] H1: b >  h0", ifelse(d12_t > qt(1 - d12_alpha, d12_df), "REJECT H0", "fail to reject"))
+pick("[D12] H1: b <  h0", ifelse(d12_t < -qt(1 - d12_alpha, d12_df), "REJECT H0", "fail to reject"))
+pick("[D12] H1: b != h0", ifelse(abs(d12_t) > qt(1 - d12_alpha / 2, d12_df), "REJECT H0", "fail to reject"))
 
-## [C6] sd(b1) when things change ---------------------------------------------------
-## sd = sigma/sqrt(SST_X): SST_X times k -> sd / sqrt(k); sigma times m -> sd times m
-## Default: 0.32, sample 2x -> 0.23
-c6_sd <- 0.32   # <-- CHANGE original sd(b1)
-c6_k  <- 2      # <-- CHANGE sample k times as large (half -> 0.5; 1 if unchanged)
-c6_m  <- 1      # <-- CHANGE sigma multiplied by m (doubles -> 2; 1 if unchanged)
-ans("[C6] new sd(b1)", c6_sd * c6_m / sqrt(c6_k))
+## ======================================================================
+## [D13] REG(): everything for one regression at once (coefs, se, t, p, CI, R^2,
+##   SST/SSE/SSR, sigma-hat, prediction, change, residual of a row, t-test)
+REG(log(wage) ~ educ + exper + tenure, data = wage1,          # <-- CHANGE formula, data
+    at = list(educ = 16, exper = 4, tenure = 2),              # <-- CHANGE (or delete)
+    from = list(educ = 12), to = list(educ = 13),             # <-- CHANGE (or delete)
+    row = 2, test = "exper")                                  # <-- CHANGE (or delete)
 
-## [C7] sigma^2-hat = SSR / (n - k - 1) -----------------------------------------------
-## Default: SSR 450, n 30, k 3 -> 17.31, sigma-hat 4.16
-c7_SSR <- 450; c7_n <- 30; c7_k <- 3     # <-- CHANGE (k = number of SLOPES)
-ans("[C7] df = n-k-1", c7_n - c7_k - 1)
-ans("[C7] sigma^2-hat", c7_SSR / (c7_n - c7_k - 1))
-ans("[C7] sigma-hat (SER)", sqrt(c7_SSR / (c7_n - c7_k - 1)))
+cat("\n#################### PART 2 - NUMBERS IN THE QUESTION ####################\n")
 
-## [C8] omitted-variable bias -----------------------------------------------------------
-## (3.23): b1-tilde = b1-hat + b2-hat * delta1. Put NA on the one they ask for.
-## Defaults: 0.25 + 1.44*0.11 = 0.41 | bias = -1.17 * -0.26 = 0.30
-c8_b1tilde <- NA      # <-- CHANGE simple-regression slope (x2 left out)
-c8_b1hat   <- 0.25    # <-- CHANGE multiple-regression slope on x1
-c8_b2hat   <- 1.44    # <-- CHANGE slope on x2 (in the true / multiple model)
-c8_delta1  <- 0.11    # <-- CHANGE slope from regressing x2 on x1
-if (is.na(c8_b1tilde)) ans("[C8] b1-tilde", c8_b1hat + c8_b2hat * c8_delta1)
-if (is.na(c8_b1hat))   ans("[C8] b1-hat",   c8_b1tilde - c8_b2hat * c8_delta1)
-if (is.na(c8_b2hat))   ans("[C8] b2-hat",   (c8_b1tilde - c8_b1hat) / c8_delta1)
-if (is.na(c8_delta1))  ans("[C8] delta1",   (c8_b1tilde - c8_b1hat) / c8_b2hat)
-c8_beta2 <- -1.17; c8_d <- -0.26          # <-- CHANGE for "Bias = beta2 * delta1"
-ans("[C8] Bias(b1-tilde) = beta2*delta1", c8_beta2 * c8_d)
-## Sign table: bias sign = sign(beta2) * sign(corr(x1, x2))
-##                  corr(x1,x2) > 0     corr(x1,x2) < 0
-##   beta2 > 0      UPWARD (+)          DOWNWARD (-)
-##   beta2 < 0      DOWNWARD (-)        UPWARD (+)
-c8_sign_b2 <- +1; c8_sign_corr <- +1      # <-- CHANGE +1 / -1
-pick("[C8] bias direction", ifelse(c8_sign_b2 * c8_sign_corr > 0, "UPWARD (overstates)", "DOWNWARD (understates)"))
-pick("[C8] NO bias when", "beta2 = 0 OR x1 and x2 uncorrelated (delta1 = 0)")
+## ======================================================================
+## [U1] x multiplied or divided by c -> new slope
+## LOOKS LIKE: "The OLS slope is 0.58. Every value of x is divided by 1,000. New slope?"
+##   (PS8 #14, Q8 #2)   x DIVIDED by c -> slope TIMES c.  Intercept, R^2 unchanged.
+## DEFAULT -> 580.00
+u1_b1 <- 0.58                                               # <-- CHANGE slope
+u1_c  <- 1/1000                                             # <-- CHANGE what x is MULTIPLIED by (divided by 1000 -> 1/1000)
+ans("[U1] new slope = b1 / c", u1_b1 / u1_c)
 
-## [C9] t-test from an estimate and se ----------------------------------------------------
-## t = (b - h0)/se. df = n - k - 1. Prints all three H1's: use the one asked.
-## Default (D20): b 0.54, se 0.05 -> t = 10.80, reject in every direction except H1: b < 0
-c9_b  <- 0.54      # <-- CHANGE estimate
-c9_se <- 0.05      # <-- CHANGE standard error
-c9_h0 <- 0         # <-- CHANGE null value a in H0: b = a (usually 0)
-c9_df <- 524       # <-- CHANGE df = n - k - 1
-c9_alpha <- 0.05   # <-- CHANGE significance level (5% = 0.05)
-c9_t  <- (c9_b - c9_h0) / c9_se
-c9_c2 <- qt(1 - c9_alpha / 2, c9_df); c9_c1 <- qt(1 - c9_alpha, c9_df)
-ans("[C9] t-statistic", c9_t)
-ans("[C9] critical c, two-sided", c9_c2)
-ans("[C9] critical c, one-sided", c9_c1)
-ans("[C9] p-value two-sided", 2 * pt(-abs(c9_t), c9_df))
-ans("[C9] p-value one-sided H1: b > a", pt(c9_t, c9_df, lower.tail = FALSE))
-ans("[C9] p-value one-sided H1: b < a", pt(c9_t, c9_df))
-pick("[C9] H1: b != a (reject if |t| > c)", ifelse(abs(c9_t) > c9_c2, "REJECT H0", "fail to reject"))
-pick("[C9] H1: b >  a (reject if t > c)",   ifelse(c9_t > c9_c1, "REJECT H0", "fail to reject"))
-pick("[C9] H1: b <  a (reject if t < -c)",  ifelse(c9_t < -c9_c1, "REJECT H0", "fail to reject"))
+## ======================================================================
+## [U2] y multiplied by c -> new slope (and intercept) times c
+## LOOKS LIKE: "The OLS slope is 2.48. Every value of y is multiplied by 1,000. New slope?" (PS8 #13)
+## DEFAULT -> 2480.00
+u2_b1 <- 2.48; u2_b0 <- 0                                   # <-- CHANGE slope (and intercept if asked)
+u2_c  <- 1000                                               # <-- CHANGE what y is multiplied by
+ans("[U2] new slope = c * b1", u2_c * u2_b1)
+ans("[U2] new intercept = c * b0", u2_c * u2_b0)
 
-## [C10] decision from a given t and c, or from a p-value ---------------------------------
-## Default (D21): c = 1.68, t = 2.4 -> reject for H1: b > 0. (t = -3.0 with H1: b > 0 -> fail)
-c10_t <- 2.4      # <-- CHANGE t
-c10_c <- 1.68     # <-- CHANGE critical value they give (positive number)
-pick("[C10] H1: b != 0", ifelse(abs(c10_t) > c10_c, "REJECT H0", "fail to reject"))
-pick("[C10] H1: b >  0", ifelse(c10_t > c10_c, "REJECT H0", "fail to reject"))
-pick("[C10] H1: b <  0", ifelse(c10_t < -c10_c, "REJECT H0", "fail to reject"))
-c10_p <- 0.03     # <-- CHANGE p-value
-for (a in c(0.10, 0.05, 0.01))
-  pick(sprintf("[C10] p = %g at alpha = %g", c10_p, a), ifelse(c10_p < a, "REJECT H0", "fail to reject"))
+## ======================================================================
+## [U3] log(y) model, y rescaled -> slope same, intercept + log(c)
+## LOOKS LIKE: "log(salary)-hat = 3.36 + 0.44 log(sales). Salary in dollars instead
+##   (times 1000): new intercept?"  (PS9 #3)    DEFAULT -> 10.27
+u3_b0 <- 3.36; u3_c <- 1000                                 # <-- CHANGE intercept, multiplier
+ans("[U3] new intercept = b0 + log(c)", u3_b0 + log(u3_c))
 
-## [C11] critical value table ---------------------------------------------------------------
-c11_df <- 25      # <-- CHANGE df = n - k - 1
-for (a in c(0.10, 0.05, 0.01)) {
-  ans(sprintf("[C11] df=%d alpha=%.2f one-sided", c11_df, a), qt(1 - a, c11_df))
-  ans(sprintf("[C11] df=%d alpha=%.2f two-sided", c11_df, a), qt(1 - a / 2, c11_df))
-}
-## Large df (> 120): one-sided 1.28 / 1.645 / 2.33,  two-sided 1.645 / 1.96 / 2.58
+## ======================================================================
+## [L1] LOG-LEVEL (log on LEFT only): %dy = 100 * b1 * dx
+## LOOKS LIKE: "log(y)-hat = 1.5 + 0.02x. By about what percent does y change when
+##   x rises by 2?"  (PS8 #17, Q8 #3, Q9 #2)   DEFAULT -> 4.00
+## Units trap (PS9 #2): x in MONTHS, asked per YEAR -> dx = 12.
+l1_b1 <- 0.02                                               # <-- CHANGE slope
+l1_dx <- 2                                                  # <-- CHANGE change in x (falls = negative)
+ans("[L1] % change in y", 100 * l1_b1 * l1_dx)
 
-## [C12] confidence interval -------------------------------------------------------------------
-## CI = b +/- c*se. "a inside the CI" = fail to reject H0: b = a (two-sided, same level).
-## Default (D23): 0.30, se 0.10, c 1.96 -> [0.10, 0.50]; 0 outside -> reject
-c12_b  <- 0.30     # <-- CHANGE estimate
-c12_se <- 0.10     # <-- CHANGE se
-c12_c  <- 1.96     # <-- CHANGE c given. If they give df and level instead: qt(1 - (1-0.95)/2, df)
-c12_a  <- 0        # <-- CHANGE value to check (H0: b = a)
-c12_lo <- c12_b - c12_c * c12_se; c12_hi <- c12_b + c12_c * c12_se
-ans("[C12] CI lower", c12_lo); ans("[C12] CI upper", c12_hi)
-pick(sprintf("[C12] is %g inside?", c12_a), ifelse(c12_a >= c12_lo & c12_a <= c12_hi,
-     "YES inside -> fail to reject H0", "NO outside -> REJECT H0"))
-## Back out b and se from a reported CI:
-c12_L <- 0.10; c12_U <- 0.50     # <-- CHANGE reported lower, upper
-ans("[C12] b-hat = midpoint", (c12_L + c12_U) / 2)
-ans("[C12] se = (U - L)/(2c)", (c12_U - c12_L) / (2 * c12_c))
+## ======================================================================
+## [L2] LOG-LOG (log on BOTH sides): %dy = b1 * %dx  (elasticity, no 100)
+## LOOKS LIKE: "log(y)-hat = 3.5 + 1.22 log(x). By about what percent does y change when
+##   x rises by 18%?"  (PS8 #18, PS9 #5, Q8 #4)   DEFAULT -> 21.96
+l2_b1 <- 1.22                                               # <-- CHANGE slope
+l2_pctx <- 18                                               # <-- CHANGE % change in x (falls = negative)
+ans("[L2] % change in y", l2_b1 * l2_pctx)
 
-## [C13] F-statistic --------------------------------------------------------------------------------
-## F = ((SSR_r - SSR_ur)/q) / (SSR_ur/(n-k-1))  =  ((R2_ur - R2_r)/q) / ((1 - R2_ur)/(n-k-1))
-## k = slopes in the UNRESTRICTED model, q = number of variables dropped.
-## Default (Example 4.9): 198.311, 183.186, q 3, n 353, k 5 -> F = 9.55
-c13_SSRr <- 198.311; c13_SSRur <- 183.186   # <-- CHANGE (or use the R^2 lines)
-c13_R2r  <- NA;      c13_R2ur  <- NA        # <-- CHANGE if given R^2 instead (else NA)
-c13_q <- 3; c13_n <- 353; c13_k <- 5        # <-- CHANGE
-c13_df <- c13_n - c13_k - 1
-c13_F <- if (!is.na(c13_R2ur)) ((c13_R2ur - c13_R2r) / c13_q) / ((1 - c13_R2ur) / c13_df) else
-         ((c13_SSRr - c13_SSRur) / c13_q) / (c13_SSRur / c13_df)
-ans("[C13] F-statistic", c13_F)
-ans("[C13] 5% critical value", qf(0.95, c13_q, c13_df))
-ans("[C13] p-value", pf(c13_F, c13_q, c13_df, lower.tail = FALSE))
-pick("[C13] decision (5%)", ifelse(c13_F > qf(0.95, c13_q, c13_df), "REJECT H0: jointly significant", "fail to reject"))
+## ======================================================================
+## [L3] LEVEL-LOG (log on RIGHT only): dy = (b1/100) * %dx  (UNITS of y)
+## LOOKS LIKE: "y-hat = 87 + 11.3 log(x). By about how many units does y change when
+##   x rises by 13%?"  (PS8 #19, Q8 #5)   DEFAULT -> 1.47
+l3_b1 <- 11.3                                               # <-- CHANGE slope
+l3_pctx <- 13                                               # <-- CHANGE % change in x
+ans("[L3] change in y (units)", l3_b1 / 100 * l3_pctx)
 
-cat("\n#################### PART D - CONCEPTS ####################\n")
-## ---- Assumptions (MLR) ----
-pick("MLR.1", "linear in parameters")
-pick("MLR.2", "random sample")
-pick("MLR.3", "no PERFECT collinearity (x not an exact combo of others)")
-pick("MLR.4", "zero conditional mean E[U|X1..Xk] = 0")
-pick("MLR.5", "homoskedasticity Var(U|X) = sigma^2")
-pick("MLR.6", "U ~ Normal(0, sigma^2), indep of X -> t and F exact")
-pick("MLR.1-4 give", "UNBIASED: E[b-hat] = b (right on AVERAGE)")
-pick("MLR.1-5 give", "Gauss-Markov: OLS is BLUE (Best Linear Unbiased)")
-pick("MLR.1-6 give", "t-stats have a t(n-k-1) distribution")
-pick("Heteroskedasticity (MLR.5 fails)", "still UNBIASED; se/t-tests invalid")
-pick("Omitted var affects y AND corr w/ x", "BIASED (MLR.4 fails)")
-pick("Irrelevant variable added", "still unbiased; Var(b) can rise")
-pick("High (not perfect) collinearity", "allowed; Var(bj) bigger (VIF up)")
-pick("Perfect collinearity examples", "x and 2x; shares summing to 1; same var in 2 units")
-## ---- Unbiasedness & variance ----
-pick("Unbiased means", "AVERAGE of b-hat over many samples = b")
-pick("Var(b1) BIGGER when", "bigger sigma^2, smaller n, x bunched (small SST), high Rj^2")
-pick("Var(b1) SMALLER when", "smaller sigma^2, bigger n, x spread out, low Rj^2")
-pick("Why prefer small Var", "estimates land closer to b; more reliable/precise")
-pick("se vs sd", "sd uses true sigma; se plugs in sigma-hat")
-## ---- MLR interpretation ----
-pick("bj means", "change in y from +1 xj HOLDING the other x's FIXED")
-pick("Prediction vs change", "prediction KEEPS intercept; change DROPS it")
-pick("Adding a regressor", "R^2 never falls; adjusted R^2 can")
-## ---- Testing ----
-pick("t-stat", "(b-hat - a)/se: how many se's from the null value")
-pick("Two-sided", "reject if |t| > c   (H1: b != a)")
-pick("One-sided >", "reject if t > c    (H1: b > a)")
-pick("One-sided <", "reject if t < -c   (H1: b < a)")
-pick("p-value", "smallest alpha at which H0 is rejected; reject if p < alpha")
-pick("p = 0.03 means", "reject at 5% and 10%, NOT at 1%")
-pick("Small p-value", "evidence AGAINST H0 (not prob H0 true)")
-pick("Statistically significant", "reject H0: b = 0 (not the same as big/important)")
-pick("summary() t and p columns", "test H0: b = 0, two-sided")
-pick("Lower alpha (1% vs 5%)", "bigger c, HARDER to reject")
-pick("95% CI", "b +/- c*se; a inside -> fail to reject b = a at 5%")
-pick("Wider CI when", "bigger se, higher confidence level (99% > 95%)")
-pick("F-test", "JOINT test that several b's = 0; F >= 0; reject if F > c")
-pick("Jointly sig. but each t insignif.", "possible: multicollinearity")
+## ======================================================================
+## [L4] LOG-LEVEL with several x's: %dy = 100 * (b1*dx1 + b2*dx2 + ...)
+## LOOKS LIKE: "log(y)-hat = 2.4 + 0.015x1 - 0.037x2. If x1 rises by 3 and x2 rises by 4,
+##   about what percent does y change?"  (PS11 #1)   DEFAULT -> -10.30
+l4_b  <- c(0.015, -0.037)                                   # <-- CHANGE slopes (keep minus signs, NO intercept)
+l4_dx <- c(3, 4)                                            # <-- CHANGE changes (falls = negative)
+ans("[L4] % change in y", 100 * sum(l4_b * l4_dx))
 
-cat("\n#################### PART E - EXAM I REFRESHER ####################\n")
-## The Exam I question types that were left blank or missed. "(Exam I: x)" = the
-## correct Canvas answer for those exact numbers; the rest use made-up numbers.
-e_r   <- 0.45                                   # correlation after rescaling income (Exam I: 0.45)
-pick("[E1] rescaled correlation", sprintf("unchanged: %.2f (covariance would change)", e_r))
-e_v   <- c(49, rep(5, 18))                      # 19 numbers: first 49, rest 5 (Exam I: 7.32)
-ans("[E2] sample mean", mean(e_v))
-e_b <- c(2.6, -0.7); e_dx <- c(1, -3)           # +1 x1, x2 falls by 3 (made-up slopes) -> 4.70
-ans("[E3] change dy = b1*dx1 + b2*dx2", sum(e_b * e_dx))
-e_old <- 5.6; e_new <- 6.6                      # (Exam I: 17.86 percent); 1 percentage point
-ans("[E4] percent change", 100 * (e_new - e_old) / e_old); ans("[E4] pp change", e_new - e_old)
-e_cov <- 6; e_sx <- 2; e_sy2 <- 41.6            # cor = cov/(sx*sy); given a VARIANCE -> sqrt it
-ans("[E5] correlation", e_cov / (e_sx * sqrt(e_sy2)))
-e_EX <- 4; e_EX2 <- 178                          # sd from E[X], E[X^2] (made-up) -> 12.73
-ans("[E6] sd(X)", sqrt(e_EX2 - e_EX^2))
-e_y <- c(6, 14, 34); e_p <- c(0.5, 0.3, 0.2)     # Y | X table (Exam I values)
-e_a7 <- 3; e_b7 <- 4                             # E[aY + b | X] = a*E[Y|X] + b (made-up a, b) -> 46
-ans("[E7] E[Y] from table", sum(e_y * e_p)); ans("[E7] E[Y^2]", sum(e_y^2 * e_p))
-ans("[E7] E[aY + b]", e_a7 * sum(e_y * e_p) + e_b7)
-ans("[E7] Var(Y) from table", sum(e_y^2 * e_p) - sum(e_y * e_p)^2)
-e_a <- 2; e_bb <- -3; e_vx <- 9; e_vy <- 4; e_cxy <- 1.2   # Var(aX+bY) = a^2VX + b^2VY + 2abCov (made-up)
-ans("[E8] Var(aX + bY)", e_a^2 * e_vx + e_bb^2 * e_vy + 2 * e_a * e_bb * e_cxy)
-e_x <- c(1, 4, 5, 6); e_yy <- c(4, 7, 4, 2); e_pp <- c(0.1, 0.4, 0.3, 0.2)  # joint table (Exam I: Cor = -0.43)
-e_EXv <- sum(e_x * e_pp); e_EYv <- sum(e_yy * e_pp)
-e_cv <- sum(e_x * e_yy * e_pp) - e_EXv * e_EYv
-ans("[E9] Cov from joint table", e_cv)
-ans("[E9] Cor from joint table", e_cv / sqrt((sum(e_x^2 * e_pp) - e_EXv^2) * (sum(e_yy^2 * e_pp) - e_EYv^2)))
-e_sx2 <- c(2, 4, 6, 8, 10); e_sy <- c(3, 7, 5, 9, 12); e_i <- 3   # OLS by hand on a small sample (made-up)
-e_b1 <- cov(e_sx2, e_sy) / var(e_sx2); e_b0 <- mean(e_sy) - e_b1 * mean(e_sx2)
-e_u <- e_sy - (e_b0 + e_b1 * e_sx2)
-ans("[E10] OLS slope", e_b1); ans("[E10] OLS intercept", e_b0)
-ans("[E10] residual of obs i", e_u[e_i])
-ans("[E10] sum(x * uhat)  (always 0)", sum(e_sx2 * e_u))
-e_SSE <- 410; e_R2 <- 0.4                        # SSR from SSE and R^2: SST = SSE/R^2 (Exam I: 615)
-ans("[E11] SSR = SSE/R^2 - SSE", e_SSE / e_R2 - e_SSE)
-e_n <- 44; e_S2 <- 7                             # SST = (n-1)*S^2 (Exam I: 301)
-ans("[E12] SST = (n-1)*S_y^2", (e_n - 1) * e_S2)
-e_b0b <- 6; e_b1b <- 1; e_xbar <- 10             # ybar = b0 + b1*xbar (Exam I: 16)
-ans("[E13] ybar = b0 + b1*xbar", e_b0b + e_b1b * e_xbar)
-e_known <- c(-0.7, 2.3, 2.3, 1.8)                # missing residual (Exam I: -5.70)
-ans("[E14] missing residual = -sum(others)", -sum(e_known))
+## ======================================================================
+## [M1] MLR PREDICTION (keep the intercept)
+## LOOKS LIKE: "y-hat = 5 + 2.9x1 + 2.2x2. Predicted value at x1 = 13 and x2 = 12?" (Q9 #8)
+## DEFAULT -> 69.10
+m1_b0 <- 5                                                  # <-- CHANGE intercept
+m1_b  <- c(2.9, 2.2)                                        # <-- CHANGE slopes (keep signs)
+m1_x  <- c(13, 12)                                          # <-- CHANGE x values
+ans("[M1] predicted y", m1_b0 + sum(m1_b * m1_x))
+
+## ======================================================================
+## [M2] MLR CHANGE (drop the intercept)
+## LOOKS LIKE: "y-hat = 4 + 0.9x1 - 1.9x2. If x1 rises by 1 and x2 rises by 4, by how
+##   much does y-hat change?"  (Q9 #9, Exam I Q14)   DEFAULT -> -6.70
+m2_b  <- c(0.9, -1.9)                                       # <-- CHANGE slopes (keep signs)
+m2_dx <- c(1, 4)                                            # <-- CHANGE changes (falls = negative, fixed = 0)
+ans("[M2] change in y-hat", sum(m2_b * m2_dx))
+
+## ======================================================================
+## [M3] ybar from the line and the means (the line passes through the means)
+## LOOKS LIKE: "y-hat = 3.6 + 0.8x1 - 1.2x2, x1bar = 4.6, x2bar = 2.9. What is ybar?"
+##   (PS11 #6, PS8 #12, Exam I Q26)   DEFAULT -> 3.80
+m3_b0 <- 3.6                                                # <-- CHANGE intercept
+m3_b  <- c(0.8, -1.2)                                       # <-- CHANGE slopes (one per x)
+m3_xbar <- c(4.6, 2.9)                                      # <-- CHANGE means of the x's
+ans("[M3] ybar", m3_b0 + sum(m3_b * m3_xbar))
+
+## ======================================================================
+## [O1] OLS residual of ONE observation (small sample)
+## LOOKS LIKE: "For x = (1,4,6,7,9), y = (2,1,6,5,3), regress y on x. Find the residual of
+##   the third observation."  (PS8 #6, Q7 #7, Exam I Q23)   DEFAULT -> 2.40
+o1_x <- c(1, 4, 6, 7, 9)                                    # <-- CHANGE x
+o1_y <- c(2, 1, 6, 5, 3)                                    # <-- CHANGE y
+o1_i <- 3                                                   # <-- CHANGE which observation
+o1_reg <- lm(o1_y ~ o1_x)
+ans("[O1] slope", o1_reg$coefficients[2]); ans("[O1] intercept", o1_reg$coefficients[1])
+ans("[O1] residual of obs i", o1_reg$residuals[o1_i])
+
+## ======================================================================
+## [O2] missing residual (OLS residuals sum to 0)
+## LOOKS LIKE: "Residuals -1.6, 2.4, -0.2, 0.7, 1.1, and one more. The sixth?" (PS8 #7, Q7 #8)
+## DEFAULT -> -2.40
+o2_known <- c(-1.6, 2.4, -0.2, 0.7, 1.1)                    # <-- CHANGE the known residuals
+ans("[O2] missing residual", -sum(o2_known))
+
+## ======================================================================
+## [O3] sum of x_i * uhat_i  -> ALWAYS 0 (type 0)
+## LOOKS LIKE: "For x = (...), y = (...), compute sum x_i uhat_i."  (PS8 #8, Q7 #3, Exam I Q28)
+o3_x <- c(3, 6, 7, 9, 10, 15); o3_y <- c(12, 12, 8, 15, 8, 10)   # (optional check)
+ans("[O3] sum(x * uhat)  (always 0)", sum(o3_x * lm(o3_y ~ o3_x)$residuals))
+
+## ======================================================================
+## [O4] SSR from SSE and R^2:  SST = SSE/R^2, SSR = SST - SSE
+## LOOKS LIKE: "SSE = 53 and R^2 = 0.89. Find SSR."  (PS8 #9, Q7 #9)   DEFAULT -> 6.55
+o4_SSE <- 53; o4_R2 <- 0.89                                 # <-- CHANGE
+ans("[O4] SST = SSE/R^2", o4_SSE / o4_R2)
+ans("[O4] SSR = SST - SSE", o4_SSE / o4_R2 - o4_SSE)
+
+## ======================================================================
+## [O5] SST from n and the sample variance:  SST = (n-1) * S_y^2
+## LOOKS LIKE: "n = 54 observations, sample variance S_y^2 = 20. Find SST." (PS8 #10, Q7 #10)
+## DEFAULT -> 1060.00
+o5_n <- 54; o5_S2 <- 20                                     # <-- CHANGE
+ans("[O5] SST", (o5_n - 1) * o5_S2)
+
+## ======================================================================
+## [V1] Var(b1) = sigma^2 / SST_x
+## LOOKS LIKE: "sigma^2 = 66 and SST_X = 53. Find Var(b1-hat)."  (PS9 #11)   DEFAULT -> 1.25
+v1_sigma2 <- 66; v1_SST <- 53                               # <-- CHANGE (given sigma? type its square: 4^2)
+ans("[V1] Var(b1)", v1_sigma2 / v1_SST)
+
+## ======================================================================
+## [V2] sd(b1) or se(b1) from sigma (or sigma-hat), n, and S_X or S_X^2
+## LOOKS LIKE: "sigma = 20, n = 6, sample variance S_X^2 = 2. Find sd(b1-hat)." (PS9 #12)
+##   "n = 23, sigma-hat = 9.4, sample SD S_X = 0.7. Find se(b1-hat)." (Q9 #6, PS10 #7)
+## SST_X = (n-1)*S_X^2. Given the SD S_X? set v2_is_var <- FALSE (it gets squared).
+## DEFAULT -> 6.32   (Q9 #6 numbers -> 2.86)
+v2_n <- 6                                                   # <-- CHANGE n
+v2_sigma <- 20                                              # <-- CHANGE sigma or sigma-hat
+v2_S <- 2                                                   # <-- CHANGE the S_X number given
+v2_is_var <- TRUE                                           # <-- CHANGE TRUE if they gave S_X^2 (variance), FALSE if S_X (sd)
+v2_SST <- (v2_n - 1) * if (v2_is_var) v2_S else v2_S^2
+ans("[V2] SST_X", v2_SST)
+ans("[V2] sd/se(b1) = sigma/sqrt(SST)", v2_sigma / sqrt(v2_SST))
+
+## ======================================================================
+## [V3] sd(b1) from sigma and the raw x values
+## LOOKS LIKE: "sigma = 6. The five X values are x = (3,4,7,8,9). Find sd(b1-hat)."
+##   (PS9 #14, Q8 #9)   DEFAULT -> 1.16
+v3_sigma <- 6                                               # <-- CHANGE
+v3_x <- c(3, 4, 7, 8, 9)                                    # <-- CHANGE
+ans("[V3] SST_X", sum((v3_x - mean(v3_x))^2))
+ans("[V3] sd(b1)", v3_sigma / sqrt(sum((v3_x - mean(v3_x))^2)))
+
+## ======================================================================
+## [V4] sigma^2-hat = SSR / (n - k - 1)   (simple regression: k = 1 -> n - 2)
+## LOOKS LIKE: "Simple regression, n = 14, SSR = 268. Estimate of the error variance?"
+##   (PS9 #15, Q8 #10)   DEFAULT -> 22.33
+v4_SSR <- 268; v4_n <- 14; v4_k <- 1                        # <-- CHANGE (k = number of slopes)
+ans("[V4] sigma^2-hat", v4_SSR / (v4_n - v4_k - 1))
+ans("[V4] sigma-hat", sqrt(v4_SSR / (v4_n - v4_k - 1)))
+
+## ======================================================================
+## [V5] se(b1) from SSR, n and SST_x
+## LOOKS LIKE: "n = 13, SSR = 437, SST_X = 12. Find se(b1-hat)."  (PS9 #16, Q8 #11)
+## DEFAULT -> 1.82
+v5_SSR <- 437; v5_n <- 13; v5_SST <- 12                     # <-- CHANGE
+ans("[V5] sigma-hat", sqrt(v5_SSR / (v5_n - 2)))
+ans("[V5] se(b1)", sqrt(v5_SSR / (v5_n - 2)) / sqrt(v5_SST))
+
+## ======================================================================
+## [V6] sd(b1) when the sample is k times as large: divide by sqrt(k)
+## LOOKS LIKE: "sd(b1-hat) = 0.34. Sample 6 times as large (SST_X also 6x). New sd?"
+##   (Q9 #7, PS10 #9)   DEFAULT -> 0.14     (sigma doubles -> multiply sd by 2)
+v6_sd <- 0.34; v6_k <- 6                                    # <-- CHANGE
+ans("[V6] new sd = sd/sqrt(k)", v6_sd / sqrt(v6_k))
+
+## ======================================================================
+## [V7] multiple regression: Var(bj) = sigma^2 / [SST_j (1 - Rj^2)],  VIF = 1/(1 - Rj^2)
+v7_sigma2 <- 15; v7_SSTj <- 120; v7_Rj2 <- 0.6              # <-- CHANGE   DEFAULTS -> VIF 2.50, Var 0.31
+ans("[V7] VIF", 1 / (1 - v7_Rj2)); ans("[V7] Var(bj)", v7_sigma2 / (v7_SSTj * (1 - v7_Rj2)))
+ans("[V7] sd(bj)", sqrt(v7_sigma2 / (v7_SSTj * (1 - v7_Rj2))))
+
+## ======================================================================
+## [B1] OVB formula (3.23): b1tilde = b1hat + b2hat * delta1. Put NA on the one asked.
+## LOOKS LIKE: "Simple regression gives b1tilde = -0.36. Multiple gives b2hat = -1.18,
+##   slope of X2 on X1 is delta1 = -0.51. Find b1hat."  (PS11 #11, PS10 #18)  DEFAULT -> -0.96
+b1_b1tilde <- -0.36                                         # <-- CHANGE simple slope (NA if asked)
+b1_b1hat   <- NA                                            # <-- CHANGE multiple slope on x1 (NA if asked)
+b1_b2hat   <- -1.18                                         # <-- CHANGE coef on x2 (NA if asked)
+b1_delta1  <- -0.51                                         # <-- CHANGE slope of x2 on x1 (NA if asked)
+if (is.na(b1_b1hat))   ans("[B1] b1hat", b1_b1tilde - b1_b2hat * b1_delta1)
+if (is.na(b1_b1tilde)) ans("[B1] b1tilde", b1_b1hat + b1_b2hat * b1_delta1)
+if (is.na(b1_b2hat))   ans("[B1] b2hat", (b1_b1tilde - b1_b1hat) / b1_delta1)
+if (is.na(b1_delta1))  ans("[B1] delta1", (b1_b1tilde - b1_b1hat) / b1_b2hat)
+
+## ======================================================================
+## [B2] Bias(b1tilde) = beta2 * delta1
+## LOOKS LIKE: "beta2 = -1.17. Omit X2; slope of X2 on X1 is delta1 = -0.26. Bias?"
+##   (PS10 #19)   DEFAULT -> 0.30  (positive = biased upward)
+b2_beta2 <- -1.17; b2_delta1 <- -0.26                       # <-- CHANGE
+ans("[B2] bias = beta2*delta1", b2_beta2 * b2_delta1)
+
+## ======================================================================
+## [B3] DIRECTION of bias (Table 3.2): sign(beta2) x sign(corr(x1, x2))
+## LOOKS LIKE: "An omitted X2 lowers Y and is negatively correlated with X1. The simple
+##   slope is..." / fertilizer & land quality / tutoring & ability  (PS11 #16-18, PS10 #20)
+## Same signs -> UPWARD (overstates). Opposite -> DOWNWARD (understates).
+b3_b2 <- -1                                                 # <-- CHANGE +1 if omitted x2 RAISES y, -1 if it lowers y
+b3_corr <- -1                                               # <-- CHANGE +1 if x2 moves WITH x1, -1 if opposite
+pick("[B3] bias", ifelse(b3_b2 * b3_corr > 0, "UPWARD (overstates the effect)", "DOWNWARD (understates the effect)"))
+
+## ======================================================================
+## [P1] sd(aX + b) from E[X] and E[X^2]:  Var = E[X^2] - E[X]^2, sd(aX+b) = |a|*sd(X)
+## LOOKS LIKE: "E[X] = 4 and E[X^2] = 20. Find the sd of 3X - 4."  (PS8 #3, Q7 #4)  DEFAULT -> 6.00
+p1_EX <- 4; p1_EX2 <- 20; p1_a <- 3                         # <-- CHANGE (b doesn't matter)
+ans("[P1] sd(aX + b)", abs(p1_a) * sqrt(p1_EX2 - p1_EX^2))
+
+## ======================================================================
+## [P2] Var(aX + bY) = a^2 VarX + b^2 VarY + 2ab Cov   (the minus sign goes INTO b)
+## LOOKS LIKE: "Var(X) = 4, Var(Y) = 3, Cov = -1.9. Find Var(2X - 3Y)." (PS8 #4, Q7 #5) DEFAULT -> 65.80
+p2_vx <- 4; p2_vy <- 3; p2_cov <- -1.9; p2_a <- 2; p2_b <- -3   # <-- CHANGE
+ans("[P2] Var(aX + bY)", p2_a^2 * p2_vx + p2_b^2 * p2_vy + 2 * p2_a * p2_b * p2_cov)
+
+## ======================================================================
+## [P3] correlation from a JOINT PROBABILITY table (weight by p; never cor())
+## LOOKS LIKE: "X and Y have the joint distribution below. Find Cor(X, Y)." (PS8 #5, Q7 #6)
+## DEFAULT -> -0.59
+p3_x <- c(1, 5, 7, 8)                                       # <-- CHANGE x column
+p3_y <- c(3, 3, 1, 3)                                       # <-- CHANGE y column
+p3_p <- c(0.2, 0.3, 0.4, 0.1)                               # <-- CHANGE probability column
+p3_EX <- sum(p3_x * p3_p); p3_EY <- sum(p3_y * p3_p)
+p3_cov <- sum(p3_x * p3_y * p3_p) - p3_EX * p3_EY
+ans("[P3] Cov(X,Y)", p3_cov)
+ans("[P3] Cor(X,Y)", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^2) * (sum(p3_y^2 * p3_p) - p3_EY^2)))
+
+## ======================================================================
+## [T1] t-statistic from an estimate and se; critical values; p-values; decisions
+## LOOKS LIKE: "b-hat = 0.54, se = 0.05. t?" / "H0: b = 0 vs H1: b > 0 at 5%, df = 522"
+## t = (b - h0)/se. One-sided c = qt(1 - a, df). Two-sided c = qt(1 - a/2, df).
+## DEFAULT -> t 10.80
+t1_b <- 0.54; t1_se <- 0.05; t1_h0 <- 0                     # <-- CHANGE estimate, se, null value
+t1_df <- 522; t1_alpha <- 0.05                              # <-- CHANGE df = n - k - 1, alpha
+t1_t <- (t1_b - t1_h0) / t1_se
+ans("[T1] t", t1_t)
+ans("[T1] c one-sided", qt(1 - t1_alpha, t1_df)); ans("[T1] c two-sided", qt(1 - t1_alpha / 2, t1_df))
+ans("[T1] p two-sided", 2 * pt(-abs(t1_t), t1_df)); ans("[T1] p one-sided (H1: b > h0)", pt(t1_t, t1_df, lower.tail = FALSE))
+pick("[T1] H1: b >  h0 (reject if t > c)", ifelse(t1_t > qt(1 - t1_alpha, t1_df), "REJECT H0", "fail to reject"))
+pick("[T1] H1: b <  h0 (reject if t < -c)", ifelse(t1_t < -qt(1 - t1_alpha, t1_df), "REJECT H0", "fail to reject"))
+pick("[T1] H1: b != h0 (reject if |t| > c)", ifelse(abs(t1_t) > qt(1 - t1_alpha / 2, t1_df), "REJECT H0", "fail to reject"))
+
+## ======================================================================
+## [T2] decision from a GIVEN t and critical value c, or from a p-value
+## LOOKS LIKE: "H0: b = 0 vs H1: b > 0, c = 1.68. t = 2.4: reject?" / "p = 0.03 at 5%?"
+t2_t <- 2.4; t2_c <- 1.68                                   # <-- CHANGE
+pick("[T2] H1: b >  0", ifelse(t2_t > t2_c, "REJECT H0", "fail to reject"))
+pick("[T2] H1: b <  0", ifelse(t2_t < -t2_c, "REJECT H0", "fail to reject"))
+pick("[T2] H1: b != 0", ifelse(abs(t2_t) > t2_c, "REJECT H0", "fail to reject"))
+t2_p <- 0.03                                                # <-- CHANGE p-value
+for (a in c(0.10, 0.05, 0.01)) pick(sprintf("[T2] p = %g at alpha %g", t2_p, a), ifelse(t2_p < a, "REJECT H0", "fail to reject"))
+
+## [T3] confidence interval: b +/- c*se. a inside -> fail to reject H0: b = a.
+t3_b <- 0.30; t3_se <- 0.10; t3_c <- 1.96                   # <-- CHANGE   DEFAULT -> [0.10, 0.50]
+ans("[T3] CI lower", t3_b - t3_c * t3_se); ans("[T3] CI upper", t3_b + t3_c * t3_se)
+
+## [T4] F = ((SSR_r - SSR_ur)/q) / (SSR_ur/(n-k-1))
+t4_SSRr <- 198.311; t4_SSRur <- 183.186; t4_q <- 3; t4_n <- 353; t4_k <- 5   # <-- CHANGE  DEFAULT -> 9.55
+ans("[T4] F", ((t4_SSRr - t4_SSRur) / t4_q) / (t4_SSRur / (t4_n - t4_k - 1)))
+
+cat("\n#################### PART 3 - MULTIPLE CHOICE ####################\n")
+## Find the [K] whose LOOKS LIKE matches; the PICK line is the answer to click.
+
+## [K1] "Four candidate lines... sum u, sum |u|, sum u^2. Which is OLS?" (PS8 #2, Q7 #2)
+pick("[K1] OLS line", "the one with sum(u) = 0 AND the SMALLEST sum(u^2)")
+## [K2] "...X is part of U. Workers with more motivation take more training / richer
+##   districts have smaller classes / more fertilizer on better land. Which is correct?"
+pick("[K2] zero conditional mean", "FAILS: the average of U changes with x (something in U is correlated with x)")
+## [K3] "Which is most likely to contribute omitted-variable bias?" (PS9 #9, Q8 #7)
+pick("[K3] OVB candidate", "the one that AFFECTS y AND is RELATED to x (ability; family income). Not IDs/random/weather")
+## [K4] "Theorem 2.1 / 1,000 researchers... unbiased means?" (PS9 #8, Q9 #4)
+pick("[K4] unbiased", "AVERAGED over many samples, b-hat = b (not every sample)")
+## [K5] "Every worker has exactly 12 years of education. What goes wrong?" (PS9 #10)
+pick("[K5] no variation in x", "SLR3 fails: x values all the same, slope can't be computed")
+## [K6] "Spread of food spending around the line grows with income." (PS9 #17)
+pick("[K6] heteroskedasticity", "SLR5 fails: Var formula no longer applies; OLS still UNBIASED")
+## [K7] "Which change makes Var(b1-hat) smaller / larger?" (PS9 #13, Q8 #8, Q9 #5)
+pick("[K7] SMALLER Var", "smaller sigma^2, larger sample, MORE spread-out x (bigger SST_X)")
+pick("[K7] LARGER Var", "larger sigma^2, smaller sample, x bunched together. NOT b0 or b1")
+## [K8] units questions (PS8 #15, PS9 #1, Q8 #1)
+pick("[K8] x times 10 (level model)", "slope DIVIDED by 10, intercept same, R^2 same")
+pick("[K8] log(y), y in $ not $000s", "b1 does NOT change; only b0 changes (by log(1000))")
+pick("[K8] log-log, x times 1000", "b1 does NOT change; only b0 changes")
+## [K9] "What does the 0.45 / 20 / 8 mean?" (PS8 #20, Q9 #1, PS10 #1)
+pick("[K9] log-log  log(y) ~ log(x)", "1% rise in x -> about b% change in y (elasticity)")
+pick("[K9] level-log  y ~ log(x)", "1% rise in x -> about b/100 UNITS of y (20 -> 0.20 units)")
+pick("[K9] log-level  log(y) ~ x", "1 unit rise in x -> about 100*b % change in y")
+## [K10] "After OLS multiple regression, which are always true? Select all" (PS11 #4)
+pick("[K10] TRUE (3)", "passes through the means; residuals average 0; cov(each Xj, residuals) = 0")
+pick("[K10] FALSE", "cov(Y, residuals) = 0; every residual 0 in big samples")
+## [K11] "Which violate MLR3 (no perfect collinearity)? Select all" (PS11 #7)
+pick("[K11] VIOLATE", "more x's than observations; x3 = x1 + x2 exactly; same variable in 2 units")
+pick("[K11] FINE", "highly but NOT perfectly correlated x's")
+## [K12] "Which makes MLR4 fail / X endogenous?" (PS11 #9)
+pick("[K12] MLR4 fails", "a variable that affects Y AND is correlated with X1 is left out (or wrong functional form)")
+## [K13] "Why not add every variable we can find?" (PS11 #10)
+pick("[K13] too many variables", "can INCREASE the variance of the estimates and can even violate MLR3")
+## [K14] "cigs slope -0.51 simple, -0.46 holding income fixed. Which reading?" (PS11 #15)
+pick("[K14] simple vs multiple", "-0.46 = smoking's effect holding income fixed; the other -0.05 is income riding along")
+## [K15] "When does omitting X2 cause NO bias? Select all" (PS11 #19)
+pick("[K15] no bias when", "beta2 = 0 (X2 has no effect on Y)  OR  X2 uncorrelated with X1")
+## [K16] assumptions and testing
+pick("[K16] MLR.1-4", "UNBIASED.   MLR.1-5 (Gauss-Markov) -> BLUE.   MLR.6 normal errors -> t-tests exact")
+pick("[K16] t-stat", "(b-hat - a)/se: how many se's the estimate is from the null value")
+pick("[K16] one-sided >", "reject H0 if t > c;  two-sided: reject if |t| > c")
+pick("[K16] p-value", "reject H0 if p < alpha; small p = evidence AGAINST H0")
+pick("[K16] high corr (not perfect)", "allowed; just raises Var(bj) (multicollinearity)")
