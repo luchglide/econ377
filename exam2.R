@@ -92,6 +92,8 @@
 #        highlight the WHOLE question in Canvas, Ctrl+C, and type ASK() in the
 #        Console. It finds the block and JUMPS your cursor there. ASK() does NOT
 #        solve it: you type the question's numbers into the # <-- CHANGE lines.
+#        Or paste it inside QUOTES: ASK("...the whole question...")
+#        (no quotes = "unexpected input" error). Type ASK in the CONSOLE, not here.
 #        Or type a few words yourself: FIND("SSE R2 find SSR"). Not it? GO("S2").
 #  Way 2: open RStudio's outline (Cmd/Ctrl+Shift+O, or the list icon at the top
 #        right of this script). Every block is listed there by tag. Click to jump.
@@ -295,7 +297,10 @@ FIND <- function(words) {
   invisible(o)
 }
 ## ASK(): copy the WHOLE question (Ctrl+C), then type ASK() in the Console.
-ASK <- function() {
+ASK <- function(question = NULL) {
+  # Two ways:  ASK()                -> reads the question you copied (Ctrl+C)
+  #            ASK("paste it here")  -> uses the text inside the quotes
+  if (!is.null(question)) txt <- paste(question, collapse = " ") else
   txt <- tryCatch({
     if (.Platform$OS.type == "windows") paste(utils::readClipboard(), collapse = " ")
     else if (Sys.info()[["sysname"]] == "Darwin") paste(readLines(pipe("pbpaste"), warn = FALSE), collapse = " ")
