@@ -88,9 +88,11 @@
 # =======================================================================
 
 # START HERE: HOW TO GET TO THE RIGHT BLOCK IN 10 SECONDS ######################
-#  Way 1 (fastest): run this whole file once (Cmd/Ctrl+Shift+Enter), then in the
-#        Console type FIND("a few words from the question"). It lists the best
-#        blocks and JUMPS your cursor to the top one. Not it? Type GO("S2") etc.
+#  Way 1 (fastest): run this whole file once (Cmd/Ctrl+Shift+Enter). Then
+#        highlight the WHOLE question in Canvas, Ctrl+C, and type ASK() in the
+#        Console. It finds the block and JUMPS your cursor there. ASK() does NOT
+#        solve it: you type the question's numbers into the # <-- CHANGE lines.
+#        Or type a few words yourself: FIND("SSE R2 find SSR"). Not it? GO("S2").
 #  Way 2: open RStudio's outline (Cmd/Ctrl+Shift+O, or the list icon at the top
 #        right of this script). Every block is listed there by tag. Click to jump.
 #  Way 3: Cmd/Ctrl+F the tag, e.g. [S1].
@@ -239,24 +241,69 @@ GO <- function(tag) {
   cat(sprintf("  [%s] is at line %d%s\n", tag, n, if (ok) " -> cursor moved there" else " (Cmd/Ctrl+F the tag)"))
   invisible(n)
 }
-FIND <- function(words) {
+## ---- matcher used by FIND() and ASK(): keywords + similarity to real past questions
+.tok <- function(s) {
+  s <- tolower(gsub("\\([^()]*=[^()]*\\)", " ", s))            # drop "(var = definition)" lists
+  w <- strsplit(gsub("[^a-z0-9\\^\\-]+", " ", s), " +")[[1]]
+  stop <- c("the","of","in","by","a","an","and","to","is","what","does","when","how","are","at","on","for","with",
+    "its","that","this","be","as","or","if","about","run","use","give","round","hundredths","regression","regress",
+    "find","value","values","which","statement","correct","it","can","you","your","than","from","then","so","into",
+    "all","apply","select","each","their","they","there","these","those","one","more","has","have","gives","given")
+  w[nchar(w) > 1 & !(w %in% stop) & !grepl("^[0-9.\\-]+$", w)]
+}
+.ask_index <- function() {
+  docs <- c(EXAMPLES$text, sapply(CATALOG, function(e) paste(e[2], e[3])))
+  tags <- c(EXAMPLES$tag, sapply(CATALOG, `[`, 1))
+  toks <- lapply(docs, .tok); vocab <- unique(unlist(toks))
+  df <- sapply(vocab, function(v) sum(vapply(toks, function(t) v %in% t, TRUE)))
+  idf <- log((length(docs) + 1) / (df + 1)) + 1
+  vec <- lapply(toks, function(t) { tf <- table(t); v <- (1 + log(as.numeric(tf))) * idf[names(tf)]; v / sqrt(sum(v^2)) })
+  list(tags = tags, vec = vec, idf = idf)
+}
+.kw_scores <- function(words) {
   stop <- c("the","of","in","by","a","an","and","to","is","what","does","when","how","are","at","on",
             "for","with","its","that","this","be","as","or","if","about","run","use","give","round","hundredths",
-            "regression","regress","find","value","values","x","y","which","statement","correct","what","happens")
-  w <- unique(tolower(strsplit(gsub("[?.:;()\"']", " ", words), "[ ,]+")[[1]]))
-  w <- w[nchar(w) > 1 & !(w %in% stop)]
+            "regression","regress","find","value","values","x","y","which","statement","correct","happens")
+  w <- unique(tolower(strsplit(gsub("[?.:;()\"']", " ", words), "[ ,]+")[[1]])); w <- w[nchar(w) > 1 & !(w %in% stop)]
   txt <- sapply(CATALOG, function(e) tolower(paste(e[1], e[2], e[3])))
-  hit <- sapply(w, function(x) grepl(x, txt, fixed = TRUE))
-  if (!length(w)) { cat("Type a few words from the question.\n"); return(invisible()) }
-  hit <- matrix(hit, nrow = length(txt))
-  idf <- log((length(txt) + 1) / (colSums(hit) + 0.5))      # rare words count more
-  sc <- as.vector(hit %*% pmax(idf, 0))
-  if ("data" %in% w) sc <- sc * ifelse(grepl("^D", sapply(CATALOG, `[`, 1)), 1.6, 1)   # "Data:" question -> real-data blocks first
-  o <- order(-sc); o <- o[sc[o] > 0][1:min(5, sum(sc > 0))]
-  if (!length(o) || is.na(o[1])) { cat("No match. Try other words from the question.\n"); return(invisible()) }
-  for (i in o) cat(sprintf("  [%s]  %-72s\n", CATALOG[[i]][1], CATALOG[[i]][2]))
-  GO(CATALOG[[o[1]]][1])
-  if (length(o) > 1) cat(sprintf("  Not it? GO(\"%s\")\n", CATALOG[[o[2]]][1]))
+  if (!length(w)) return(setNames(rep(0, length(txt)), sapply(CATALOG, `[`, 1)))
+  hit <- matrix(sapply(w, function(x) grepl(x, txt, fixed = TRUE)), nrow = length(txt))
+  idf <- log((length(txt) + 1) / (colSums(hit) + 0.5)); sc <- as.vector(hit %*% pmax(idf, 0))
+  if ("data" %in% w) sc <- sc * ifelse(grepl("^D", sapply(CATALOG, `[`, 1)), 1.6, 1)
+  setNames(sc, sapply(CATALOG, `[`, 1))
+}
+.knn_scores <- function(text) {
+  if (!exists(".ASKIDX", envir = globalenv())) assign(".ASKIDX", .ask_index(), envir = globalenv())
+  ix <- get(".ASKIDX", envir = globalenv())
+  q <- .tok(text); q <- q[q %in% names(ix$idf)]
+  if (!length(q)) return(c())
+  tf <- table(q); qv <- (1 + log(as.numeric(tf))) * ix$idf[names(tf)]; qv <- qv / sqrt(sum(qv^2))
+  sims <- sapply(ix$vec, function(v) sum(v[names(qv)] * qv, na.rm = TRUE))
+  tapply(sims, ix$tags, function(s) { s <- sort(s, decreasing = TRUE); s[1] + 0.3 * ifelse(length(s) > 1, s[2], 0) })
+}
+FIND <- function(words) {
+  a <- .kw_scores(words); b <- .knn_scores(words)
+  tags <- union(names(a), names(b)); A <- a[tags]; B <- b[tags]; A[is.na(A)] <- 0; B[is.na(B)] <- 0
+  if (max(A) == 0 && max(B) == 0) { cat("No match. Try other words from the question.\n"); return(invisible()) }
+  sc <- A / max(A, 1e-9) + B / max(B, 1e-9)
+  if (grepl("data", tolower(words), fixed = TRUE)) sc[grepl("^D", tags)] <- sc[grepl("^D", tags)] * 1.15
+  o <- names(sort(sc, decreasing = TRUE))[1:4]
+  title <- setNames(sapply(CATALOG, `[`, 2), sapply(CATALOG, `[`, 1))
+  for (t in o) cat(sprintf("  [%s]  %-72s\n", t, title[t]))
+  GO(o[1])
+  cat(sprintf("  Not it? GO(\"%s\")  or  GO(\"%s\")\n", o[2], o[3]))
+  invisible(o)
+}
+## ASK(): copy the WHOLE question (Ctrl+C), then type ASK() in the Console.
+ASK <- function() {
+  txt <- tryCatch({
+    if (.Platform$OS.type == "windows") paste(utils::readClipboard(), collapse = " ")
+    else if (Sys.info()[["sysname"]] == "Darwin") paste(readLines(pipe("pbpaste"), warn = FALSE), collapse = " ")
+    else paste(readLines(pipe("xclip -o -selection clipboard"), warn = FALSE), collapse = " ")
+  }, error = function(e) "")
+  if (!nzchar(trimws(txt))) { cat("Nothing on the clipboard. Highlight the question, Ctrl+C, then ASK().\n"); return(invisible()) }
+  cat("Question:", substr(gsub("\\s+", " ", txt), 1, 110), "...\n")
+  FIND(txt)
 }
 
 ## ---- STATS(), REG(), OVB(), FTEST(): one-call reports --------------------------
@@ -978,3 +1025,285 @@ pick("[K17] family income, bwght ~ cigs", "(+) bwght, smokers have lower income 
 pick("[K17] city size, crime ~ police", "correlation, not causation: big cities have more of both")
 ## ZERO CONDITIONAL MEAN (MLR.4) story: "Z is part of U and Z moves with X" -> FAILS (X endogenous).
 ## "Z is part of U but unrelated to X" (weather, random ID) -> still holds.
+
+# ASK()/FIND() TRAINING EXAMPLES (leave alone) ###############################
+## Real PS8-PS11, Exam I and Mock II questions with the block that solves each.
+## ASK()/FIND() compare a new question against these to pick the block.
+EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
+  "K2",
+  "K1",
+  "S5",
+  "S5",
+  "S5",
+  "S6",
+  "O2",
+  "S6",
+  "S1",
+  "S1",
+  "D1",
+  "S7",
+  "S3",
+  "S3",
+  "K8",
+  "D2",
+  "L1",
+  "L2",
+  "L3",
+  "K9",
+  "D3",
+  "K8",
+  "L1",
+  "S3",
+  "K9",
+  "L2",
+  "D3",
+  "D4",
+  "K4",
+  "K3",
+  "K5",
+  "S2",
+  "S2",
+  "K7",
+  "S2",
+  "S2",
+  "S2",
+  "K6",
+  "D6",
+  "D6",
+  "K9",
+  "L1",
+  "D5",
+  "K4",
+  "K7",
+  "K7",
+  "S2",
+  "S2",
+  "V6",
+  "D6",
+  "K14",
+  "S7",
+  "S7",
+  "D7",
+  "D7",
+  "D8",
+  "D8",
+  "B1",
+  "B2",
+  "B3",
+  "L4",
+  "D8",
+  "D8",
+  "K10",
+  "D9",
+  "S7",
+  "K11",
+  "D11",
+  "K12",
+  "K13",
+  "B1",
+  "D10",
+  "D10",
+  "D10",
+  "K14",
+  "B3",
+  "B3",
+  "B3",
+  "K15",
+  "S4",
+  "K2",
+  "S1",
+  "K1",
+  "S7",
+  "S4",
+  "S6",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S6",
+  "S6",
+  "S1",
+  "S1",
+  "S7",
+  "O2",
+  "S6",
+  "D0",
+  "D0",
+  "D0",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "K2",
+  "B3",
+  "S3",
+  "K7",
+  "S4",
+  "K11",
+  "K16",
+  "T2",
+  "L4",
+  "S5",
+  "S1",
+  "S1",
+  "B1",
+  "S2",
+  "L1",
+  "L3",
+  "S7",
+  "M3",
+  "B2",
+  "T1",
+  "D0",
+  "D0",
+  "D7",
+  "D7",
+  "D5",
+  "D10",
+  "D1",
+  "D8",
+  "D6",
+  "D12"),
+text = c(
+  "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
+  "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
+  "(E[X]=4 ) and (E[X^2]=20 ). Find the standard deviation of (3X-4 ). (round to the hundredths)",
+  "( {Var}(X)=4 ), ( {Var}(Y)=3 ), and ( {Cov}(X,Y)=-1.9 ). Find ( {Var}(2X-3Y) ). (round to the hundredths)",
+  "(X ) and (Y ) have the joint distribution below. Find ( {Cor}(X,Y) ). (round to the hundredths) (x ) (y ) (P(X=x, ,Y=y) ) 1 3 0.2 5 3 0.3 7 1 0.4 8 3 0.1",
+  "For the sample (x=(1,4,6,7,9) ), (y=(2,1,6,5,3) ), regress (y ) on (x ) by OLS. Find the residual of the third observation, ((x_3,y_3)=(6,6) ). (round to the hundredths)",
+  "An OLS regression on six observations has residuals -1.6, 2.4, -0.2, 0.7, 1.1, and one more. What is the sixth residual? (round to the hundredths)",
+  "For the sample (x=(3,6,7,9,10,15) ), (y=(12,12,8,15,8,10) ), regress (y ) on (x ) by OLS. Compute ( _{i=1}^{6}x_i u_i ). (round to the hundredths)",
+  "A regression has explained sum of squares ( {SSE}=53 ) and (R^2=0.89 ). Find the sum of squared residuals ( {SSR} ). (round to the hundredths)",
+  "A sample of (n=54 ) observations has sample variance (S_y^2=20 ). Find the total sum of squares ( {SST} ). (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). Run reg <- lm(wage ~ tenure, data = wage1) . What is the OLS residual of the worker in row 12? (round to the hundredths)",
+  "An OLS regression line has intercept ( _0=-5 ) and slope ( _1=2.8 ). The sample mean of (x ) is 4. What is the sample mean of (y )? (round to the hundredths)",
+  "In a regression of (y ) on (x ), the OLS slope is ( _1=2.48 ). Every value of (y ) is then multiplied by 1,000 (for example, dollars to cents when the multiplier is 100). What is the new OLS slope? (round to the hundredths)",
+  "In a regression of (y ) on (x ), the OLS slope is ( _1=0.58 ). Every value of (x ) is then divided by 1,000 (for example, percent to decimal when the divisor is 100). What is the new OLS slope? (round to the hundredths)",
+  "In a regression of (y ) on (x ), every value of (x ) is multiplied by 10. Which statement is correct?",
+  "Data: ceosal1 ( salary = a CEO's salary in thousands of dollars; sales = firm sales in millions of dollars). Run lm(salary ~ sales, data = ceosal1) . If salary is measured in dollars instead of thousands of dollars, what is the OLS slope? (Use the unrounded slope.) (round to the hundredths)",
+  "A log-level regression gives ( { (y)}=1.5+0.02 ,x ). By about what percent does (y ) change when (x ) rises by 2? (Give a percent, e.g. 12.34 for 12.34%.) (round to the hundredths)",
+  "A log-log regression gives ( { (y)}=3.5+1.22 (x) ). By about what percent does (y ) change when (x ) rises by 18%? (Give a percent.) (round to the hundredths)",
+  "A level-log regression gives ( y=87+11.3 (x) ). By about how many units does (y ) change when (x ) rises by 13%? (round to the hundredths)",
+  "A study estimates ( { ( {rent})}=2.1+0.45 ( {income}) ). What does the 0.45 mean?",
+  "Data: wage1 ( wage = average hourly earnings in dollars; exper = years of potential work experience). Run the log-level regression lm(log(wage) ~ exper, data = wage1) . By about what percent does predicted wage change with 10 more years of experience? (Give a percent, e.g. 12.34 for 12.34%. Use the unrounded slope.) (round to the hundredths)",
+  "A log-log regression of CEO salary on firm sales gives ( { ( {salary})}= _0+ _1 ( {sales}) ), with salary in thousands of dollars. Salary is then measured in dollars instead. What happens?",
+  "A log-level regression of ( ( {wage}) ) on tenure, with tenure measured in months , gives a slope of 0.0062. By about what percent does wage rise with one more year of tenure? (Give a percent, e.g. 12.34 for 12.34%.) (round to the hundredths)",
+  "A regression gives ( { ( {salary})}=3.36+0.44 ( {sales}) ), with salary in thousands of dollars. If salary is measured in dollars instead (every salary times 1000), what is the new intercept? (round to the hundredths)",
+  "In which model is the slope read as ( % y 100 _1 x )?",
+  "A log-log regression gives ( { (y)}=2.9+0.94 (x) ). By about what percent does (y ) change when (x ) falls by 8%? (Give a percent; it can be negative.) (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent; sales = firm sales in millions of dollars). Run the log-level regression lm(log(salary) ~ roe, data = ceosal1) . By about what percent does predicted salary change when return on equity rises by 5 points? (Give a percent. Use the unrounded slope.) (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent; sales = firm sales in millions of dollars). Run the level-log regression lm(salary ~ log(sales), data = ceosal1) . By about how many thousand dollars does predicted salary change when sales rise by 10%? (Use the unrounded slope.) (round to the hundredths)",
+  "Theorem 2.1 says that under SLR1–SLR4, (E[ _1]= _1 ). What does this mean?",
+  "In ( {wage}= _0+ _1 , {educ}+U ), which of the following is the most likely to contribute omitted-variable bias to the OLS slope on educ?",
+  "In a sample of workers, every worker has exactly 12 years of education. You regress wage on education. What goes wrong?",
+  "Under SLR1–SLR5, the error variance is ( ^2=66 ) and ( {SST}_X=53 ). Find ( {Var}( _1) ). (round to the hundredths)",
+  "Under SLR1–SLR5, the error standard deviation is ( =20 ). A sample has (n=6 ) observations, and the sample variance of (X ) is (S_X^2=2 ). Find ( {sd}( _1) ). (round to the hundredths)",
+  "Holding everything else fixed, which change makes ( {Var}( _1) ) smaller ?",
+  "Under SLR1–SLR5, the error standard deviation is ( =6 ). A sample has the five (X ) values (x=(3,4,7,8,9) ). Find ( {sd}( _1) ). (round to the hundredths)",
+  "A simple regression on (n=14 ) observations has ( {SSR}=268 ). Find the estimate of the error variance, ( ^2 ). (round to the hundredths)",
+  "A simple regression on (n=13 ) observations has ( {SSR}=437 ), and ( {SST}_X=12 ). Find the standard error ( {se}( _1) ). (round to the hundredths)",
+  "In a regression of food spending on income, the spread of food spending around the regression line grows as income grows. Which statement is correct?",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education). Run reg <- lm(wage ~ educ, data = wage1) . What is ( ), the standard error of the regression? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education). What is ( {SST}_X ) for educ, the total sum of squares of the explanatory variable? (round to the hundredths)",
+  "A log-level regression gives ( { (y)}=2.5+0.01 ,x ). By about what percent does (y ) change when (x ) falls by 1? (Give a percent; it can be negative.) (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; faminc = the family's income in thousands of dollars). Run the log-log regression lm(log(bwght) ~ log(faminc), data = bwght) . By about what percent does predicted birth weight change when family income rises by 20%? (Give a percent.) (round to the hundredths)",
+  "Suppose you could draw 1,000 different random samples from the same population and compute ( _1 ) in each one. If OLS is unbiased (SLR1–SLR4 hold), which statement is correct?",
+  "Why do we prefer an unbiased estimator with a smaller variance ( {Var}( _1) )?",
+  "Under SLR1–SLR5, ( {Var}( _1)= ^2/ {SST}_X ). Holding everything else fixed, which changes would make ( {Var}( _1) ) larger ? Select all that apply.",
+  "A simple regression on (n=11 ) observations has ( =8.6 ), and the sample standard deviation of (X ) is (S_X=1.7 ). Find the standard error ( {se}( _1) ). (round to the hundredths)",
+  "A simple regression uses the five (X ) values (x=(2,3,4,5,9) ) and has ( {SSR}=62 ). Find the standard error ( {se}( _1) ). (round to the hundredths)",
+  "Under SLR1–SLR5, a regression has ( {sd}( _1)=0.32 ). If the sample were 2 times as large, with the (X ) values spread out in the same way (so ( {SST}_X ) is also 2 times as large), what would ( {sd}( _1) ) be? (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent; sales = firm sales in millions of dollars). Run reg <- lm(salary ~ roe, data = ceosal1) . Compute the standard error ( {se}( _1) ) by hand from ( ) and ( {SST}_X ). (round to the hundredths)",
+  "In ( { {wage}}= _0+ _1 , {educ}+ _2 , {exper} ), what does ( _1 ) measure?",
+  "A multiple regression gives ( y=10+2.4x_1+1.7x_2 ). Find the predicted value ( y ) at (x_1=2 ) and (x_2=10 ). (round to the hundredths)",
+  "A multiple regression gives ( y=2+3.8x_1-0.7x_2 ). If (x_1 ) rises by 1 and (x_2 ) rises by 4, by how much does ( y ) change? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education; exper = years of experience; tenure = years with the current employer). Run reg <- lm(wage ~ educ + exper + tenure, data = wage1) . What is the predicted hourly wage of a worker with 14 years of education, 10 years of experience and 5 years of tenure? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education; exper = years of experience; tenure = years with the current employer). Using the same regression of wage on educ, exper and tenure, by how much does the predicted hourly wage change when tenure rises by 3 years, holding education and experience fixed? (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent; sales = firm sales in millions of dollars). Run reg <- lm(log(salary) ~ log(sales) + roe, data = ceosal1) . By about what percent does predicted salary change when return on equity rises by 10 points, holding sales fixed? (Give a percent. Use the unrounded coefficient.) (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent; sales = firm sales in millions of dollars). Using the same regression of log(salary) on log(sales) and roe, what is the predicted salary, in thousands of dollars, of a CEO whose firm has sales of 5,000 (that is, $5 billion) and a return on equity of 15? (Use the unrounded coefficients.) (round to the hundredths)",
+  "Formula (3.23) links the simple and multiple regression slopes: ( _1= _1+ _2 _1 ). The multiple regression of (Y ) on (X_1 ) and (X_2 ) gives ( _1=0.25 ) and ( _2=1.44 ), and the slope from regressing (X_2 ) on (X_1 ) is ( _1=0.11 ). Find the simple-regression slope ( _1 ) from regressing (Y ) on (X_1 ) alone. (round to the hundredths)",
+  "In the population, (Y= _0+ _1X_1+ _2X_2+U ) with ( _2=-1.17 ). You omit (X_2 ) and regress (Y ) on (X_1 ) alone, and the slope from regressing (X_2 ) on (X_1 ) is ( _1=-0.26 ). What is the bias of the simple-regression slope, ( {Bias}( _1)=E[ _1]- _1 )? (round to the hundredths)",
+  "An omitted variable (X_2 ) lowers (Y ) ( ( _2<0 )), and (X_2 ) is positively correlated with (X_1 ). The simple-regression slope on (X_1 ) is:",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education; exper = years of experience; tenure = years with the current employer). Run the multiple regression lm(wage ~ educ + exper, data = wage1) and the regression of the omitted variable on the included one, lm(exper ~ educ, data = wage1) . Compute ( _2 _1 ), the exper coefficient from the first regression times the educ slope from the second. (round to the hundredths)",
+  "A regression gives ( { (y)}=2.4+0.015 ,x_1-0.037 ,x_2 ). If (x_1 ) rises by 3 and (x_2 ) rises by 4, by about what percent does predicted (y ) change? (Give a percent; it can be negative.) (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education; exper = years of experience; tenure = years with the current employer). Run reg <- lm(log(wage) ~ educ + exper + tenure, data = wage1) . By about what percent does predicted wage change when experience rises by 2 years and tenure rises by 1 year, holding education fixed? (Give a percent. Use the unrounded coefficients.) (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; educ = years of education; exper = years of experience; tenure = years with the current employer). Using the same regression of log(wage) on educ, exper and tenure, what is the predicted hourly wage, in dollars, of a worker with 12 years of education, 10 years of experience and 3 years of tenure? (round to the hundredths)",
+  "After an OLS multiple regression of (Y ) on (X_1, ,X_K ) (with an intercept) and residuals ( U_i=Y_i- Y_i ), which statements are always true? Select all that apply.",
+  "Data: gpa1 ( colGPA = college GPA; ACT = ACT score; hsGPA = high-school GPA). Run reg <- lm(colGPA ~ ACT + hsGPA, data = gpa1) . Compute the predicted colGPA at ACT = mean(gpa1$ACT) and hsGPA = mean(gpa1$hsGPA) . (round to the hundredths)",
+  "A multiple regression gives ( y=3.6+0.8x_1-1.2x_2 ). The sample means of the independent variables are ( x_1=4.6 ) and ( x_2=2.9 ). What is the sample mean ( y )? (round to the hundredths)",
+  "Which of these regressions violate MLR3 (no perfect collinearity), so that OLS cannot estimate them? Select all that apply.",
+  "Data: vote1 ( voteA = percent of the vote won by candidate A; expendA and expendB = campaign spending by candidates A and B, in thousands of dollars). Create total spending with vote1$totexpend <- vote1$expendA + vote1$expendB , then run lm(voteA ~ expendA + expendB + totexpend, data = vote1) . What does R report for the coefficient on totexpend?",
+  "Which situation makes MLR4, (E[U X_1, ,X_K]=0 ), fail (so that the (X ) variables are endogenous )?",
+  "Unbiasedness only needs MLR1-MLR4. Why not simply add every variable we can find to the regression?",
+  "Formula (3.23): ( _1= _1+ _2 _1 ). The simple regression of (Y ) on (X_1 ) gives ( _1=-0.36 ). The multiple regression of (Y ) on (X_1 ) and (X_2 ) gives ( _2=-1.18 ), and the slope from regressing (X_2 ) on (X_1 ) is ( _1=-0.51 ). Find the multiple-regression slope ( _1 ). (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; cigs = cigarettes the mother smoked per day during pregnancy; faminc = the family's income in thousands of dollars). Run the simple regression lm(bwght ~ cigs, data = bwght) . What is the slope on cigs (the predicted change in birth weight, in ounces, from one more cigarette per day)? (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; cigs = cigarettes the mother smoked per day during pregnancy; faminc = the family's income in thousands of dollars). Now add family income: reg <- lm(bwght ~ cigs + faminc, data = bwght) . What is the slope on cigs, holding faminc fixed? (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; cigs = cigarettes the mother smoked per day during pregnancy; faminc = the family's income in thousands of dollars). Regress faminc (the variable left out of the simple regression in problem 12) on cigs, lm(faminc ~ cigs, data = bwght) , to get ( _1 ). Compute ( _2 _1 ), the faminc coefficient from the multiple regression times this slope. (round to the hundredths)",
+  "In the birth-weight regressions, the simple-regression cigs slope is about (-0.51 ) and the multiple-regression slope (holding faminc fixed) is about (-0.46 ). Which reading is correct?",
+  "An omitted variable (X_2 ) lowers (Y ) ( ( _2<0 )), and (X_2 ) is negatively correlated with the included (X_1 ). The simple-regression slope on (X_1 ) is:",
+  "A researcher regresses crop yield on fertilizer use across farms, leaving out land quality. Better land raises yield, and farmers tend to use more fertilizer on better land. The simple-regression fertilizer slope most likely:",
+  "A school regresses exam scores on hours of tutoring, leaving out prior ability. Higher ability raises exam scores, but the students who sign up for the most tutoring tend to be the ones with lower prior ability. The simple-regression tutoring slope most likely:",
+  "You regress (Y ) on (X_1 ) alone, leaving out (X_2 ). When does this cause no omitted-variable bias in the slope on (X_1 )? Select all that apply.",
+  "The unemployment rate falls from 5% to 4%. Select all statements that are correct.",
+  "In ( {yield}= _0+ _1 , {fertilizer}+U ), land quality is part of (U ). Suppose farmers put more fertilizer on better-quality land. Then:",
+  "In a sample where the (y ) values are not all equal, every observation lies exactly on the OLS line. Then:",
+  "A researcher fits four candidate lines to the same sample. For each line she records the sum of the residuals, the sum of their absolute values, and the sum of squared residuals. Exactly one of the four lines is the ordinary least squares (OLS) regression line, the line that gives ( _0 ) and ( _1 ). Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 3.80 3.30 B 0.00 3.20 2.40 C -0.50 3.30 2.55 D 1.00 3.00 3.00",
+  "Suppose (y=4+2.9X_1-0.6X_2 ). If (X_1 ) rises by 1 and (X_2 ) falls by 3, by how much does (y ) change? (round to the hundredths)",
+  "The unemployment rate rises from 5.6% to 6.6%. By what percent does the unemployment rate change? Give a percent rounded to the hundredths, e.g. 12.34 for 12.34%.",
+  "Find the sample standard deviation of (x=(5,5,2,12) ). (round to the hundredths)",
+  "A sample has sample covariance (S_{xy}=11 ), sample standard deviation (S_x=3 ), and sample variance (S_y^2=64 ). Find the sample correlation between (x ) and (y ). (round to the hundredths)",
+  "(E[X]=3 ) and (E[X^2]=27 ). Find the standard deviation of (3X-2 ). (round to the hundredths)",
+  "Given (X=x ), (Y ) takes the values 6, 14, and 34 with probabilities 0.5, 0.3, and 0.2. Find (E[3Y+4 X=x] ). (round to the hundredths)",
+  "( {Var}(X)=8 ), ( {Var}(Y)=6 ), and ( {Cov}(X,Y)=-2.9 ). Find ( {Var}(2X-2Y) ). (round to the hundredths)",
+  "(X ) and (Y ) have the joint distribution below. Find ( {Cor}(X,Y) ). (round to the hundredths) (x ) (y ) (P(X=x, ,Y=y) ) 1 4 0.1 4 7 0.4 5 4 0.3 6 2 0.2",
+  "For the sample (x=(1,2,4,9,10) ), (y=(1,1,10,5,9) ), find the OLS slope ( _1 ) from regressing (y ) on (x ). (round to the hundredths)",
+  "For the sample (x=(4,6,7,8,10) ), (y=(4,6,7,1,8) ), regress (y ) on (x ) by OLS. Find the OLS residual of the third observation, ((x_3,y_3)=(7,7) ). (round to the hundredths)",
+  "A sample of (n=44 ) observations has sample variance (S_y^2=7 ). Find the total sum of squares, ( {SST} ). (round to the hundredths)",
+  "A regression has explained sum of squares ( {SSE}=135 ) and (R^2=0.18 ). Find the sum of squared residuals, ( {SSR} ). (round to the hundredths)",
+  "An OLS regression line has intercept ( _0=4 ) and slope ( _1=1.2 ). The sample mean of (x ) is 10. What is the sample mean of (y )? (round to the hundredths)",
+  "An OLS regression on five observations has residuals -0.7, 2.3, 2.3, 1.8, and one more. What is the fifth residual? (round to the hundredths)",
+  "For the sample (x=(1,2,5,10,11,15) ), (y=(5,8,6,10,8,14) ), regress (y ) on (x ) by OLS. Compute ( _{i=1}^{6}x_i u_i ), where ( u_i ) are the OLS residuals. (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent). How many CEOs are in the sample?",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent). What is the sample mean of return on equity? (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent). What is the sample correlation between salary and return on equity? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). Run the OLS regression of wage on tenure. What is the OLS slope? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). Using the OLS regression of wage on tenure, what is the predicted hourly wage of a worker with 10 years of tenure? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). Using the OLS regression of wage on tenure, by how much does the predicted hourly wage change when tenure rises from 3 to 16 years? (round to the hundredths)",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). What percentage of the sample variation in wage is explained by tenure? Give a percent rounded to the hundredths, e.g. 12.34 for 12.34%.",
+  "Data: wage1 ( wage = average hourly earnings in dollars; tenure = years with the current employer). Using the OLS regression of wage on tenure, what is the OLS residual of the worker in the second row of wage1? (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; faminc = the family's income in thousands of dollars). Run the OLS regression of birth weight on family income. What is the explained sum of squares, ( {SSE} )? (round to the hundredths)",
+  "Data: bwght ( bwght = a baby's birth weight in ounces; faminc = the family's income in thousands of dollars). Using the OLS regression of birth weight on family income, by how many ounces does predicted birth weight change when family income rises by 17, that is, by $17,000? (round to the hundredths)",
+  "In price = β₀ + β₁·sqrft + U, neighborhood quality is part of U, and bigger houses tend to be in better neighborhoods. Which statement is correct?",
+  "A researcher regresses crop yield on rainfall, leaving out irrigation. Irrigation raises yield, and farms that get less rain irrigate more. The rainfall slope most likely:",
+  "In log(wage) = β₀ + β₁·educ + U, educ is re-measured in MONTHS instead of years (every value multiplied by 12). What happens?",
+  "Holding everything else fixed, which change makes se(β̂₁) LARGER in a multiple regression?",
+  "A study estimates log(rent) = 0.8 + 0.03·dist, where dist is miles from campus. What does the 0.03 mean?",
+  "A regression of sales on the product's price in dollars AND its price in cents is estimated. What happens?",
+  "Which assumptions make OLS the Best Linear Unbiased Estimator (BLUE)?",
+  "Test H₀: β₁ = 0 against H₁: β₁ > 0 at 5% with critical value c = 1.65. The t-statistic is −2.50. Conclusion?",
+  "log(ŷ) = 1.2 + 0.04x₁ − 0.015x₂. If x₁ FALLS by 2 and x₂ FALLS by 10, by about what percent does predicted y change?",
+  "E[X] = 5 and E[X²] = 34. Find Var(4 − 2X).",
+  "A regression has SSR = 420 and R² = 0.30. Find the EXPLAINED sum of squares, SSE.",
+  "A sample of n = 25 has sample variance of y equal to 12, and the regression has SSR = 168. Find R².",
+  "The simple regression of y on x₁ gives a slope of 0.80. The multiple regression on x₁ and x₂ gives 0.62 on x₁, and regressing x₂ on x₁ gives δ̃₁ = 0.45. Find β̂₂, the coefficient on x₂.",
+  "A simple regression on n = 30 observations has σ̂² = 16, and the sample standard deviation of x is 2. Find se(β̂₁).",
+  "log(wage) = 0.5 + 0.0062·tenure, with tenure measured in MONTHS. By about what percent does wage rise with two more YEARS of tenure?",
+  "ŷ = 40 + 15·log(x). By about how many units does y change when x FALLS by 6%?",
+  "log(price) = 4.2 + 0.0003·sqrft + 0.02·bdrms, with price in $1000s. What is the predicted price, in $1000s, of a 2,000 sq ft home with 3 bedrooms?",
+  "ŷ = 12 − 0.5x₁ + 3x₂. The sample mean of y is 20 and the sample mean of x₂ is 4. What is the sample mean of x₁?",
+  "In the population, β₁ = 2 and β₂ = 0.9. You omit x₂, and the slope from regressing x₂ on x₁ is δ̃₁ = −0.3. What is the expected value of the simple-regression slope, E[β̃₁]?",
+  "A regression on n = 88 observations with k = 3 slopes gives β̂₁ = −0.042 and se(β̂₁) = 0.018. What is the t-statistic for H₀: β₁ = 0?",
+  "Data: hprice1 (price = house price in $1000s; sqrft = square footage; bdrms = bedrooms; lotsize = lot size in sq ft). How many houses are in the sample?",
+  "Data: hprice1. What is the sample correlation between price and sqrft?",
+  "Data: hprice1. Regress price on sqrft and bdrms. What is the predicted price (in $1000s) of a 2,000 sq ft house with 4 bedrooms?",
+  "Same regression. By how much does predicted price change (in $1000s) when square footage rises by 100, holding bedrooms fixed?",
+  "Data: hprice1. Run lm(log(price) ~ log(lotsize) + sqrft). By about what percent does predicted price change when lot size rises by 10%, holding sqrft fixed?",
+  "Data: meap93 (math10 = % passing a math test; lnchprg = % of students in the lunch program; expend = spending per student). Regress math10 on lnchprg and log(expend). What is the coefficient on lnchprg?",
+  "Data: wage1. Regress wage on educ and exper. What is the explained sum of squares, SSE?",
+  "Data: ceosal2 (salary = CEO salary in $1000s; sales = firm sales; ceoten = years as CEO). Run lm(log(salary) ~ log(sales) + ceoten). By about what percent does predicted salary change with one more year as CEO, holding sales fixed?",
+  "Data: hprice1. For the regression of price on sqrft and bdrms, what is σ̂ (the standard error of the regression)?",
+  "Same regression. What is the t-statistic on bdrms?"))
