@@ -1,4 +1,28 @@
 # =======================================================================
+# BEFORE YOU START: DO THESE 3 THINGS ONCE (with internet)
+# =======================================================================
+#  1. Install the 2 packages. Paste this in the Console, press Enter:
+#        install.packages(c("wooldridge", "rstudioapi"))
+#     (asked "install from sources?" -> type no.  "personal library?" -> yes)
+#
+#  2. Check it worked. Paste this in the Console:
+#        library(wooldridge); nrow(wage1)
+#     It should print  [1] 526
+#
+#  3. Point R at this folder: Session -> Set Working Directory ->
+#     To Source File Location. Then run the whole file: Cmd+Shift+Enter
+#     (Windows: Ctrl+Shift+Enter). The SETUP CHECK box it prints should say
+#     OK / OK / found.
+#
+#  What the 2 packages do:
+#    wooldridge = the course datasets (wage1, ceosal1, ...). If it won't
+#                 install, the script uses the copies in data/ instead.
+#    rstudioapi = lets FIND() jump your cursor to the right block.
+#                 Optional: without it FIND() just prints the line number.
+#  Do steps 1-3 at home AND on the lab PC before the exam starts.
+# =======================================================================
+
+# =======================================================================
 # ECN 377 - EXAM II SCRIPT (Wed Nov 11). Round every answer to hundredths.
 # Built from EVERY question on PS8-PS11 and Quizzes 7-10 (the exam is drawn from
 # them, like Exam I was drawn from PS1-PS7), plus D21-D22 t-tests.
