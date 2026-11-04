@@ -9,6 +9,9 @@
 #        library(wooldridge); nrow(wage1)
 #     It should print  [1] 526
 #
+#  0. Get the files: github.com/luchglide/econ377 -> green Code button ->
+#     Download ZIP -> unzip -> open exam2.R from that folder.
+#
 #  3. Point R at this folder: Session -> Set Working Directory ->
 #     To Source File Location. Then run the whole file: Cmd+Shift+Enter
 #     (Windows: Ctrl+Shift+Enter). The SETUP CHECK box it prints should say
@@ -130,7 +133,9 @@ cat("\n---- SETUP CHECK ----\n")
 cat(sprintf("  wooldridge package : %s\n", if (requireNamespace("wooldridge", quietly = TRUE)) "OK" else "not installed -> using data/ CSV copies"))
 cat(sprintf("  rstudioapi package : %s\n", if (requireNamespace("rstudioapi", quietly = TRUE)) "OK (FIND jumps to blocks)" else "not installed -> FIND prints line numbers"))
 cat(sprintf("  data/ folder       : %s\n", if (dir.exists("data")) "found" else
+  if (requireNamespace("wooldridge", quietly = TRUE)) "not found, but not needed (wooldridge is OK)" else
   "NOT FOUND -> Session > Set Working Directory > To Source File Location, then rerun"))
+cat("  RUN THE WHOLE FILE (Ctrl+Shift+Enter or the Source button), never pieces of it.\n")
 if (!requireNamespace("wooldridge", quietly = TRUE) && !dir.exists("data"))
   cat("  !! No datasets available: fix the working directory (above) or install wooldridge.\n")
 cat("---------------------\n")
