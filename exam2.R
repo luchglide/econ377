@@ -94,6 +94,9 @@
 #        solve it: you type the question's numbers into the # <-- CHANGE lines.
 #        Or paste it inside QUOTES: ASK("...the whole question...")
 #        (no quotes = "unexpected input" error). Type ASK in the CONSOLE, not here.
+#        SHORTHAND works too: say what they GAVE and what they WANT, e.g.
+#          ASK("gave SSE and R2, want SSR")      ASK("data hprice1 log price on log sqrft")
+#          ASK("given sigma, n, S_x, want se")   ASK("omitted var raises y, corr with x negative, bias?")
 #        Or type a few words yourself: FIND("SSE R2 find SSR"). Not it? GO("S2").
 #  Way 2: open RStudio's outline (Cmd/Ctrl+Shift+O, or the list icon at the top
 #        right of this script). Every block is listed there by tag. Click to jump.
@@ -287,7 +290,8 @@ GO <- function(tag) {
     q <- if (ds != "?") .strip_desc(s, ds) else s
     h <- function(p) grepl(p, q, perl = TRUE)
     logy <- h("(regress|lm\\(|estimate|of|with)\\s*(the\\s*)?(natural\\s*)?log\\s*(\\(|of\\s)\\s*\\w+\\)?\\s*(~|on|as the dependent|=)|log\\(\\w+\\)\\s*(~|as the dependent|=)|natural log of \\w+ as the dependent|log\\(\\w+\\) as the dependent")
-    logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity")
+    logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity|\\bon log\\s+\\w+")
+    if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b")) logy <- TRUE
     if (h("log-log|constant[- ]elasticity|elasticity of")) { logy <- TRUE; logx <- TRUE } else if (h("log-level")) { logy <- TRUE; logx <- FALSE } else if (h("level-log")) { logy <- FALSE; logx <- TRUE }
     two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors")
     if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
@@ -307,12 +311,14 @@ GO <- function(tag) {
     if (h("adjusted r|everything|all the output")) add("D13", 0.8)
     return(list(bonus = b, gate = "data"))
   }
-  logeq <- has("\\b(log|ln)\\s*\\(|log-log|log-level|level-log|constant[- ]elasticity|elasticity")
-  num <- grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
+  logeq <- has("\\b(log|ln)\\s*\\(|\\blog \\w+ on\\b|\\bon log\\b|\\blog y\\b|\\blog x\\b|log-log|log-level|level-log|constant[- ]elasticity|elasticity")
+  short <- has("\\bgiven\\b|\\bgave\\b|\\bwant\\b|\\bknow\\b|\\bneed\\b|\\bfind\\b")
+  num <- short || grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
   # ---------- PART II: numbers in the question ----------
   if (has("residuals?[^.?]*-?[0-9.]+\\s*,\\s*-?[0-9.]+") && has("one more|missing|final|last|\\?\\s*[.,]|, \\?|(sixth|fifth|seventh|last) residual")) add("O2", 1.6)
   if (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]|sample (standard deviation|variance|mean) of x")) add(c("S6"), 1.4)
   pts <- has("\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)\\s*,\\s*\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)") || (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]"))
+  if (has("x and y (lists?|values|data|points)|lists? of x|x list|raw x and y")) pts <- TRUE
   if (pts) add("S6", 1.8)
   if (has("\\bx\\s*=\\s*[\\[(]|x takes the values|x values") && has("sigma|error (standard deviation|variance)|ssr")) add(c("S2"), 1.6)
   if (has("correlation") && has("covariance|cov\\s*\\(|s_?\\{?xy")) add("S5", 1.8)
@@ -331,11 +337,12 @@ GO <- function(tag) {
   if (num && ssonly) add("S2", 1.8)
   if (num && !ssonly && !pts && has("\\bsse\\b|\\bssr\\b|\\bsst\\b(?!_?x)|r\\^2|r-squared|r2\\b|explained|sum of squares|sample variance of (y|the dependent)") &&
       !has("sigma|se\\s*\\(|sd\\s*\\(|standard error|sst_?x|vif")) add(c("S1"), 1.4)
+  if (num && !logeq && !has("percent|%") && has("x_?1\\b.*x_?2\\b") && has("change|up|down|rises|falls|predict")) add("S7", 1.2)
   if (num && !ttest && !has("correlation") && has("sigma|sst_?x|sst_?[0-9j]|se\\s*\\(|sd\\s*\\(|standard error|standard deviation of the slope|variance of the (ols )?slope|error variance|var\\s*\\(\\s*b|s_?x")) add(c("S2"), 1.2)
   if (has("measured in|instead|divided by|multiplied by|re-measured|in cents|in thousands|decimals?\\b|in months|converted|units"))
     add(if (num && !has("what happens|which (statement|estimates|coefficient)|does .* change|affects")) c("S3") else c("K8"), 1.4)
   if (num && logeq && has("percent|%|how much|by how many|change") && !has("what does .* mean|interpret|in which model"))
-    { if (has("x_?2\\b|, x\\b")) { add("L4", 1.8); add("S4", 1.0) } else add("S4", 1.4) }
+    { if (has("x_?2\\b|, x_?[0-9]")) { add("L4", 1.8); add("S4", 1.0) } else add("S4", 1.4) }
   if (num && !logeq && has("by (about )?what percent") && has("x_?2\\b")) add("L4", 1.4)
   if (num && has("percentage[- ]point|from [0-9.]+% to [0-9.]+%|rises from [0-9.]+%|falls from [0-9.]+%")) add("S4", 1.4)
   if (num && !logeq && has("yhat|y-hat|-hat\\s*=|\\bhat\\s*=|=\\s*-?[0-9.]+\\s*[+-]\\s*[0-9.]+\\s*\\*?\\s*[a-z]|y-bar|ybar|mean of y|sample mean of y|intercept\\?")) add(c("S7"), 1.2)
