@@ -465,6 +465,12 @@ REG <- function(formula, data, at = NULL, from = NULL, to = NULL, row = NULL,
   vars <- all.vars(formula)[-1]
   base <- lapply(model.frame(lm(reformulate(vars, yname), data = data))[vars], mean)
   pred <- function(vals) { nd <- base; nd[names(vals)] <- vals; predict(fit, as.data.frame(nd)) }
+  nm <- function(v, what) {                       # at = 10 / c(14, 10, 5) also work: matched to x's in formula order
+    if (is.null(v) || !is.null(names(v))) return(v)
+    if (length(v) != length(vars)) stop(sprintf("REG: %s needs one number per x (%s), e.g. %s = list(%s = 10)",
+                                               what, paste(vars, collapse = ", "), what, vars[1]), call. = FALSE)
+    v <- setNames(as.list(v), vars); info(paste0(what, " used:"), paste(vars, unlist(v), sep = " = ", collapse = ", ")); v }
+  at <- nm(at, "at"); from <- nm(from, "from"); to <- nm(to, "to")
   if (!is.null(at)) { miss <- setdiff(vars, names(at))
     if (length(miss)) info("WARNING: set to their mean:", paste(miss, collapse = ", "))
     p <- pred(at); ans(paste0("prediction of ", yname), p); if (logy) ans("prediction in levels = exp(above)", exp(p)) }
