@@ -43,7 +43,11 @@
 #   2. Each block starts with LOOKS LIKE: (a real question of that type).
 #      Check it matches.
 #   3. Change ONLY the lines marked  # <-- CHANGE.
-#   4. Highlight the block, Ctrl+Enter, copy the ">>> ANSWER" line.
+#   4. RUN THE WHOLE BLOCK: click anywhere inside it and press
+#        Mac: Cmd+Option+T      Windows: Ctrl+Alt+T     ("Run Current Section")
+#      Never highlight just a few lines: the CHANGE lines must run too.
+#      If the output shows the block's DEFAULTS numbers, your edits didn't run.
+#   5. Read the ">>> ANSWER" line whose LABEL matches the question's wording.
 #
 # ORDER ON THE EXAM: Part 1 real data first (fast points), then Part 2,
 # then Part 3 multiple choice. Never leave a blank. Stuck > 3 min: move on.
@@ -150,6 +154,10 @@ ans  <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(ro
 ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 4), nsmall = 4)))
 pick <- function(label, x) cat(sprintf(">>> PICK   %-38s %s\n", label, x))
 info <- function(label, x) cat(sprintf("    %-45s %s\n", label, x))
+part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-heading inside a block
+fx <- function(a, b, v = "X") {                                        # writes aX + b as it would appear in a question
+  a_s <- if (a == 1) v else if (a == -1) paste0("-", v) else paste0(format(a), v)
+  if (b == 0) a_s else paste0(a_s, if (b > 0) " + " else " - ", format(abs(b))) }
 get_data <- function(name) {
   if (requireNamespace("wooldridge", quietly = TRUE)) {
     e <- new.env(); data(list = name, package = "wooldridge", envir = e); get(name, e)
@@ -244,6 +252,7 @@ GO <- function(tag) {
   if (is.na(n)) { cat("No block [", tag, "].\n", sep = ""); return(invisible()) }
   ok <- tryCatch({ rstudioapi::navigateToFile(EXAM2_PATH, line = n, column = 1); TRUE }, error = function(e) FALSE)
   cat(sprintf("  [%s] is at line %d%s\n", tag, n, if (ok) " -> cursor moved there" else " (Cmd/Ctrl+F the tag)"))
+  cat("  Edit the # <-- CHANGE lines, then run the WHOLE block: Cmd+Option+T (Mac) / Ctrl+Alt+T (Win)\n")
   invisible(n)
 }
 ## ---- matcher used by FIND() and ASK(): keywords + similarity to real past questions
@@ -795,26 +804,35 @@ ans("[S4] percentage-POINT change new - old", s4_new - s4_old)
 ## LOOKS LIKE: "E[X]=3, E[X^2]=27: sd of 3X-2?" / "Var(X)=8, Var(Y)=6, Cov=-2.9: Var(2X-2Y)?"
 ##   / "joint distribution below: Cor(X,Y)?" / "Y takes 6, 14, 34 w.p. .5 .3 .2: E[3Y+4]?"  (Exam I Q18-21, PS8 #3-5)
 ## DEFAULTS (Exam I): sd(3X-2) 12.73 | Var(2X-2Y) 79.20 | Cor -0.43 | E[3Y+4] 46.00
+## "4 - 2X" means a = -2, b = 4 (the number in front of X is a). Unknown things stay NA.
+## RUN: click inside this block, Cmd+Option+T (Mac) / Ctrl+Alt+T (Win). Seeing the DEFAULTS above = your edits didn't run.
 s5_EX <- 3; s5_EX2 <- 27; s5_VarX <- NA                     # <-- CHANGE: E[X] and E[X^2] (or Var(X) directly)
 s5_a <- 3; s5_b <- -2                                       # <-- CHANGE: transform aX + b
-if (is.na(s5_VarX)) s5_VarX <- s5_EX2 - s5_EX^2
-ans("[S5] Var(X)", s5_VarX); ans("[S5] sd(X)", sqrt(s5_VarX))
-ans("[S5] E[aX+b]", s5_a * s5_EX + s5_b); ans("[S5] Var(aX+b) = a^2 Var", s5_a^2 * s5_VarX)
-ans("[S5] sd(aX+b) = |a| sd", abs(s5_a) * sqrt(s5_VarX))
+part(sprintf("PART A: one variable X, transform %s", fx(s5_a, s5_b)))
+if (is.na(s5_VarX)) { s5_VarX <- s5_EX2 - s5_EX^2
+  ans(sprintf("Var(X) = %g - %g^2", s5_EX2, s5_EX), s5_VarX) } else ans("Var(X) (given)", s5_VarX)
+ans("sd(X)", sqrt(s5_VarX))
+ans(sprintf("E[%s]", fx(s5_a, s5_b)), s5_a * s5_EX + s5_b)
+ans(sprintf("Var(%s) = (%g)^2 x Var(X)", fx(s5_a, s5_b), s5_a), s5_a^2 * s5_VarX)
+ans(sprintf("sd(%s) = |%g| x sd(X)", fx(s5_a, s5_b), s5_a), abs(s5_a) * sqrt(s5_VarX))
 s5_vx <- 8; s5_vy <- 6; s5_cov <- -2.9; s5_c1 <- 2; s5_c2 <- -2   # <-- CHANGE: Var(c1 X + c2 Y), minus goes INTO c2
-ans("[S5] Var(c1X + c2Y)", s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
-ans("[S5] Cor(X,Y) = Cov/(sdX sdY)", s5_cov / sqrt(s5_vx * s5_vy))
+part(sprintf("PART B: two variables, Var(X)=%g Var(Y)=%g Cov=%g", s5_vx, s5_vy, s5_cov))
+ans(sprintf("Var(%s)", sub("X - ", "X - ", paste0(fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")))),
+    s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
+ans("Cor(X,Y) = Cov/(sdX sdY)", s5_cov / sqrt(s5_vx * s5_vy))
 s5_x <- c(1, 4, 5, 6); s5_y <- c(4, 7, 4, 2); s5_p <- c(0.1, 0.4, 0.3, 0.2)   # <-- CHANGE a probability table
+part("PART C: joint probability table of X and Y")
 s5_EXt <- sum(s5_x * s5_p); s5_EYt <- sum(s5_y * s5_p)
 s5_Vx <- sum(s5_x^2 * s5_p) - s5_EXt^2; s5_Vy <- sum(s5_y^2 * s5_p) - s5_EYt^2
 s5_C <- sum(s5_x * s5_y * s5_p) - s5_EXt * s5_EYt
-ans("[S5] table E[X]", s5_EXt); ans("[S5] table E[Y]", s5_EYt); ans("[S5] table E[XY]", sum(s5_x * s5_y * s5_p))
-ans("[S5] table Var(X)", s5_Vx); ans("[S5] table Var(Y)", s5_Vy)
-ans("[S5] table Cov(X,Y)", s5_C); ans("[S5] table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
+ans("table E[X]", s5_EXt); ans("table E[Y]", s5_EYt); ans("table E[XY]", sum(s5_x * s5_y * s5_p))
+ans("table Var(X)", s5_Vx); ans("table Var(Y)", s5_Vy)
+ans("table Cov(X,Y)", s5_C); ans("table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
 s5_v <- c(6, 14, 34); s5_pv <- c(0.5, 0.3, 0.2); s5_A <- 3; s5_B <- 4   # <-- CHANGE one-variable table, E[AY+B]
+part(sprintf("PART D: Y takes %s with probabilities %s", paste(s5_v, collapse = ", "), paste(s5_pv, collapse = ", ")))
 s5_E <- sum(s5_v * s5_pv)
-ans("[S5] one-var E[Y]", s5_E); ans("[S5] one-var Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
-ans("[S5] one-var E[AY+B]", s5_A * s5_E + s5_B)
+ans("E[Y]", s5_E); ans("Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
+ans(sprintf("E[%s]", fx(s5_A, s5_B, "Y")), s5_A * s5_E + s5_B)
 
 ## ======================================================================
 ## [S6] SMALL-SAMPLE OLS SOLVER: type x and y, get EVERYTHING ----
