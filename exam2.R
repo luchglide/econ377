@@ -159,7 +159,7 @@ CATALOG <- list(
   c("S6",  "SOLVER small sample: type x and y, get slope, intercept, residuals, R^2, cor ...", "sample x= y= regress by hand slope intercept residual observation predict sum sample standard deviation covariance correlation"),
   c("S7",  "SOLVER equation: prediction, change, ybar, % change, exp() for logged y", "yhat equation predicted value change rises falls sample mean ybar means intercept percent dollars"),
   c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns"),
-  c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained"),
+  c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained sum of squares"),
   c("D2",  "Data: measure y or x in other units, new slope", "data units measured instead dollars thousands slope rescale percent decimal"),
   c("D3",  "Data: log-level, % change in y", "data log-level log percent change rises points"),
   c("D4",  "Data: level-log, change in y units", "data level-log log sales rise percent thousand dollars"),
@@ -194,8 +194,8 @@ CATALOG <- list(
   c("V5",  "se(b1) from SSR, n, SST_x", "standard error se ssr sst_x n observations"),
   c("V6",  "sd(b1) when the sample is k times as large", "times as large sample sd spread same way"),
   c("V7",  "multiple regression Var(bj) with Rj^2 / VIF", "variance inflation vif multicollinearity rj2 r-squared other"),
-  c("B1",  "OVB formula (3.23): solve for any piece", "formula 3.23 simple multiple slope delta b1tilde find"),
-  c("B2",  "Bias = beta2 * delta1", "bias beta2 delta1 omit e[b1tilde]"),
+  c("B1",  "OVB formula (3.23): solve for any piece", "formula 3.23 simple multiple slope delta b1tilde b1hat b2hat b2 find coefficient"),
+  c("B2",  "Bias = beta2 * delta1 (or expected simple slope)", "bias beta2 delta1 omit e[b1tilde] expected value of the simple slope true beta1"),
   c("B3",  "direction of omitted-variable bias (sign table)", "biased upward downward overstates understates omitted direction sign"),
   c("P1",  "sd(aX+b) from E[X] and E[X^2]", "e[x] e[x^2] standard deviation 3x"),
   c("P2",  "Var(aX+bY) with a covariance", "var(x) var(y) cov(x,y) var(2x"),
@@ -204,7 +204,23 @@ CATALOG <- list(
   c("T2",  "decision from a given t and c, or a p-value", "given t critical value reject fail p-value alpha"),
   c("T3",  "confidence interval", "confidence interval ci 95 lower upper"),
   c("T4",  "F-statistic", "f statistic joint restricted unrestricted"),
-  c("K",   "MULTIPLE CHOICE concepts: see [K1]-[K16]", "which statement correct means what happens mean assumption fails violate select all")
+  c("K1",  "MC: which candidate line is OLS (sum u, sum |u|, sum u^2)", "candidate lines four ols line sum residuals absolute squared"),
+  c("K2",  "MC: zero conditional mean / MLR.4 holds or fails (something in U moves with x)", "part of u zero conditional mean e[u assumption fails holds endogenous exogenous tend to"),
+  c("K3",  "MC: which variable causes omitted-variable bias", "most likely contribute omitted-variable bias ability family income id random"),
+  c("K4",  "MC: what unbiased means", "unbiased theorem 2.1 e[b1 averaged many samples researchers"),
+  c("K5",  "MC: x has no variation (SLR.3)", "every worker exactly same value goes wrong no variation"),
+  c("K6",  "MC: heteroskedasticity (spread grows with x)", "spread grows heteroskedasticity homoskedasticity slr5 mlr5"),
+  c("K7",  "MC: what makes Var / se of b1 larger or smaller", "makes var larger smaller se spread out bunched sample error variance correlated other regressors"),
+  c("K8",  "MC: what happens to b0, b1, R^2 when units change", "multiplied measured instead happens slope intercept r2 divided units cents months"),
+  c("K9",  "MC: what does the slope mean in a log model", "what does mean 1% rise associated log elasticity interpretation"),
+  c("K10", "MC: properties always true after OLS", "always true residuals average sample means covariance select all properties"),
+  c("K11", "MC: perfect collinearity / MLR.3 violations", "perfect collinearity mlr3 violate cannot estimate dollars cents exact total"),
+  c("K12", "MC: what makes MLR.4 fail", "mlr4 fail endogenous left out functional form"),
+  c("K13", "MC: why not add every variable", "add every variable why not too many"),
+  c("K14", "MC: reading simple vs multiple slopes", "simple multiple slope reading holding fixed riding along"),
+  c("K15", "MC: when omitting x2 causes no bias", "no bias when omitting uncorrelated no effect"),
+  c("K16", "MC: assumptions (BLUE, Gauss-Markov), t-test and p-value concepts", "blue gauss-markov best linear unbiased assumptions mlr1 mlr5 normality p-value meaning significant"),
+  c("K17", "MC: OVB stories (ability, land, motivation, income, tutoring...)", "story scenario omitted overstates understates direction")
 )
 EXAM2_PATH <- tryCatch(if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable())
   rstudioapi::getSourceEditorContext()$path else "", error = function(e) "")
@@ -221,7 +237,7 @@ GO <- function(tag) {
 FIND <- function(words) {
   stop <- c("the","of","in","by","a","an","and","to","is","what","does","when","how","are","at","on",
             "for","with","its","that","this","be","as","or","if","about","run","use","give","round","hundredths",
-            "regression","regress","data","find","value","values","x","y","which","statement","correct")
+            "regression","regress","find","value","values","x","y","which","statement","correct","what","happens")
   w <- unique(tolower(strsplit(gsub("[?.:;()\"']", " ", words), "[ ,]+")[[1]]))
   w <- w[nchar(w) > 1 & !(w %in% stop)]
   txt <- sapply(CATALOG, function(e) tolower(paste(e[1], e[2], e[3])))
@@ -230,6 +246,7 @@ FIND <- function(words) {
   hit <- matrix(hit, nrow = length(txt))
   idf <- log((length(txt) + 1) / (colSums(hit) + 0.5))      # rare words count more
   sc <- as.vector(hit %*% pmax(idf, 0))
+  if ("data" %in% w) sc <- sc * ifelse(grepl("^D", sapply(CATALOG, `[`, 1)), 1.6, 1)   # "Data:" question -> real-data blocks first
   o <- order(-sc); o <- o[sc[o] > 0][1:min(5, sum(sc > 0))]
   if (!length(o) || is.na(o[1])) { cat("No match. Try other words from the question.\n"); return(invisible()) }
   for (i in o) cat(sprintf("  [%s]  %-72s\n", CATALOG[[i]][1], CATALOG[[i]][2]))
