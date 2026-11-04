@@ -70,9 +70,11 @@ get_data <- function(name) {
     e <- new.env(); data(list = name, package = "wooldridge", envir = e); get(name, e)
   } else read.csv(file.path("data", paste0(name, ".csv")))
 }
-for (d in c("wage1", "ceosal1", "bwght", "gpa1", "vote1", "campus", "rdchem", "mlb1"))
+## Loads every dataset the course has used (all have offline copies in data/).
+for (d in c("wage1", "wage2", "ceosal1", "ceosal2", "bwght", "gpa1", "gpa2", "vote1", "campus", "rdchem",
+            "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain"))
   assign(d, get_data(d))
-## Any other dataset: hprice1 <- get_data("hprice1")
+## Any other dataset: name <- get_data("name")  (needs the wooldridge package if no CSV)
 
 ## ---- FIND(): type words from the question, get the block tag -----------------
 CATALOG <- list(
