@@ -150,9 +150,10 @@ cat("  RUN THE WHOLE FILE (Ctrl+Shift+Enter or the Source button), never pieces 
 if (!requireNamespace("wooldridge", quietly = TRUE) && !dir.exists("data"))
   cat("  !! No datasets available: fix the working directory (above) or install wooldridge.\n")
 cat("---------------------\n")
-ans  <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 2), nsmall = 2)))
-ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-38s %s\n", label, format(round(unname(x), 4), nsmall = 4)))
-pick <- function(label, x) cat(sprintf(">>> PICK   %-38s %s\n", label, x))
+ans  <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 2), nsmall = 2)))
+ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 4), nsmall = 4)))
+pick <- function(label, x) cat(sprintf(">>> PICK   %-50s -> %s\n", label, x))
+blk  <- function(tag, what) cat(sprintf("\n==== [%s] %s ====\n", tag, what))     # heading printed when a block runs
 info <- function(label, x) cat(sprintf("    %-45s %s\n", label, x))
 part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-heading inside a block
 fx <- function(a, b, v = "X") {                                        # writes aX + b as it would appear in a question
@@ -515,182 +516,293 @@ FTEST <- function(unrestricted, restricted, data, alpha = 0.05) {
 
 # PART 1 - REAL DATA ########################################################
 cat("\n#################### PART 1 - REAL DATA ####################\n")
+## Every block below works the same way:
+##   1. Change ONLY the lines that end in  # <-- CHANGE   (names go in "quotes").
+##   2. Run the WHOLE block: click inside it, Cmd+Option+T (Mac) / Ctrl+Alt+T (Windows).
+##   3. Read the >>> ANSWER line whose label matches the question's wording.
+##   If you see the block's DEFAULTS numbers, your changes didn't run.
 
 ## ======================================================================
-## [D0] n, mean, sd, correlation of columns ----
+## [D0] DATA SUMMARY: n, mean, sd, variance, correlation, min, max, counts ----
 ## LOOKS LIKE: "Data: ceosal1. How many CEOs are in the sample?" / "sample mean of roe?"
-##   / "sample correlation between salary and roe?"          (Exam I Q29-Q31)
-## A correlation NEVER comes from lm(). It must be between -1 and 1.
-## DEFAULTS -> 209, 17.18, 0.11
-d0_data <- ceosal1                                          # <-- CHANGE dataset
-ans("[D0] n = nrow(data)", nrow(d0_data))
-ans("[D0] mean(data$x)", mean(d0_data$roe))                 # <-- CHANGE column
-ans("[D0] sd(data$x)", sd(d0_data$roe))                     # <-- CHANGE column
-ans("[D0] cor(data$x, data$y)", cor(d0_data$salary, d0_data$roe))   # <-- CHANGE columns
-ans("[D0] var(data$x)", var(d0_data$roe)); ans("[D0] cov(data$x, data$y)", cov(d0_data$salary, d0_data$roe))
-ans("[D0] min", min(d0_data$roe)); ans("[D0] max", max(d0_data$roe)); ans("[D0] median", median(d0_data$roe))
-## 0/1 column (female, smoker...): mean = SHARE with 1, e.g. mean(wage1$female) = 0.48 -> 48% women.
-## "How many have x > 20?"  ->  sum(d0_data$roe > 20)      "...equal to 0?"  ->  sum(d0_data$roe == 0)
-ans("[D0] how many rows with x > 20", sum(d0_data$roe > 20))  # <-- CHANGE condition
+##   / "sample correlation between salary and roe?" / "what share of wage1 is female?"  (Exam I Q29-31)
+## A correlation NEVER comes from lm() and is always between -1 and 1.
+## A 0/1 column (female, smoker): its MEAN is the SHARE that are 1 (0.48 -> 48% women).
+## DEFAULTS: n 209 | mean of roe 17.18 | sd of roe 8.52 | correlation 0.11
+# ---- YOUR NUMBERS: change these lines ----
+d0_data <- "ceosal1"     # <-- CHANGE  dataset name, in quotes
+d0_x    <- "roe"         # <-- CHANGE  the column the question is about
+d0_y    <- "salary"      # <-- CHANGE  a second column (only for correlation / covariance)
+d0_cut  <- 20            # <-- CHANGE  only for "how many have <column> above ___?"
+# ---- ANSWERS: nothing to change below ----
+blk("D0", sprintf("summary of %s in %s", d0_x, d0_data))
+d0_df <- get(d0_data); d0_v <- d0_df[[d0_x]]; d0_w <- d0_df[[d0_y]]
+ans(sprintf("n = number of rows in %s", d0_data), nrow(d0_df))
+ans(sprintf("mean of %s", d0_x), mean(d0_v, na.rm = TRUE))
+ans(sprintf("sd of %s", d0_x), sd(d0_v, na.rm = TRUE))
+ans(sprintf("variance of %s", d0_x), var(d0_v, na.rm = TRUE))
+ans(sprintf("min of %s", d0_x), min(d0_v, na.rm = TRUE)); ans(sprintf("max of %s", d0_x), max(d0_v, na.rm = TRUE))
+ans(sprintf("median of %s", d0_x), median(d0_v, na.rm = TRUE))
+ans(sprintf("how many rows with %s > %g", d0_x, d0_cut), sum(d0_v > d0_cut, na.rm = TRUE))
+ans(sprintf("correlation of %s and %s", d0_y, d0_x), cor(d0_w, d0_v, use = "complete.obs"))
+ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "complete.obs"))
 
 ## ======================================================================
-## [D1] simple regression: slope, prediction, change, R^2, residual of a row ----
-## LOOKS LIKE: "Data: wage1. Run reg <- lm(wage ~ tenure). What is the OLS slope? /
-##   predicted wage at 10 years of tenure? / change from 3 to 16 years? / % of
-##   variation explained? / residual of the worker in row 12?"  (Exam I, PS8 #11, Q7 #11)
-## DEFAULTS -> slope 0.18 | pred 6.76 | change 2.31 | R^2% 12.03 | row 12 resid 3.14
-d1_reg <- lm(wage ~ tenure, data = wage1)                   # <-- CHANGE y ~ x, data
-d1_b <- d1_reg$coefficients
-ans("[D1] slope b[2]", d1_b[2])
-ans("[D1] intercept b[1]", d1_b[1])
-ans("[D1] prediction b[1] + b[2]*x", d1_b[1] + d1_b[2] * 10)             # <-- CHANGE x
-ans("[D1] change b[2]*(new - old)", d1_b[2] * (16 - 3))                   # <-- CHANGE new, old
-ans("[D1] R^2 percent", 100 * summary(d1_reg)$r.squared)
-ans("[D1] residual of row i", d1_reg$residuals[12])                      # <-- CHANGE row
+## [D1] SIMPLE REGRESSION ON DATA: slope, prediction, change, R^2, residual, SSE/SSR/SST ----
+## LOOKS LIKE: "Data: wage1. Regress wage on tenure. What is the OLS slope? / predicted wage
+##   at 10 years of tenure? / change from 3 to 16 years? / % of variation explained? /
+##   residual of the worker in row 12?"   (Exam I Q32-38, PS8 #11)
+## PREDICTION = a level ("has 10 years"): keeps the intercept.
+## CHANGE = "rises by" / "from 3 to 16": no intercept. "Rises by 13" = from 0 to 13.
+## DEFAULTS: slope 0.18 | prediction 6.76 | change 2.31 | R^2 12.03% | row 12 residual 3.14
+# ---- YOUR NUMBERS: change these lines ----
+d1_data    <- "wage1"          # <-- CHANGE  dataset name, in quotes
+d1_formula <- wage ~ tenure    # <-- CHANGE  y ~ x
+d1_at      <- 10               # <-- CHANGE  prediction: "predicted y when x = ___"
+d1_from    <- 3                # <-- CHANGE  change: x goes FROM ___ ...
+d1_to      <- 16               # <-- CHANGE  ... TO ___
+d1_row     <- 12               # <-- CHANGE  residual of row number ___
+# ---- ANSWERS: nothing to change below ----
+d1_reg <- lm(d1_formula, data = get(d1_data)); d1_b <- coef(d1_reg)
+d1_yn <- all.vars(d1_formula)[1]; d1_xn <- all.vars(d1_formula)[2]
+blk("D1", sprintf("%s regressed on %s (%s)", d1_yn, d1_xn, d1_data))
+ans4(sprintf("slope on %s", d1_xn), d1_b[2]); ans4("intercept", d1_b[1])
+ans(sprintf("predicted %s at %s = %g", d1_yn, d1_xn, d1_at), d1_b[1] + d1_b[2] * d1_at)
+ans(sprintf("change in %s when %s goes %g -> %g", d1_yn, d1_xn, d1_from, d1_to), d1_b[2] * (d1_to - d1_from))
+ans("R^2 (share explained)", summary(d1_reg)$r.squared); ans("R^2 in percent", 100 * summary(d1_reg)$r.squared)
+ans(sprintf("row %d: actual %s", d1_row, d1_yn), model.response(model.frame(d1_reg))[d1_row])
+ans(sprintf("row %d: fitted (predicted) %s", d1_row, d1_yn), fitted(d1_reg)[d1_row])
+ans(sprintf("row %d: residual = actual - fitted", d1_row), resid(d1_reg)[d1_row])
 d1_y <- model.response(model.frame(d1_reg))
-ans("[D1] SSE (explained)", sum((d1_reg$fitted.values - mean(d1_y))^2))
-ans("[D1] SSR (residual)", sum(d1_reg$residuals^2))
-ans("[D1] SST (total)", sum((d1_y - mean(d1_y))^2))
+ans("SSE (EXPLAINED sum of squares)", sum((fitted(d1_reg) - mean(d1_y))^2))
+ans("SSR (RESIDUAL sum of squares)", sum(resid(d1_reg)^2))
+ans("SST (TOTAL sum of squares)", sum((d1_y - mean(d1_y))^2))
+ans("n (observations used)", nobs(d1_reg))
 
 ## ======================================================================
-## [D2] measure y (or x) in other units, rerun -> new slope ----
+## [D2] DATA, CHANGE UNITS: measure y or x in other units, rerun -> new slope ----
 ## LOOKS LIKE: "Data: ceosal1. Run lm(salary ~ sales). If salary is measured in dollars
-##   instead of thousands of dollars, what is the OLS slope?"  (PS8 #16)
+##   instead of thousands of dollars, what is the OLS slope?"   (PS8 #16)
+## Thousands -> dollars: x 1000.  Percent -> decimal: x 1/100.  Years -> months: x 12.
 ## y times c -> slope times c.  x times c -> slope divided by c.  R^2 never changes.
-## DEFAULT -> 15.47
-d2_data <- ceosal1                                          # <-- CHANGE dataset
-d2_data$ynew <- d2_data$salary * 1000                       # <-- CHANGE column and factor (or leave y alone)
-d2_data$xnew <- d2_data$sales * 1                           # <-- CHANGE column and factor (1 = unchanged)
-ans("[D2] new slope", coef(lm(ynew ~ xnew, data = d2_data))[2])
+## DEFAULT: new slope 15.47
+# ---- YOUR NUMBERS: change these lines ----
+d2_data   <- "ceosal1"   # <-- CHANGE  dataset name, in quotes
+d2_y      <- "salary"    # <-- CHANGE  y column
+d2_x      <- "sales"     # <-- CHANGE  x column
+d2_ytimes <- 1000        # <-- CHANGE  what y is MULTIPLIED by (1 = y unchanged)
+d2_xtimes <- 1           # <-- CHANGE  what x is MULTIPLIED by (1 = x unchanged; divided by 100 -> 1/100)
+# ---- ANSWERS: nothing to change below ----
+blk("D2", sprintf("%s on %s (%s), y x %g, x x %g", d2_y, d2_x, d2_data, d2_ytimes, d2_xtimes))
+d2_df <- get(d2_data)
+d2_old <- coef(lm(d2_df[[d2_y]] ~ d2_df[[d2_x]]))
+d2_new <- coef(lm(I(d2_df[[d2_y]] * d2_ytimes) ~ I(d2_df[[d2_x]] * d2_xtimes)))
+ans4("ORIGINAL slope", d2_old[2]); ans4("NEW slope (after rescaling)", d2_new[2])
+ans4("ORIGINAL intercept", d2_old[1]); ans4("NEW intercept", d2_new[1])
+pick("R^2", "unchanged (rescaling never changes R^2)")
 
 ## ======================================================================
-## [D3] log-level from data: % change in y = 100 * b * dx ----
+## [D3] DATA, LOG-LEVEL: lm(log(y) ~ x) -> % change in y = 100 x slope x change in x ----
 ## LOOKS LIKE: "Data: wage1. Run lm(log(wage) ~ exper). By about what percent does
-##   predicted wage change with 10 more years of experience?"  (PS8 #21, PS9 #6, Q8 #6)
-## DEFAULT -> 4.36   (ceosal1 log(salary) ~ roe, roe +5 -> 6.93; +7 -> 9.70)
-d3_reg <- lm(log(wage) ~ exper, data = wage1)               # <-- CHANGE log(y) ~ x, data
-d3_dx <- 10                                                 # <-- CHANGE change in x (falls = negative)
-ans("[D3] % change in y", 100 * d3_reg$coefficients[2] * d3_dx)
+##   predicted wage change with 10 more years of experience?"   (PS8 #21, PS9 #6)
+## DEFAULT: 4.36%
+# ---- YOUR NUMBERS: change these lines ----
+d3_data    <- "wage1"              # <-- CHANGE  dataset name, in quotes
+d3_formula <- log(wage) ~ exper    # <-- CHANGE  log(y) ~ x
+d3_dx      <- 10                   # <-- CHANGE  change in x, in x's units (falls = negative)
+# ---- ANSWERS: nothing to change below ----
+d3_reg <- lm(d3_formula, data = get(d3_data)); d3_b <- coef(d3_reg)[2]
+d3_yn <- all.vars(d3_formula)[1]; d3_xn <- all.vars(d3_formula)[2]
+blk("D3", sprintf("log(%s) on %s (%s)", d3_yn, d3_xn, d3_data))
+ans4(sprintf("slope on %s", d3_xn), d3_b)
+ans(sprintf("%% change in %s when %s %+g  (about)", d3_yn, d3_xn, d3_dx), 100 * d3_b * d3_dx)
+ans(sprintf("%% change in %s when %s %+g  (EXACT)", d3_yn, d3_xn, d3_dx), 100 * (exp(d3_b * d3_dx) - 1))
 
 ## ======================================================================
-## [D4] level-log from data: change in y = (b/100) * %dx ----
+## [D4] DATA, LEVEL-LOG: lm(y ~ log(x)) -> change in y = (slope / 100) x % change in x ----
 ## LOOKS LIKE: "Data: ceosal1. Run lm(salary ~ log(sales)). By about how many thousand
-##   dollars does predicted salary change when sales rise by 10%?"  (PS9 #7)
-## DEFAULT -> 26.29
-d4_reg <- lm(salary ~ log(sales), data = ceosal1)           # <-- CHANGE y ~ log(x), data
-d4_pctx <- 10                                               # <-- CHANGE % change in x
-ans("[D4] change in y (units of y)", d4_reg$coefficients[2] / 100 * d4_pctx)
+##   dollars does predicted salary change when sales rise by 10%?"   (PS9 #7)
+## DEFAULT: 26.29 (in y's units: $1000s)
+# ---- YOUR NUMBERS: change these lines ----
+d4_data    <- "ceosal1"              # <-- CHANGE  dataset name, in quotes
+d4_formula <- salary ~ log(sales)    # <-- CHANGE  y ~ log(x)
+d4_pctx    <- 10                     # <-- CHANGE  % change in x (falls = negative)
+# ---- ANSWERS: nothing to change below ----
+d4_reg <- lm(d4_formula, data = get(d4_data)); d4_b <- coef(d4_reg)[2]
+d4_yn <- all.vars(d4_formula)[1]; d4_xn <- all.vars(d4_formula)[2]
+blk("D4", sprintf("%s on log(%s) (%s)", d4_yn, d4_xn, d4_data))
+ans4(sprintf("slope on log(%s)", d4_xn), d4_b)
+ans(sprintf("change in %s (its units) when %s %+g%%", d4_yn, d4_xn, d4_pctx), d4_b / 100 * d4_pctx)
 
 ## ======================================================================
-## [D5] log-log from data: % change in y = b * %dx (elasticity) ----
-## LOOKS LIKE: "Data: bwght. Run the log-log regression of log(bwght) on log(faminc).
-##   By about what percent does birth weight change when income rises by 15%?" (Q9 #3, PS10 #3)
-## DEFAULT -> 0.31   (20% -> 0.41)
-d5_reg <- lm(log(bwght) ~ log(faminc), data = bwght)        # <-- CHANGE log(y) ~ log(x), data
-d5_pctx <- 15                                               # <-- CHANGE % change in x
-ans("[D5] % change in y", d5_reg$coefficients[2] * d5_pctx)
+## [D5] DATA, LOG-LOG: lm(log(y) ~ log(x)) -> % change in y = slope x % change in x ----
+## LOOKS LIKE: "Data: bwght. Run the log-log regression of bwght on faminc. By about what
+##   percent does birth weight change when income rises by 15%?"   (Q9 #3, PS10 #3)
+## "Constant elasticity model" also means log-log. The slope IS the elasticity.
+## DEFAULT: 0.31%
+# ---- YOUR NUMBERS: change these lines ----
+d5_data    <- "bwght"                     # <-- CHANGE  dataset name, in quotes
+d5_formula <- log(bwght) ~ log(faminc)    # <-- CHANGE  log(y) ~ log(x)
+d5_pctx    <- 15                          # <-- CHANGE  % change in x (falls = negative)
+# ---- ANSWERS: nothing to change below ----
+d5_reg <- lm(d5_formula, data = get(d5_data)); d5_b <- coef(d5_reg)[2]
+d5_yn <- all.vars(d5_formula)[1]; d5_xn <- all.vars(d5_formula)[2]
+blk("D5", sprintf("log(%s) on log(%s) (%s)", d5_yn, d5_xn, d5_data))
+ans4(sprintf("slope = elasticity of %s w.r.t. %s", d5_yn, d5_xn), d5_b)
+ans(sprintf("%% change in %s when %s %+g%%", d5_yn, d5_xn, d5_pctx), d5_b * d5_pctx)
 
 ## ======================================================================
-## [D6] sigma-hat, SST_x, standard error by hand ----
-## LOOKS LIKE: "Data: wage1. Run lm(wage ~ educ). What is sigma-hat?" / "SST_X for educ?"
-##   / "Compute se(b1) by hand from sigma-hat and SST_X"  (PS9 #18-19, PS10 #10)
-## DEFAULTS -> sigma-hat 3.38 | SST_x 4025.43 | se 0.05
-d6_reg <- lm(wage ~ educ, data = wage1)                     # <-- CHANGE y ~ x, data
-d6_x <- wage1$educ                                          # <-- CHANGE the x column
-d6_sig <- sqrt(sum(d6_reg$residuals^2) / d6_reg$df.residual)
+## [D6] DATA, BY HAND: sigma-hat, SSR, SST_x, standard error of the slope ----
+## LOOKS LIKE: "Data: wage1. Run lm(wage ~ educ). What is sigma-hat (the standard error of
+##   the regression)?" / "SST_X for educ?" / "compute se(b1) by hand"   (PS9 #18-19, PS10 #10)
+## DEFAULTS: sigma-hat 3.38 | SST_x 4025.43 | se 0.05
+# ---- YOUR NUMBERS: change these lines ----
+d6_data    <- "wage1"        # <-- CHANGE  dataset name, in quotes
+d6_formula <- wage ~ educ    # <-- CHANGE  y ~ x  (simple regression)
+# ---- ANSWERS: nothing to change below ----
+d6_reg <- lm(d6_formula, data = get(d6_data)); d6_xn <- all.vars(d6_formula)[2]
+d6_x <- model.frame(d6_reg)[[2]]; d6_SSR <- sum(resid(d6_reg)^2); d6_df <- d6_reg$df.residual
 d6_SST <- sum((d6_x - mean(d6_x))^2)
-ans("[D6] sigma-hat = sqrt(SSR/(n-2))", d6_sig)
-ans("[D6] sigma^2-hat", d6_sig^2)
-ans("[D6] SST_x = sum((x - mean)^2)", d6_SST)
-ans("[D6] se(b1) = sigma-hat/sqrt(SST_x)", d6_sig / sqrt(d6_SST))
-ans("[D6] check: R's Std. Error", summary(d6_reg)$coefficients[2, 2])
+blk("D6", sprintf("%s by hand (%s)", deparse(d6_formula), d6_data))
+ans("n", nobs(d6_reg)); ans("df = n - 2", d6_df)
+ans("SSR (sum of squared residuals)", d6_SSR)
+ans("sigma^2-hat = SSR / (n - 2)", d6_SSR / d6_df)
+ans("sigma-hat = sqrt(SSR / (n - 2))", sqrt(d6_SSR / d6_df))
+ans(sprintf("SST_x = total variation in %s", d6_xn), d6_SST)
+ans4("se(slope) = sigma-hat / sqrt(SST_x)", sqrt(d6_SSR / d6_df) / sqrt(d6_SST))
+ans4("check: R's Std. Error for the slope", summary(d6_reg)$coefficients[2, 2])
 
 ## ======================================================================
-## [D7] multiple regression: coefficient, predicted value, change holding others fixed ----
-## LOOKS LIKE: "Data: wage1. Regress wage on educ, exper and tenure. Predicted hourly
-##   wage of a worker with 16 educ, 5 exper, 2 tenure?" / "change when exper rises by
-##   10, holding educ and tenure fixed?"   (Q9 #10-11, PS10 #14-15)
-## DEFAULTS -> pred 7.16 | change 0.22
-d7_reg <- lm(wage ~ educ + exper + tenure, data = wage1)    # <-- CHANGE y ~ x1 + x2 + x3, data
-d7_b <- d7_reg$coefficients
-print(round(d7_b, 4))
-d7_at <- c(16, 5, 2)                                        # <-- CHANGE x VALUES, same order as formula
-d7_dx <- c(0, 10, 0)                                        # <-- CHANGE x CHANGES (fixed = 0)
-ans("[D7] predicted y (keeps intercept)", d7_b[1] + sum(d7_b[-1] * d7_at))
-ans("[D7] change in y (no intercept)", sum(d7_b[-1] * d7_dx))
+## [D7] DATA, MULTIPLE REGRESSION: coefficients, prediction, change holding others fixed ----
+## LOOKS LIKE: "Data: wage1. Regress wage on educ, exper and tenure. Predicted hourly wage of
+##   a worker with 16 educ, 5 exper, 2 tenure?" / "change when exper rises by 10, holding
+##   educ and tenure fixed?"   (Q9 #10-11, PS10 #14-15)
+## Values go in the SAME ORDER as the x's in the formula. "Holding fixed" = change of 0.
+## DEFAULTS: prediction 7.16 | change 0.22
+# ---- YOUR NUMBERS: change these lines ----
+d7_data    <- "wage1"                      # <-- CHANGE  dataset name, in quotes
+d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...
+d7_at      <- c(16, 5, 2)                  # <-- CHANGE  prediction: the x VALUES, formula order
+d7_dx      <- c(0, 10, 0)                  # <-- CHANGE  change: how much each x CHANGES (fixed = 0)
+# ---- ANSWERS: nothing to change below ----
+d7_reg <- lm(d7_formula, data = get(d7_data)); d7_b <- coef(d7_reg)
+d7_xn <- names(d7_b)[-1]; d7_yn <- all.vars(d7_formula)[1]
+blk("D7", sprintf("%s (%s)", deparse(d7_formula), d7_data))
+for (i in seq_along(d7_b)) ans4(sprintf("coefficient on %s", names(d7_b)[i]), d7_b[i])
+ans(sprintf("predicted %s at %s", d7_yn, paste(d7_xn, d7_at, sep = " = ", collapse = ", ")), d7_b[1] + sum(d7_b[-1] * d7_at))
+ans(sprintf("change in %s when %s", d7_yn, paste(sprintf("%s %+g", d7_xn, d7_dx)[d7_dx != 0], collapse = ", ")), sum(d7_b[-1] * d7_dx))
+ans("R^2", summary(d7_reg)$r.squared)
 
 ## ======================================================================
-## [D8] log(y) multiple regression: % change, or predicted DOLLARS with exp() ----
-## LOOKS LIKE: "Run lm(log(wage) ~ educ + exper + tenure). By about what percent does
-##   wage change when exper rises 2 and tenure rises 1?" / "predicted hourly wage, in
-##   dollars, at 12 educ, 10 exper, 3 tenure?"   (PS11 #2-3, PS10 #16-17)
-## "in dollars" + log(y) -> exp().  DEFAULTS -> 3.03% | $4.46
-d8_reg <- lm(log(wage) ~ educ + exper + tenure, data = wage1)   # <-- CHANGE
-d8_b <- d8_reg$coefficients
-d8_dx <- c(0, 2, 1)                                         # <-- CHANGE x CHANGES (fixed = 0)
-d8_at <- c(12, 10, 3)                                       # <-- CHANGE x VALUES
-ans("[D8] % change in y = 100*sum(b*dx)", 100 * sum(d8_b[-1] * d8_dx))
-ans("[D8] predicted log(y) (NOT dollars)", d8_b[1] + sum(d8_b[-1] * d8_at))
-ans("[D8] predicted y in $ = exp(...)", exp(d8_b[1] + sum(d8_b[-1] * d8_at)))
+## [D8] DATA, log(y) MULTIPLE REGRESSION: % change, or predicted DOLLARS with exp() ----
+## LOOKS LIKE: "Run lm(log(wage) ~ educ + exper + tenure). By about what percent does wage
+##   change when exper rises 2 and tenure rises 1?" / "predicted hourly wage, in dollars,
+##   at 12 educ, 10 exper, 3 tenure?"   (PS11 #2-3, PS10 #16-17)
+## "In dollars" with log(y) -> exp() of the predicted log. That's the DOLLARS line.
+## DEFAULTS: 3.03% | predicted log(wage) 1.50 | $4.46
+# ---- YOUR NUMBERS: change these lines ----
+d8_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
+d8_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  log(y) ~ x1 + x2 + ...
+d8_dx      <- c(0, 2, 1)                        # <-- CHANGE  % question: how much each x CHANGES (fixed = 0)
+d8_at      <- c(12, 10, 3)                      # <-- CHANGE  dollars question: the x VALUES, formula order
+# ---- ANSWERS: nothing to change below ----
+d8_reg <- lm(d8_formula, data = get(d8_data)); d8_b <- coef(d8_reg)
+d8_xn <- names(d8_b)[-1]; d8_yn <- all.vars(d8_formula)[1]
+blk("D8", sprintf("%s (%s)", deparse(d8_formula), d8_data))
+for (i in seq_along(d8_b)) ans4(sprintf("coefficient on %s", names(d8_b)[i]), d8_b[i])
+ans(sprintf("%% change in %s when %s", d8_yn, paste(sprintf("%s %+g", d8_xn, d8_dx)[d8_dx != 0], collapse = ", ")), 100 * sum(d8_b[-1] * d8_dx))
+d8_lp <- d8_b[1] + sum(d8_b[-1] * d8_at)
+ans(sprintf("predicted log(%s) (NOT dollars)", d8_yn), d8_lp)
+ans(sprintf("predicted %s in DOLLARS = exp(%.3f)", d8_yn, d8_lp), exp(d8_lp))
 
 ## ======================================================================
-## [D9] predicted y at the sample means = mean of y ----
+## [D9] DATA: predicted y at the sample means = mean of y ----
 ## LOOKS LIKE: "Run lm(colGPA ~ ACT + hsGPA). Compute predicted colGPA at ACT = mean(ACT)
 ##   and hsGPA = mean(hsGPA). Why is it the same as mean(colGPA)?"   (PS11 #5)
-## DEFAULT -> 3.06 (OLS passes through the point of means)
-d9_reg <- lm(colGPA ~ ACT + hsGPA, data = gpa1)             # <-- CHANGE
-d9_b <- d9_reg$coefficients
-ans("[D9] prediction at the means", d9_b[1] + d9_b[2] * mean(gpa1$ACT) + d9_b[3] * mean(gpa1$hsGPA))  # <-- CHANGE columns
-ans("[D9] mean of y (same)", mean(gpa1$colGPA))             # <-- CHANGE column
+## Why: the OLS line always passes through the point of means.   DEFAULT: 3.06
+# ---- YOUR NUMBERS: change these lines ----
+d9_data    <- "gpa1"                 # <-- CHANGE  dataset name, in quotes
+d9_formula <- colGPA ~ ACT + hsGPA   # <-- CHANGE  y ~ x1 + x2 + ...
+# ---- ANSWERS: nothing to change below ----
+d9_reg <- lm(d9_formula, data = get(d9_data)); d9_mf <- model.frame(d9_reg)
+d9_xbar <- colMeans(d9_mf[-1]); d9_yn <- all.vars(d9_formula)[1]
+blk("D9", sprintf("%s at the means (%s)", deparse(d9_formula), d9_data))
+for (v in names(d9_xbar)) ans(sprintf("mean of %s", v), d9_xbar[v])
+ans(sprintf("predicted %s at the means", d9_yn), coef(d9_reg)[1] + sum(coef(d9_reg)[-1] * d9_xbar))
+ans(sprintf("mean of %s (always the same number)", d9_yn), mean(d9_mf[[1]]))
 
 ## ======================================================================
-## [D10] omitted-variable bias in data ----
-## LOOKS LIKE: "Data: bwght. lm(bwght ~ cigs) slope?" / "add faminc: slope on cigs?"
-##   / "regress faminc on cigs for delta1, compute b2*delta1"   (PS11 #12-14, PS10 #21)
-## Order matters: simple = y ~ x1; multiple = y ~ x1 + x2 (left-out x2 SECOND); aux = x2 ~ x1
-## DEFAULTS -> simple -0.51 | multiple -0.46 | b2 0.09 | delta1 -0.54 | b2*delta1 -0.05
-d10_simple <- lm(bwght ~ cigs, data = bwght)                # <-- CHANGE y ~ x1
-d10_multi  <- lm(bwght ~ cigs + faminc, data = bwght)       # <-- CHANGE y ~ x1 + x2
-d10_aux    <- lm(faminc ~ cigs, data = bwght)               # <-- CHANGE x2 ~ x1
-ans("[D10] simple slope on x1 (b1-tilde)", d10_simple$coefficients[2])
-ans("[D10] multiple slope on x1 (b1-hat)", d10_multi$coefficients[2])
-ans("[D10] b2-hat (x2 in multiple)", d10_multi$coefficients[3])
-ans("[D10] delta1 (slope of x2 on x1)", d10_aux$coefficients[2])
-ans("[D10] b2-hat * delta1", d10_multi$coefficients[3] * d10_aux$coefficients[2])
-ans("[D10] check: simple - multiple", d10_simple$coefficients[2] - d10_multi$coefficients[2])
+## [D10] DATA, OMITTED-VARIABLE BIAS: simple vs multiple slope, delta1, b2-hat x delta1 ----
+## LOOKS LIKE: "Data: bwght. lm(bwght ~ cigs) slope?" / "add faminc: slope on cigs?" /
+##   "regress faminc on cigs; compute b2-hat x delta1"   (PS11 #12-14, PS10 #21)
+## x1 = the variable in BOTH regressions. x2 = the one left out of the simple regression.
+## DEFAULTS: simple -0.51 | multiple -0.46 | b2 0.09 | delta1 -0.54 | b2 x delta1 -0.05
+# ---- YOUR NUMBERS: change these lines ----
+d10_data <- "bwght"     # <-- CHANGE  dataset name, in quotes
+d10_y    <- "bwght"     # <-- CHANGE  y column
+d10_x1   <- "cigs"      # <-- CHANGE  x1: the variable whose slope they ask about
+d10_x2   <- "faminc"    # <-- CHANGE  x2: the variable that gets added / left out
+# ---- ANSWERS: nothing to change below ----
+d10_df <- get(d10_data)
+d10_s <- coef(lm(reformulate(d10_x1, d10_y), data = d10_df))
+d10_m <- coef(lm(reformulate(c(d10_x1, d10_x2), d10_y), data = d10_df))
+d10_d <- coef(lm(reformulate(d10_x1, d10_x2), data = d10_df))
+blk("D10", sprintf("leaving %s out of %s ~ %s (%s)", d10_x2, d10_y, d10_x1, d10_data))
+ans4(sprintf("SIMPLE slope on %s (b1-tilde)", d10_x1), d10_s[2])
+ans4(sprintf("MULTIPLE slope on %s, with %s (b1-hat)", d10_x1, d10_x2), d10_m[2])
+ans4(sprintf("coefficient on %s in multiple (b2-hat)", d10_x2), d10_m[3])
+ans4(sprintf("delta1 = slope of %s ~ %s", d10_x2, d10_x1), d10_d[2])
+ans4("b2-hat x delta1 (the omitted-variable part)", d10_m[3] * d10_d[2])
+ans4("check: simple - multiple (same number)", d10_s[2] - d10_m[2])
+pick(sprintf("leaving %s out pushes the %s slope", d10_x2, d10_x1),
+     ifelse(d10_m[3] * d10_d[2] > 0, "UP (simple slope too big)", "DOWN (simple slope too small / too negative)"))
 
 ## ======================================================================
-## [D11] perfect collinearity: R reports NA ----
+## [D11] DATA, PERFECT COLLINEARITY: R reports NA ----
 ## LOOKS LIKE: "vote1: totexpend <- expendA + expendB; lm(voteA ~ expendA + expendB +
 ##   totexpend). What does R report for totexpend?"   (PS11 #8)
-## ANSWER: NA - R drops it because it's an exact linear function of the others (MLR.3 fails).
+## ANSWER: NA. R drops it because it's an exact linear function of the others (MLR.3 fails).
 d11_v <- vote1; d11_v$totexpend <- d11_v$expendA + d11_v$expendB
+blk("D11", "voteA ~ expendA + expendB + totexpend (vote1)")
 print(coef(lm(voteA ~ expendA + expendB + totexpend, data = d11_v)))
-pick("[D11] coefficient on the exact combination", "NA (dropped: perfect collinearity)")
+pick("coefficient on the exact combination", "NA (dropped: perfect collinearity, MLR.3)")
 
 ## ======================================================================
-## [D12] t-statistic and test from data (D21-D22) ----
+## [D12] DATA, t-TEST: t-statistic, critical value, decision (D21-D22) ----
 ## LOOKS LIKE: "Run lm(log(wage) ~ educ + exper + tenure). Test H0: b_exper = 0 vs
 ##   H1: b_exper > 0 at 5%."   (Example 4.1)
-## DEFAULTS -> t 2.39 | c(one-sided 5%) 1.65 -> reject
-d12_reg <- lm(log(wage) ~ educ + exper + tenure, data = wage1)   # <-- CHANGE
-d12_var <- "exper"                                          # <-- CHANGE variable name (in quotes)
-d12_h0 <- 0; d12_alpha <- 0.05                              # <-- CHANGE null value, alpha
-d12_s <- summary(d12_reg)$coefficients
-d12_t <- (d12_s[d12_var, "Estimate"] - d12_h0) / d12_s[d12_var, "Std. Error"]
-d12_df <- d12_reg$df.residual
-ans4("[D12] estimate", d12_s[d12_var, "Estimate"]); ans4("[D12] se", d12_s[d12_var, "Std. Error"])
-ans("[D12] t = (b - h0)/se", d12_t); ans("[D12] df = n-k-1", d12_df)
-ans("[D12] c one-sided = qt(1-a, df)", qt(1 - d12_alpha, d12_df))
-ans("[D12] c two-sided = qt(1-a/2, df)", qt(1 - d12_alpha / 2, d12_df))
-ans("[D12] p-value two-sided", 2 * pt(-abs(d12_t), d12_df))
-pick("[D12] H1: b >  h0", ifelse(d12_t > qt(1 - d12_alpha, d12_df), "REJECT H0", "fail to reject"))
-pick("[D12] H1: b <  h0", ifelse(d12_t < -qt(1 - d12_alpha, d12_df), "REJECT H0", "fail to reject"))
-pick("[D12] H1: b != h0", ifelse(abs(d12_t) > qt(1 - d12_alpha / 2, d12_df), "REJECT H0", "fail to reject"))
+## "raises / positive" -> H1: b > 0.  "lowers / negative" -> H1: b < 0.
+## DEFAULTS: t 2.39 | c (one-sided 5%) 1.65 -> reject for H1: b > 0
+# ---- YOUR NUMBERS: change these lines ----
+d12_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
+d12_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  the regression
+d12_var     <- "exper"                           # <-- CHANGE  the variable being tested, in quotes
+d12_h0      <- 0                                 # <-- CHANGE  null value (usually 0)
+d12_alpha   <- 0.05                              # <-- CHANGE  significance level (5% = 0.05)
+# ---- ANSWERS: nothing to change below ----
+d12_reg <- lm(d12_formula, data = get(d12_data)); d12_s <- summary(d12_reg)$coefficients
+d12_b <- d12_s[d12_var, "Estimate"]; d12_se <- d12_s[d12_var, "Std. Error"]
+d12_t <- (d12_b - d12_h0) / d12_se; d12_df <- d12_reg$df.residual
+d12_c1 <- qt(1 - d12_alpha, d12_df); d12_c2 <- qt(1 - d12_alpha / 2, d12_df)
+blk("D12", sprintf("t-test on %s in %s (%s)", d12_var, deparse(d12_formula), d12_data))
+ans4(sprintf("estimate on %s", d12_var), d12_b); ans4("its standard error", d12_se)
+ans(sprintf("t = (%.4f - %g) / %.4f", d12_b, d12_h0, d12_se), d12_t)
+ans(sprintf("df = n - k - 1 = %d - %d - 1", nobs(d12_reg), length(coef(d12_reg)) - 1), d12_df)
+ans(sprintf("critical c, ONE-sided %g%%", 100 * d12_alpha), d12_c1)
+ans(sprintf("critical c, TWO-sided %g%%", 100 * d12_alpha), d12_c2)
+ans("p-value, two-sided", 2 * pt(-abs(d12_t), d12_df))
+pick(sprintf("H1: %s >  %g  (reject if t > c)", d12_var, d12_h0), ifelse(d12_t > d12_c1, "REJECT H0", "fail to reject H0"))
+pick(sprintf("H1: %s <  %g  (reject if t < -c)", d12_var, d12_h0), ifelse(d12_t < -d12_c1, "REJECT H0", "fail to reject H0"))
+pick(sprintf("H1: %s != %g  (reject if |t| > c)", d12_var, d12_h0), ifelse(abs(d12_t) > d12_c2, "REJECT H0", "fail to reject H0"))
 
 ## ======================================================================
-## [D13] REG(): everything for one regression at once (coefs, se, t, p, CI, R^2, ----
-##   SST/SSE/SSR, sigma-hat, prediction, change, residual of a row, t-test)
+## [D13] REG(): EVERYTHING for one regression in one line ----
+## Prints coefficients, se, t, p, CIs, R^2, SST/SSE/SSR, sigma-hat, and (if you give them)
+## a prediction, a change, the residual of a row and a t-test. Delete what you don't need.
+##   at   = list(educ = 16, exper = 4, tenure = 2)  or  c(16, 4, 2)   (formula order)
+##   from = list(educ = 12), to = list(educ = 13)   (a change in educ only)
+##   row  = 2      test = "exper"      alpha = 0.05
+blk("D13", "REG() example")
 REG(log(wage) ~ educ + exper + tenure, data = wage1,          # <-- CHANGE formula, data
     at = list(educ = 16, exper = 4, tenure = 2),              # <-- CHANGE (or delete)
     from = list(educ = 12), to = list(educ = 13),             # <-- CHANGE (or delete)
@@ -701,24 +813,32 @@ cat("\n#################### PART 2 - NUMBERS IN THE QUESTION ###################
 
 ## ######################################################################
 ## UNIVERSAL SOLVERS [S1]-[S7]: USE THESE WHEN THE QUESTION IS WORDED NEW
-## Type EVERY number the question gives; leave the rest NA. Each solver
-## fills in everything it can and prints ALL related answers, so a flipped
-## direction or a merged step still lands on a printed line.
+## Type EVERY number the question gives; leave the rest NA. Each solver fills in
+## everything it can and prints ALL related answers, so a flipped direction or a
+## merged step still lands on a printed line.
 ## TRIAGE every question (20 seconds):
 ##   1. ASKED: what number do they want? (sd? SSR? % change? residual?)
 ##   2. GIVEN: list the numbers they hand you.
-##   3. CONNECT: FIND() or pick the solver that links given -> asked.
+##   3. CONNECT: ASK() or pick the solver that links given -> asked.
 ##   4. CHECK: correlation in [-1, 1]? % vs units? dollars from log(y) need exp()?
 ## ######################################################################
 
 ## ======================================================================
-## [S1] SUMS-OF-SQUARES SOLVER: any of SST, SSE, SSR, R^2, n + S_y^2 ----
+## [S1] SUMS-OF-SQUARES SOLVER: SST, SSE, SSR, R^2 (any direction) ----
 ## LOOKS LIKE: "SSE = 135, R^2 = 0.18. Find SSR." / "SST = 241, SSR = 113. Find SSE."
-##   / "n = 44, S_y^2 = 7. Find SST." / "What fraction is UNEXPLAINED?"   (Exam I Q24-25, PS6, PS8 #9-10)
-## SSE = EXPLAINED, SSR = RESIDUAL (unexplained). DEFAULT (Exam I Q25) -> SSR 615.00
-s1_SST <- NA; s1_SSE <- 135; s1_SSR <- NA; s1_R2 <- 0.18     # <-- CHANGE: given numbers, NA otherwise
-s1_n <- NA; s1_S2y <- NA                                     # <-- CHANGE: n and sample variance of y, if given
-s1_k <- NA                                                   # <-- CHANGE: number of slopes k, only for ADJUSTED R^2
+##   / "n = 44, S_y^2 = 7. Find SST." / "What fraction is UNEXPLAINED?"   (Exam I Q24-25, PS8 #9-10)
+## SST = SSE + SSR      R^2 = SSE / SST      SST = (n - 1) x (sample variance of y)
+## SSE = EXPLAINED.  SSR = RESIDUAL (unexplained).   DEFAULT (Exam I Q25): SSR 615.00
+# ---- YOUR NUMBERS: type what's GIVEN, leave the rest NA ----
+s1_SST <- NA     # <-- CHANGE  total sum of squares
+s1_SSE <- 135    # <-- CHANGE  EXPLAINED sum of squares
+s1_SSR <- NA     # <-- CHANGE  RESIDUAL sum of squares
+s1_R2  <- 0.18   # <-- CHANGE  R^2 as a decimal (18% -> 0.18)
+s1_n   <- NA     # <-- CHANGE  n, if given
+s1_S2y <- NA     # <-- CHANGE  sample VARIANCE of y, if given
+s1_k   <- NA     # <-- CHANGE  number of slopes k (only for ADJUSTED R^2)
+# ---- ANSWERS: nothing to change below ----
+s1_given <- c(SST = !is.na(s1_SST), SSE = !is.na(s1_SSE), SSR = !is.na(s1_SSR), R2 = !is.na(s1_R2))
 for (s1_i in 1:4) {
   if (is.na(s1_SST) && !is.na(s1_n) && !is.na(s1_S2y)) s1_SST <- (s1_n - 1) * s1_S2y
   if (is.na(s1_SST) && !is.na(s1_SSE) && !is.na(s1_SSR)) s1_SST <- s1_SSE + s1_SSR
@@ -729,85 +849,112 @@ for (s1_i in 1:4) {
   if (is.na(s1_SSR) && !is.na(s1_SST) && !is.na(s1_SSE)) s1_SSR <- s1_SST - s1_SSE
   if (is.na(s1_R2)  && !is.na(s1_SST) && !is.na(s1_SSE)) s1_R2  <- s1_SSE / s1_SST
 }
-ans("[S1] SST (total)", s1_SST); ans("[S1] SSE (EXPLAINED)", s1_SSE); ans("[S1] SSR (RESIDUAL)", s1_SSR)
-ans("[S1] R^2 (explained share)", s1_R2); ans("[S1] R^2 in percent", 100 * s1_R2)
-ans("[S1] 1 - R^2 (UNEXPLAINED share)", 1 - s1_R2)
-if (!is.na(s1_n)) ans("[S1] sample variance of y = SST/(n-1)", s1_SST / (s1_n - 1))
-if (!is.na(s1_n) && !is.na(s1_k)) ans("[S1] ADJUSTED R^2 = 1-(1-R2)(n-1)/(n-k-1)", 1 - (1 - s1_R2) * (s1_n - 1) / (s1_n - s1_k - 1))
+s1_tag <- function(k) if (s1_given[k]) "(given)" else "(computed)"
+blk("S1", "sums of squares")
+ans(paste("SST, TOTAL", s1_tag("SST")), s1_SST)
+ans(paste("SSE, EXPLAINED", s1_tag("SSE")), s1_SSE)
+ans(paste("SSR, RESIDUAL / unexplained", s1_tag("SSR")), s1_SSR)
+ans(paste("R^2, share EXPLAINED", s1_tag("R2")), s1_R2); ans("R^2 in percent", 100 * s1_R2)
+ans("1 - R^2, share UNEXPLAINED", 1 - s1_R2)
+if (!is.na(s1_n)) ans("sample variance of y = SST / (n - 1)", s1_SST / (s1_n - 1))
+if (!is.na(s1_n) && !is.na(s1_k)) ans("ADJUSTED R^2 = 1 - (1-R^2)(n-1)/(n-k-1)", 1 - (1 - s1_R2) * (s1_n - 1) / (s1_n - s1_k - 1))
 
 ## ======================================================================
 ## [S2] VARIANCE / SD / SE SOLVER for the OLS slope ----
-## Takes any mix of: sigma or sigma^2 (or SSR + n), and SST_x or raw x or S_X or S_X^2.
 ## LOOKS LIKE: "sigma = 20, n = 6, S_X^2 = 2: sd(b1)?" / "SSR = 437, n = 13, SST_X = 12: se?"
 ##   / "sigma-hat = 9.4, n = 23, S_X = 0.7: se?" / "sigma^2 = 66, SST = 53: Var?"   (PS9, PS10, Q8, Q9)
-## DEFAULT (PS9 #16) -> se 1.82
-s2_sigma  <- NA       # <-- CHANGE error sd (sigma or sigma-hat), if given
-s2_sigma2 <- NA       # <-- CHANGE error variance (sigma^2 or sigma^2-hat), if given
-s2_SSR <- 437         # <-- CHANGE SSR, if given (then sigma-hat^2 = SSR/(n-k-1))
-s2_n   <- 13          # <-- CHANGE n
-s2_k   <- 1           # <-- CHANGE number of slopes (1 = simple regression)
-s2_SSTx <- 12         # <-- CHANGE SST_X, if given
-s2_x   <- NULL        # <-- CHANGE OR raw x values, e.g. c(3,4,7,8,9)
-s2_SX  <- NA          # <-- CHANGE OR sample SD of X (gets squared)
-s2_SX2 <- NA          # <-- CHANGE OR sample VARIANCE of X
-s2_Rj2 <- 0           # <-- CHANGE MLR only: R^2 of xj on the other x's
-if (!is.null(s2_x)) { s2_SSTx <- sum((s2_x - mean(s2_x))^2); if (is.na(s2_n)) s2_n <- length(s2_x) }
-if (is.na(s2_SSTx) && !is.na(s2_SX2)) s2_SSTx <- (s2_n - 1) * s2_SX2
-if (is.na(s2_SSTx) && !is.na(s2_SX))  s2_SSTx <- (s2_n - 1) * s2_SX^2
+## Var(b1) = sigma^2 / SST_x        sigma^2-hat = SSR / (n - k - 1)       SST_x = (n - 1) x S_x^2
+## DEFAULT (PS9 #16): se 1.82
+# ---- YOUR NUMBERS: type what's GIVEN, leave the rest NA ----
+s2_sigma  <- NA     # <-- CHANGE  error SD: sigma or sigma-hat
+s2_sigma2 <- NA     # <-- CHANGE  OR error VARIANCE: sigma^2 or sigma^2-hat
+s2_SSR    <- 437    # <-- CHANGE  OR SSR (then sigma^2-hat = SSR / (n - k - 1))
+s2_n      <- 13     # <-- CHANGE  n
+s2_k      <- 1      # <-- CHANGE  number of slopes (1 = simple regression)
+s2_SSTx   <- 12     # <-- CHANGE  SST_x, if given
+s2_x      <- NULL   # <-- CHANGE  OR the raw x values, e.g. c(3, 4, 7, 8, 9)
+s2_SX     <- NA     # <-- CHANGE  OR the sample SD of x, S_x (gets squared)
+s2_SX2    <- NA     # <-- CHANGE  OR the sample VARIANCE of x, S_x^2
+s2_Rj2    <- 0      # <-- CHANGE  multiple regression only: R^2 of x_j on the other x's
+# ---- ANSWERS: nothing to change below ----
+blk("S2", "variance / sd / se of the slope")
+if (!is.null(s2_x)) { s2_SSTx <- sum((s2_x - mean(s2_x))^2); if (is.na(s2_n)) s2_n <- length(s2_x)
+  ans("SST_x from the x values", s2_SSTx) }
+if (is.na(s2_SSTx) && !is.na(s2_SX2)) { s2_SSTx <- (s2_n - 1) * s2_SX2; ans(sprintf("SST_x = (%g - 1) x %g", s2_n, s2_SX2), s2_SSTx) }
+if (is.na(s2_SSTx) && !is.na(s2_SX))  { s2_SSTx <- (s2_n - 1) * s2_SX^2; ans(sprintf("SST_x = (%g - 1) x %g^2", s2_n, s2_SX), s2_SSTx) }
 if (is.na(s2_sigma2) && !is.na(s2_sigma)) s2_sigma2 <- s2_sigma^2
-if (is.na(s2_sigma2) && !is.na(s2_SSR))   s2_sigma2 <- s2_SSR / (s2_n - s2_k - 1)
-ans("[S2] df = n - k - 1", s2_n - s2_k - 1)
-ans("[S2] sigma^2 (or sigma^2-hat)", s2_sigma2); ans("[S2] sigma (or sigma-hat)", sqrt(s2_sigma2))
-ans("[S2] SST_X", s2_SSTx); ans("[S2] VIF = 1/(1-Rj^2)", 1 / (1 - s2_Rj2))
-ans("[S2] Var(b1)", s2_sigma2 / (s2_SSTx * (1 - s2_Rj2)))
-ans("[S2] sd(b1) = se(b1)", sqrt(s2_sigma2 / (s2_SSTx * (1 - s2_Rj2))))
-ans("[S2] ...if sample k=2 times as large", sqrt(s2_sigma2 / (s2_SSTx * (1 - s2_Rj2))) / sqrt(2))
+s2_df <- s2_n - s2_k - 1
+if (is.na(s2_sigma2) && !is.na(s2_SSR)) { s2_sigma2 <- s2_SSR / s2_df
+  ans(sprintf("df = n - k - 1 = %g - %g - 1", s2_n, s2_k), s2_df)
+  ans(sprintf("sigma^2-hat = SSR / df = %g / %g", s2_SSR, s2_df), s2_sigma2) } else ans("sigma^2", s2_sigma2)
+ans("sigma (or sigma-hat) = sqrt(sigma^2)", sqrt(s2_sigma2))
+if (s2_Rj2 != 0) ans(sprintf("VIF = 1 / (1 - %g)", s2_Rj2), 1 / (1 - s2_Rj2))
+s2_var <- s2_sigma2 / (s2_SSTx * (1 - s2_Rj2))
+ans(sprintf("Var(b1) = %.4g / %.4g%s", s2_sigma2, s2_SSTx, if (s2_Rj2 != 0) sprintf(" x (1 - %g)", s2_Rj2) else ""), s2_var)
+ans("sd(b1) = se(b1) = sqrt(Var)", sqrt(s2_var))
+ans("se(b1) if the sample were 2x as large", sqrt(s2_var) / sqrt(2))
 
 ## ======================================================================
-## [S3] UNITS SOLVER: rescale y and/or x in ANY of the 4 models -> new b0, b1 ----
+## [S3] UNITS SOLVER: rescale y and/or x in ANY of the 4 models -> new intercept, slope ----
 ## LOOKS LIKE: "slope 0.58; x divided by 1,000: new slope?" / "y times 1,000" /
-##   "log(salary) = 3.36 + 0.44 log(sales); salary in dollars: new intercept?"  (PS8 #13-16, PS9 #1,#3, Q8 #1-2)
-## R^2 NEVER changes. DEFAULT (PS9 #3) -> b0 10.27, b1 0.44
-s3_model <- "log-log"   # <-- CHANGE "level-level", "log-level" (log y), "level-log" (log x), "log-log"
-s3_b0 <- 3.36           # <-- CHANGE intercept (0 if not given)
-s3_b1 <- 0.44           # <-- CHANGE slope
-s3_cy <- 1000           # <-- CHANGE what y is MULTIPLIED by (1 = unchanged; $000s -> $: 1000)
-s3_cx <- 1              # <-- CHANGE what x is MULTIPLIED by (divided by 1000 -> 1/1000)
+##   "log(salary) = 3.36 + 0.44 log(sales); salary in dollars: new intercept?"  (PS8 #13-16, PS9 #1,#3)
+## Thousands -> dollars: 1000.  Dollars -> thousands: 1/1000.  Percent -> decimal: 1/100.  Years -> months: 12.
+## R^2 NEVER changes.   DEFAULT (PS9 #3): intercept 10.27, slope 0.44
+# ---- YOUR NUMBERS: change these lines ----
+s3_model <- "log-log"  # <-- CHANGE  "level-level" | "log-level" (log y) | "level-log" (log x) | "log-log"
+s3_b0    <- 3.36       # <-- CHANGE  original intercept (0 if not given)
+s3_b1    <- 0.44       # <-- CHANGE  original slope
+s3_cy    <- 1000       # <-- CHANGE  what y is MULTIPLIED by (1 = y unchanged)
+s3_cx    <- 1          # <-- CHANGE  what x is MULTIPLIED by (1 = x unchanged)
+# ---- ANSWERS: nothing to change below ----
 s3_new <- switch(s3_model,
   "level-level" = c(s3_cy * s3_b0, s3_cy * s3_b1 / s3_cx),
   "log-level"   = c(s3_b0 + log(s3_cy), s3_b1 / s3_cx),
   "level-log"   = c(s3_cy * (s3_b0 - s3_b1 * log(s3_cx)), s3_cy * s3_b1),
   "log-log"     = c(s3_b0 + log(s3_cy) - s3_b1 * log(s3_cx), s3_b1))
-ans("[S3] new intercept", s3_new[1]); ans("[S3] new slope", s3_new[2])
-pick("[S3] what changed", paste(ifelse(abs(s3_new[1] - s3_b0) > 1e-9, "intercept CHANGES", "intercept same"),
-                                ifelse(abs(s3_new[2] - s3_b1) > 1e-9, "slope CHANGES", "slope same"), "R^2 same", sep = "; "))
+blk("S3", sprintf("%s model, y x %g, x x %g", s3_model, s3_cy, s3_cx))
+ans4(sprintf("NEW intercept (was %g)", s3_b0), s3_new[1]); ans4(sprintf("NEW slope (was %g)", s3_b1), s3_new[2])
+pick("what changed", paste(ifelse(abs(s3_new[1] - s3_b0) > 1e-9, "intercept CHANGES", "intercept same"),
+                           ifelse(abs(s3_new[2] - s3_b1) > 1e-9, "slope CHANGES", "slope same"), "R^2 same", sep = "; "))
 
 ## ======================================================================
-## [S4] LOG / PERCENT READER: prints the answer for ALL 4 models at once, so you only ----
-## have to know WHERE the log is. Plus percent vs percentage points.
-## LOOKS LIKE: any "by about what percent / how many units" question with logs (Table 2.3)
-## DEFAULTS (b = 0.083): 0.08 | 8.30% | 0.01 units | 0.83%
-s4_b <- 0.083           # <-- CHANGE slope
-s4_dx <- 1              # <-- CHANGE change in x in UNITS (falls = negative)
-s4_pctx <- 10           # <-- CHANGE change in x in PERCENT (falls = negative)
-ans("[S4] y ~ x          dy (units)", s4_b * s4_dx)
-ans("[S4] log(y) ~ x     %dy (100*b*dx)", 100 * s4_b * s4_dx)
-ans("[S4] log(y) ~ x     %dy exact", 100 * (exp(s4_b * s4_dx) - 1))
-ans("[S4] y ~ log(x)     dy units (b/100*%dx)", s4_b / 100 * s4_pctx)
-ans("[S4] log(y)~log(x)  %dy (b*%dx)", s4_b * s4_pctx)
-s4_old <- 5.6; s4_new <- 6.6                                # <-- CHANGE a rate before/after (percent vs points)
-ans("[S4] percent change 100*(new-old)/old", 100 * (s4_new - s4_old) / s4_old)
-ans("[S4] percentage-POINT change new - old", s4_new - s4_old)
+## [S4] LOG / PERCENT READER (Table 2.3): prints all 4 models, you pick by WHERE the log is ----
+## LOOKS LIKE: any "by about what percent / how many units" question with logs; also
+##   "the rate rises from 5.6% to 6.6%: percent change? percentage-point change?"
+## log on y -> answer in PERCENT.  log on x -> x moves in PERCENT.
+## DEFAULTS (slope 0.083): level 0.08 | log-level 8.30% | level-log 0.01 | log-log 0.83%
+# ---- YOUR NUMBERS: change these lines ----
+s4_b    <- 0.083   # <-- CHANGE  the slope
+s4_dx   <- 1       # <-- CHANGE  change in x in x's UNITS (log-level, level-level; falls = negative)
+s4_pctx <- 10      # <-- CHANGE  change in x in PERCENT (level-log, log-log; falls = negative)
+s4_old  <- 5.6     # <-- CHANGE  a rate BEFORE (percent vs points questions)
+s4_new  <- 6.6     # <-- CHANGE  the rate AFTER
+# ---- ANSWERS: nothing to change below ----
+blk("S4", sprintf("reading a slope of %g", s4_b))
+part("pick the model by where the log is")
+ans(sprintf("y = ... + b x        Dy = %g x %g", s4_b, s4_dx), s4_b * s4_dx)
+ans(sprintf("log(y) = ... + b x   %%Dy = 100 x %g x %g", s4_b, s4_dx), 100 * s4_b * s4_dx)
+ans("log(y) = ... + b x   %Dy EXACT", 100 * (exp(s4_b * s4_dx) - 1))
+ans(sprintf("y = ... + b log(x)   Dy = %g/100 x %g%%", s4_b, s4_pctx), s4_b / 100 * s4_pctx)
+ans(sprintf("log(y) = ... + b log(x)  %%Dy = %g x %g%%", s4_b, s4_pctx), s4_b * s4_pctx)
+part(sprintf("a rate going from %g%% to %g%%", s4_old, s4_new))
+ans(sprintf("PERCENT change = 100 x (%g - %g) / %g", s4_new, s4_old, s4_old), 100 * (s4_new - s4_old) / s4_old)
+ans(sprintf("PERCENTAGE-POINT change = %g - %g", s4_new, s4_old), s4_new - s4_old)
 
 ## ======================================================================
 ## [S5] PROBABILITY SOLVER: moments, transforms, Var of sums, probability tables ----
 ## LOOKS LIKE: "E[X]=3, E[X^2]=27: sd of 3X-2?" / "Var(X)=8, Var(Y)=6, Cov=-2.9: Var(2X-2Y)?"
 ##   / "joint distribution below: Cor(X,Y)?" / "Y takes 6, 14, 34 w.p. .5 .3 .2: E[3Y+4]?"  (Exam I Q18-21, PS8 #3-5)
-## DEFAULTS (Exam I): sd(3X-2) 12.73 | Var(2X-2Y) 79.20 | Cor -0.43 | E[3Y+4] 46.00
 ## "4 - 2X" means a = -2, b = 4 (the number in front of X is a). Unknown things stay NA.
-## RUN: click inside this block, Cmd+Option+T (Mac) / Ctrl+Alt+T (Win). Seeing the DEFAULTS above = your edits didn't run.
-s5_EX <- 3; s5_EX2 <- 27; s5_VarX <- NA                     # <-- CHANGE: E[X] and E[X^2] (or Var(X) directly)
-s5_a <- 3; s5_b <- -2                                       # <-- CHANGE: transform aX + b
+## Four PARTS below; change only the part your question is about.
+## DEFAULTS (Exam I): sd(3X - 2) 12.73 | Var(2X - 2Y) 79.20 | Cor -0.43 | E[3Y + 4] 46.00
+# ---- PART A: one variable X and a transform aX + b ----
+s5_EX   <- 3     # <-- CHANGE  E[X]
+s5_EX2  <- 27    # <-- CHANGE  E[X^2]
+s5_VarX <- NA    # <-- CHANGE  OR Var(X) directly (then E[X^2] is ignored)
+s5_a    <- 3     # <-- CHANGE  a in aX + b (the number in front of X, with its sign)
+s5_b    <- -2    # <-- CHANGE  b in aX + b
+blk("S5", "probability")
 part(sprintf("PART A: one variable X, transform %s", fx(s5_a, s5_b)))
 if (is.na(s5_VarX)) { s5_VarX <- s5_EX2 - s5_EX^2
   ans(sprintf("Var(X) = %g - %g^2", s5_EX2, s5_EX), s5_VarX) } else ans("Var(X) (given)", s5_VarX)
@@ -815,20 +962,32 @@ ans("sd(X)", sqrt(s5_VarX))
 ans(sprintf("E[%s]", fx(s5_a, s5_b)), s5_a * s5_EX + s5_b)
 ans(sprintf("Var(%s) = (%g)^2 x Var(X)", fx(s5_a, s5_b), s5_a), s5_a^2 * s5_VarX)
 ans(sprintf("sd(%s) = |%g| x sd(X)", fx(s5_a, s5_b), s5_a), abs(s5_a) * sqrt(s5_VarX))
-s5_vx <- 8; s5_vy <- 6; s5_cov <- -2.9; s5_c1 <- 2; s5_c2 <- -2   # <-- CHANGE: Var(c1 X + c2 Y), minus goes INTO c2
+# ---- PART B: two variables, Var(c1 X + c2 Y) ----
+s5_vx  <- 8      # <-- CHANGE  Var(X)
+s5_vy  <- 6      # <-- CHANGE  Var(Y)
+s5_cov <- -2.9   # <-- CHANGE  Cov(X, Y)
+s5_c1  <- 2      # <-- CHANGE  c1, the number in front of X
+s5_c2  <- -2     # <-- CHANGE  c2, the number in front of Y (a minus goes INTO c2)
 part(sprintf("PART B: two variables, Var(X)=%g Var(Y)=%g Cov=%g", s5_vx, s5_vy, s5_cov))
-ans(sprintf("Var(%s)", sub("X - ", "X - ", paste0(fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")))),
+ans(sprintf("Var(%s%s%s)", fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")),
     s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
-ans("Cor(X,Y) = Cov/(sdX sdY)", s5_cov / sqrt(s5_vx * s5_vy))
-s5_x <- c(1, 4, 5, 6); s5_y <- c(4, 7, 4, 2); s5_p <- c(0.1, 0.4, 0.3, 0.2)   # <-- CHANGE a probability table
+ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", s5_cov / sqrt(s5_vx * s5_vy))
+# ---- PART C: a JOINT probability table of X and Y (one row per cell) ----
+s5_x <- c(1, 4, 5, 6)            # <-- CHANGE  the x column
+s5_y <- c(4, 7, 4, 2)            # <-- CHANGE  the y column
+s5_p <- c(0.1, 0.4, 0.3, 0.2)    # <-- CHANGE  the probability column
 part("PART C: joint probability table of X and Y")
 s5_EXt <- sum(s5_x * s5_p); s5_EYt <- sum(s5_y * s5_p)
 s5_Vx <- sum(s5_x^2 * s5_p) - s5_EXt^2; s5_Vy <- sum(s5_y^2 * s5_p) - s5_EYt^2
 s5_C <- sum(s5_x * s5_y * s5_p) - s5_EXt * s5_EYt
 ans("table E[X]", s5_EXt); ans("table E[Y]", s5_EYt); ans("table E[XY]", sum(s5_x * s5_y * s5_p))
 ans("table Var(X)", s5_Vx); ans("table Var(Y)", s5_Vy)
-ans("table Cov(X,Y)", s5_C); ans("table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
-s5_v <- c(6, 14, 34); s5_pv <- c(0.5, 0.3, 0.2); s5_A <- 3; s5_B <- 4   # <-- CHANGE one-variable table, E[AY+B]
+ans("table Cov(X,Y) = E[XY] - E[X]E[Y]", s5_C); ans("table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
+# ---- PART D: ONE variable Y with values and probabilities ----
+s5_v  <- c(6, 14, 34)        # <-- CHANGE  the values Y takes
+s5_pv <- c(0.5, 0.3, 0.2)    # <-- CHANGE  their probabilities
+s5_A  <- 3                   # <-- CHANGE  A in E[AY + B]
+s5_B  <- 4                   # <-- CHANGE  B in E[AY + B]
 part(sprintf("PART D: Y takes %s with probabilities %s", paste(s5_v, collapse = ", "), paste(s5_pv, collapse = ", ")))
 s5_E <- sum(s5_v * s5_pv)
 ans("E[Y]", s5_E); ans("Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
@@ -837,305 +996,394 @@ ans(sprintf("E[%s]", fx(s5_A, s5_B, "Y")), s5_A * s5_E + s5_B)
 ## ======================================================================
 ## [S6] SMALL-SAMPLE OLS SOLVER: type x and y, get EVERYTHING ----
 ## LOOKS LIKE: "For x = (...), y = (...): slope? intercept? residual of obs 3? predict at x = 5?
-##   sum x*uhat? R^2? sample sd/cov/cor?"   (Exam I Q16-17,22-23,28; PS5-PS6; PS8 #6,#8)
-## DEFAULT (Exam I Q23) -> residual of obs 3 = 1.80
-s6_x <- c(4, 6, 7, 8, 10)                                   # <-- CHANGE
-s6_y <- c(4, 6, 7, 1, 8)                                    # <-- CHANGE
-s6_i <- 3; s6_x0 <- 7                                       # <-- CHANGE observation number; x to predict at
-s6_reg <- lm(s6_y ~ s6_x); s6_b <- s6_reg$coefficients
-ans("[S6] mean x", mean(s6_x)); ans("[S6] mean y", mean(s6_y))
-ans("[S6] sd x", sd(s6_x)); ans("[S6] sd y", sd(s6_y)); ans("[S6] var x", var(s6_x))
-ans("[S6] cov(x,y)", cov(s6_x, s6_y)); ans("[S6] cor(x,y)", cor(s6_x, s6_y))
-ans("[S6] slope b1", s6_b[2]); ans("[S6] intercept b0", s6_b[1])
-ans("[S6] prediction at x0", s6_b[1] + s6_b[2] * s6_x0)
-ans("[S6] fitted of obs i", s6_reg$fitted.values[s6_i]); ans("[S6] residual of obs i", s6_reg$residuals[s6_i])
-ans("[S6] sum of residuals (always 0)", sum(s6_reg$residuals)); ans("[S6] sum x*uhat (always 0)", sum(s6_x * s6_reg$residuals))
-ans("[S6] SST", sum((s6_y - mean(s6_y))^2)); ans("[S6] SSR", sum(s6_reg$residuals^2))
-ans("[S6] SSE", sum((s6_reg$fitted.values - mean(s6_y))^2)); ans("[S6] R^2", summary(s6_reg)$r.squared)
+##   sum x*uhat? R^2? sample sd / cov / cor?"   (Exam I Q16-17, 22-23, 28; PS8 #6, #8)
+## DEFAULT (Exam I Q23): residual of observation 3 = 1.80
+# ---- YOUR NUMBERS: change these lines ----
+s6_x  <- c(4, 6, 7, 8, 10)   # <-- CHANGE  the x values
+s6_y  <- c(4, 6, 7, 1, 8)    # <-- CHANGE  the y values (same order)
+s6_i  <- 3                   # <-- CHANGE  which observation (for its fitted value / residual)
+s6_x0 <- 7                   # <-- CHANGE  x to predict at
+# ---- ANSWERS: nothing to change below ----
+s6_reg <- lm(s6_y ~ s6_x); s6_b <- coef(s6_reg)
+blk("S6", sprintf("x = (%s), y = (%s)", paste(s6_x, collapse = ", "), paste(s6_y, collapse = ", ")))
+part("the sample")
+ans("mean of x", mean(s6_x)); ans("mean of y", mean(s6_y))
+ans("sd of x", sd(s6_x)); ans("sd of y", sd(s6_y)); ans("variance of x", var(s6_x)); ans("variance of y", var(s6_y))
+ans("covariance of x and y", cov(s6_x, s6_y)); ans("correlation of x and y", cor(s6_x, s6_y))
+part("the OLS line")
+ans4("slope b1", s6_b[2]); ans4("intercept b0", s6_b[1])
+ans(sprintf("predicted y at x = %g", s6_x0), s6_b[1] + s6_b[2] * s6_x0)
+part(sprintf("observation %d: x = %g, y = %g", s6_i, s6_x[s6_i], s6_y[s6_i]))
+ans(sprintf("fitted y for observation %d", s6_i), fitted(s6_reg)[s6_i])
+ans(sprintf("residual of observation %d = y - fitted", s6_i), resid(s6_reg)[s6_i])
+part("always-true properties and sums of squares")
+ans("sum of residuals (always 0)", sum(resid(s6_reg))); ans("sum of x * residual (always 0)", sum(s6_x * resid(s6_reg)))
+ans("SST (total)", sum((s6_y - mean(s6_y))^2)); ans("SSE (explained)", sum((fitted(s6_reg) - mean(s6_y))^2))
+ans("SSR (residual)", sum(resid(s6_reg)^2)); ans("R^2", summary(s6_reg)$r.squared)
 
 ## ======================================================================
-## [S7] LINE SOLVER: given an equation, prints prediction, change, ybar, and log versions ----
+## [S7] EQUATION SOLVER: prediction, change, y-bar, and the log(y) versions ----
 ## LOOKS LIKE: any "y-hat = b0 + b1 x1 + b2 x2 ..." question: predicted value / change /
 ##   sample mean of y / % change / predicted $ when y is logged    (Q9 #8-9, PS11 #1, #6)
-## DEFAULTS (yhat = 4 + 2.9x1 - 0.6x2): pred at (1,2) 5.70 | change (1,-3) 4.70 | ybar at (5,2) 17.30
-s7_b0 <- 4                                                  # <-- CHANGE intercept
-s7_b  <- c(2.9, -0.6)                                       # <-- CHANGE slopes (keep signs)
-s7_at <- c(1, 2)                                            # <-- CHANGE x VALUES (for a prediction)
-s7_dx <- c(1, -3)                                           # <-- CHANGE x CHANGES (falls negative, fixed 0)
-s7_xbar <- c(5, 2)                                          # <-- CHANGE x MEANS (for ybar), if given
+## PREDICTION keeps b0.  CHANGE drops b0.  y-bar = b0 + b1 x1-bar + ...
+## DEFAULTS (y-hat = 4 + 2.9 x1 - 0.6 x2): prediction 5.70 | change 4.70 | y-bar 17.30
+# ---- YOUR NUMBERS: change these lines (one number per x, same order) ----
+s7_b0   <- 4             # <-- CHANGE  intercept
+s7_b    <- c(2.9, -0.6)  # <-- CHANGE  slopes, keep the signs
+s7_at   <- c(1, 2)       # <-- CHANGE  prediction: x VALUES
+s7_dx   <- c(1, -3)      # <-- CHANGE  change: how much each x CHANGES (falls = negative, fixed = 0)
+s7_xbar <- c(5, 2)       # <-- CHANGE  y-bar: the MEANS of the x's
+# ---- ANSWERS: nothing to change below ----
 s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
-ans("[S7] prediction (keeps b0)", s7_pred); ans("[S7] change (no b0)", s7_chg)
-ans("[S7] ybar = b0 + sum(b * xbar)", s7_b0 + sum(s7_b * s7_xbar))
-ans("[S7] IF y is logged: % change = 100*chg", 100 * s7_chg)
-ans("[S7] IF y is logged: prediction in $ = exp", exp(s7_pred))
-
-
-## ======================================================================
-## [U1] x multiplied or divided by c -> new slope ----
-## LOOKS LIKE: "The OLS slope is 0.58. Every value of x is divided by 1,000. New slope?"
-##   (PS8 #14, Q8 #2)   x DIVIDED by c -> slope TIMES c.  Intercept, R^2 unchanged.
-## DEFAULT -> 580.00
-u1_b1 <- 0.58                                               # <-- CHANGE slope
-u1_c  <- 1/1000                                             # <-- CHANGE what x is MULTIPLIED by (divided by 1000 -> 1/1000)
-ans("[U1] new slope = b1 / c", u1_b1 / u1_c)
+s7_eq <- paste0("y-hat = ", s7_b0, paste(sprintf(" %s %g x%d", ifelse(s7_b < 0, "-", "+"), abs(s7_b), seq_along(s7_b)), collapse = ""))
+blk("S7", s7_eq)
+ans(sprintf("PREDICTION at %s", paste(sprintf("x%d = %g", seq_along(s7_at), s7_at), collapse = ", ")), s7_pred)
+ans(sprintf("CHANGE when %s", paste(sprintf("x%d %+g", seq_along(s7_dx), s7_dx), collapse = ", ")), s7_chg)
+ans(sprintf("y-bar at %s", paste(sprintf("x%d-bar = %g", seq_along(s7_xbar), s7_xbar), collapse = ", ")), s7_b0 + sum(s7_b * s7_xbar))
+part("ONLY if the left side is log(y)")
+ans("% change in y = 100 x CHANGE", 100 * s7_chg)
+ans("predicted y in levels/$ = exp(PREDICTION)", exp(s7_pred))
 
 ## ======================================================================
-## [U2] y multiplied by c -> new slope (and intercept) times c ----
-## LOOKS LIKE: "The OLS slope is 2.48. Every value of y is multiplied by 1,000. New slope?" (PS8 #13)
-## DEFAULT -> 2480.00
-u2_b1 <- 2.48; u2_b0 <- 0                                   # <-- CHANGE slope (and intercept if asked)
-u2_c  <- 1000                                               # <-- CHANGE what y is multiplied by
-ans("[U2] new slope = c * b1", u2_c * u2_b1)
-ans("[U2] new intercept = c * b0", u2_c * u2_b0)
+## SPECIALIZED BLOCKS: one formula each. The solvers above do all of these too.
 
 ## ======================================================================
-## [U3] log(y) model, y rescaled -> slope same, intercept + log(c) ----
-## LOOKS LIKE: "log(salary)-hat = 3.36 + 0.44 log(sales). Salary in dollars instead
-##   (times 1000): new intercept?"  (PS9 #3)    DEFAULT -> 10.27
-u3_b0 <- 3.36; u3_c <- 1000                                 # <-- CHANGE intercept, multiplier
-ans("[U3] new intercept = b0 + log(c)", u3_b0 + log(u3_c))
+## [U1] x MULTIPLIED or DIVIDED by c -> new slope ----
+## LOOKS LIKE: "The OLS slope is 0.58. Every value of x is divided by 1,000. New slope?"  (PS8 #14, Q8 #2)
+## x times c -> slope DIVIDED by c. Intercept and R^2 unchanged.   DEFAULT: 580.00
+u1_b1 <- 0.58      # <-- CHANGE  original slope
+u1_c  <- 1/1000    # <-- CHANGE  what x is MULTIPLIED by (divided by 1000 -> 1/1000)
+blk("U1", "x rescaled")
+ans(sprintf("new slope = %g / %g", u1_b1, u1_c), u1_b1 / u1_c)
 
 ## ======================================================================
-## [L1] LOG-LEVEL (log on LEFT only): %dy = 100 * b1 * dx ----
-## LOOKS LIKE: "log(y)-hat = 1.5 + 0.02x. By about what percent does y change when
-##   x rises by 2?"  (PS8 #17, Q8 #3, Q9 #2)   DEFAULT -> 4.00
-## Units trap (PS9 #2): x in MONTHS, asked per YEAR -> dx = 12.
-l1_b1 <- 0.02                                               # <-- CHANGE slope
-l1_dx <- 2                                                  # <-- CHANGE change in x (falls = negative)
-ans("[L1] % change in y", 100 * l1_b1 * l1_dx)
+## [U2] y MULTIPLIED by c -> slope and intercept times c ----
+## LOOKS LIKE: "The OLS slope is 2.48. Every value of y is multiplied by 1,000. New slope?"  (PS8 #13)
+## DEFAULT: 2480.00
+u2_b1 <- 2.48   # <-- CHANGE  original slope
+u2_b0 <- 0      # <-- CHANGE  original intercept (if asked)
+u2_c  <- 1000   # <-- CHANGE  what y is multiplied by
+blk("U2", "y rescaled")
+ans(sprintf("new slope = %g x %g", u2_c, u2_b1), u2_c * u2_b1)
+ans(sprintf("new intercept = %g x %g", u2_c, u2_b0), u2_c * u2_b0)
 
 ## ======================================================================
-## [L2] LOG-LOG (log on BOTH sides): %dy = b1 * %dx  (elasticity, no 100) ----
-## LOOKS LIKE: "log(y)-hat = 3.5 + 1.22 log(x). By about what percent does y change when
-##   x rises by 18%?"  (PS8 #18, PS9 #5, Q8 #4)   DEFAULT -> 21.96
-l2_b1 <- 1.22                                               # <-- CHANGE slope
-l2_pctx <- 18                                               # <-- CHANGE % change in x (falls = negative)
-ans("[L2] % change in y", l2_b1 * l2_pctx)
+## [U3] log(y) MODEL, y rescaled -> slope same, intercept + log(c) ----
+## LOOKS LIKE: "log(salary)-hat = 3.36 + 0.44 log(sales). Salary in dollars instead (times 1000):
+##   new intercept?"  (PS9 #3)   DEFAULT: 10.27
+u3_b0 <- 3.36   # <-- CHANGE  original intercept
+u3_c  <- 1000   # <-- CHANGE  what y is multiplied by
+blk("U3", "log(y) model, y rescaled")
+ans(sprintf("new intercept = %g + log(%g)", u3_b0, u3_c), u3_b0 + log(u3_c))
+pick("slope", "unchanged")
 
 ## ======================================================================
-## [L3] LEVEL-LOG (log on RIGHT only): dy = (b1/100) * %dx  (UNITS of y) ----
-## LOOKS LIKE: "y-hat = 87 + 11.3 log(x). By about how many units does y change when
-##   x rises by 13%?"  (PS8 #19, Q8 #5)   DEFAULT -> 1.47
-l3_b1 <- 11.3                                               # <-- CHANGE slope
-l3_pctx <- 13                                               # <-- CHANGE % change in x
-ans("[L3] change in y (units)", l3_b1 / 100 * l3_pctx)
+## [L1] LOG-LEVEL (log on the LEFT only): % change in y = 100 x b1 x change in x ----
+## LOOKS LIKE: "log(y)-hat = 1.5 + 0.02x. By about what percent does y change when x rises by 2?"
+##   (PS8 #17, Q8 #3, Q9 #2)   DEFAULT: 4.00
+## Units trap (PS9 #2): x in MONTHS but asked per YEAR -> change in x = 12.
+l1_b1 <- 0.02   # <-- CHANGE  slope
+l1_dx <- 2      # <-- CHANGE  change in x (falls = negative)
+blk("L1", "log-level")
+ans(sprintf("%% change in y = 100 x %g x %g", l1_b1, l1_dx), 100 * l1_b1 * l1_dx)
+ans("% change in y, EXACT", 100 * (exp(l1_b1 * l1_dx) - 1))
 
 ## ======================================================================
-## [L4] LOG-LEVEL with several x's: %dy = 100 * (b1*dx1 + b2*dx2 + ...) ----
+## [L2] LOG-LOG (log on BOTH sides): % change in y = b1 x % change in x (elasticity) ----
+## LOOKS LIKE: "log(y)-hat = 3.5 + 1.22 log(x). By about what percent does y change when x rises
+##   by 18%?"  (PS8 #18, PS9 #5, Q8 #4)   DEFAULT: 21.96
+l2_b1   <- 1.22   # <-- CHANGE  slope (the elasticity)
+l2_pctx <- 18     # <-- CHANGE  % change in x (falls = negative)
+blk("L2", "log-log")
+ans(sprintf("%% change in y = %g x %g%%", l2_b1, l2_pctx), l2_b1 * l2_pctx)
+
+## ======================================================================
+## [L3] LEVEL-LOG (log on the RIGHT only): change in y = (b1 / 100) x % change in x ----
+## LOOKS LIKE: "y-hat = 87 + 11.3 log(x). By about how many units does y change when x rises
+##   by 13%?"  (PS8 #19, Q8 #5)   DEFAULT: 1.47
+l3_b1   <- 11.3   # <-- CHANGE  slope
+l3_pctx <- 13     # <-- CHANGE  % change in x (falls = negative)
+blk("L3", "level-log")
+ans(sprintf("change in y (units) = %g/100 x %g%%", l3_b1, l3_pctx), l3_b1 / 100 * l3_pctx)
+
+## ======================================================================
+## [L4] LOG-LEVEL with several x's: % change in y = 100 x (b1 dx1 + b2 dx2 + ...) ----
 ## LOOKS LIKE: "log(y)-hat = 2.4 + 0.015x1 - 0.037x2. If x1 rises by 3 and x2 rises by 4,
-##   about what percent does y change?"  (PS11 #1)   DEFAULT -> -10.30
-l4_b  <- c(0.015, -0.037)                                   # <-- CHANGE slopes (keep minus signs, NO intercept)
-l4_dx <- c(3, 4)                                            # <-- CHANGE changes (falls = negative)
-ans("[L4] % change in y", 100 * sum(l4_b * l4_dx))
+##   about what percent does y change?"  (PS11 #1)   DEFAULT: -10.30
+l4_b  <- c(0.015, -0.037)   # <-- CHANGE  slopes, keep minus signs, NO intercept
+l4_dx <- c(3, 4)            # <-- CHANGE  changes in each x (falls = negative, fixed = 0)
+blk("L4", "log-level, several x's")
+ans(sprintf("%% change in y = 100 x (%s)", paste(sprintf("%g x %g", l4_b, l4_dx), collapse = " + ")), 100 * sum(l4_b * l4_dx))
 
 ## ======================================================================
-## [M1] MLR PREDICTION (keep the intercept) ----
+## [M1] MULTIPLE REGRESSION PREDICTION (keep the intercept) ----
 ## LOOKS LIKE: "y-hat = 5 + 2.9x1 + 2.2x2. Predicted value at x1 = 13 and x2 = 12?" (Q9 #8)
-## DEFAULT -> 69.10
-m1_b0 <- 5                                                  # <-- CHANGE intercept
-m1_b  <- c(2.9, 2.2)                                        # <-- CHANGE slopes (keep signs)
-m1_x  <- c(13, 12)                                          # <-- CHANGE x values
-ans("[M1] predicted y", m1_b0 + sum(m1_b * m1_x))
+## DEFAULT: 69.10
+m1_b0 <- 5            # <-- CHANGE  intercept
+m1_b  <- c(2.9, 2.2)  # <-- CHANGE  slopes, keep signs
+m1_x  <- c(13, 12)    # <-- CHANGE  x VALUES
+blk("M1", "prediction")
+ans(sprintf("predicted y = %g + %s", m1_b0, paste(sprintf("%g x %g", m1_b, m1_x), collapse = " + ")), m1_b0 + sum(m1_b * m1_x))
 
 ## ======================================================================
-## [M2] MLR CHANGE (drop the intercept) ----
-## LOOKS LIKE: "y-hat = 4 + 0.9x1 - 1.9x2. If x1 rises by 1 and x2 rises by 4, by how
-##   much does y-hat change?"  (Q9 #9, Exam I Q14)   DEFAULT -> -6.70
-m2_b  <- c(0.9, -1.9)                                       # <-- CHANGE slopes (keep signs)
-m2_dx <- c(1, 4)                                            # <-- CHANGE changes (falls = negative, fixed = 0)
-ans("[M2] change in y-hat", sum(m2_b * m2_dx))
+## [M2] MULTIPLE REGRESSION CHANGE (drop the intercept) ----
+## LOOKS LIKE: "y-hat = 4 + 0.9x1 - 1.9x2. If x1 rises by 1 and x2 rises by 4, by how much does
+##   y-hat change?"  (Q9 #9, Exam I Q14)   DEFAULT: -6.70
+m2_b  <- c(0.9, -1.9)   # <-- CHANGE  slopes, keep signs
+m2_dx <- c(1, 4)        # <-- CHANGE  changes (falls = negative, fixed = 0)
+blk("M2", "change")
+ans(sprintf("change in y-hat = %s", paste(sprintf("%g x %g", m2_b, m2_dx), collapse = " + ")), sum(m2_b * m2_dx))
 
 ## ======================================================================
-## [M3] ybar from the line and the means (the line passes through the means) ----
-## LOOKS LIKE: "y-hat = 3.6 + 0.8x1 - 1.2x2, x1bar = 4.6, x2bar = 2.9. What is ybar?"
-##   (PS11 #6, PS8 #12, Exam I Q26)   DEFAULT -> 3.80
-m3_b0 <- 3.6                                                # <-- CHANGE intercept
-m3_b  <- c(0.8, -1.2)                                       # <-- CHANGE slopes (one per x)
-m3_xbar <- c(4.6, 2.9)                                      # <-- CHANGE means of the x's
-ans("[M3] ybar", m3_b0 + sum(m3_b * m3_xbar))
+## [M3] y-bar FROM THE LINE AND THE MEANS (the line passes through the means) ----
+## LOOKS LIKE: "y-hat = 3.6 + 0.8x1 - 1.2x2, x1-bar = 4.6, x2-bar = 2.9. What is y-bar?"
+##   (PS11 #6, PS8 #12, Exam I Q26)   DEFAULT: 3.80
+m3_b0   <- 3.6           # <-- CHANGE  intercept
+m3_b    <- c(0.8, -1.2)  # <-- CHANGE  slopes
+m3_xbar <- c(4.6, 2.9)   # <-- CHANGE  means of the x's
+blk("M3", "y-bar")
+ans(sprintf("y-bar = %g + %s", m3_b0, paste(sprintf("%g x %g", m3_b, m3_xbar), collapse = " + ")), m3_b0 + sum(m3_b * m3_xbar))
 
 ## ======================================================================
-## [O1] OLS residual of ONE observation (small sample) ----
-## LOOKS LIKE: "For x = (1,4,6,7,9), y = (2,1,6,5,3), regress y on x. Find the residual of
-##   the third observation."  (PS8 #6, Q7 #7, Exam I Q23)   DEFAULT -> 2.40
-o1_x <- c(1, 4, 6, 7, 9)                                    # <-- CHANGE x
-o1_y <- c(2, 1, 6, 5, 3)                                    # <-- CHANGE y
-o1_i <- 3                                                   # <-- CHANGE which observation
+## [O1] OLS RESIDUAL of ONE observation (small sample) ----
+## LOOKS LIKE: "For x = (1,4,6,7,9), y = (2,1,6,5,3), regress y on x. Find the residual of the
+##   third observation."  (PS8 #6, Q7 #7, Exam I Q23)   DEFAULT: 2.40
+o1_x <- c(1, 4, 6, 7, 9)   # <-- CHANGE  x values
+o1_y <- c(2, 1, 6, 5, 3)   # <-- CHANGE  y values
+o1_i <- 3                  # <-- CHANGE  which observation
 o1_reg <- lm(o1_y ~ o1_x)
-ans("[O1] slope", o1_reg$coefficients[2]); ans("[O1] intercept", o1_reg$coefficients[1])
-ans("[O1] residual of obs i", o1_reg$residuals[o1_i])
+blk("O1", "residual of one observation")
+ans4("slope", coef(o1_reg)[2]); ans4("intercept", coef(o1_reg)[1])
+ans(sprintf("fitted y for observation %d (x = %g)", o1_i, o1_x[o1_i]), fitted(o1_reg)[o1_i])
+ans(sprintf("residual of observation %d = %g - fitted", o1_i, o1_y[o1_i]), resid(o1_reg)[o1_i])
 
 ## ======================================================================
-## [O2] missing residual (OLS residuals sum to 0) ----
+## [O2] MISSING RESIDUAL (OLS residuals always sum to 0) ----
 ## LOOKS LIKE: "Residuals -1.6, 2.4, -0.2, 0.7, 1.1, and one more. The sixth?" (PS8 #7, Q7 #8)
-## DEFAULT -> -2.40
-o2_known <- c(-1.6, 2.4, -0.2, 0.7, 1.1)                    # <-- CHANGE the known residuals
-ans("[O2] missing residual", -sum(o2_known))
+## DEFAULT: -2.40
+o2_known <- c(-1.6, 2.4, -0.2, 0.7, 1.1)   # <-- CHANGE  the residuals you're given
+blk("O2", "missing residual")
+ans(sprintf("missing residual = -(sum of the %d given)", length(o2_known)), -sum(o2_known))
 
 ## ======================================================================
-## [O3] sum of x_i * uhat_i  -> ALWAYS 0 (type 0) ----
-## LOOKS LIKE: "For x = (...), y = (...), compute sum x_i uhat_i."  (PS8 #8, Q7 #3, Exam I Q28)
+## [O3] sum of x_i x uhat_i -> ALWAYS 0 (just type 0) ----
+## LOOKS LIKE: "For x = (...), y = (...), compute the sum of x_i times uhat_i."  (PS8 #8, Exam I Q28)
 o3_x <- c(3, 6, 7, 9, 10, 15); o3_y <- c(12, 12, 8, 15, 8, 10)   # (optional check)
-ans("[O3] sum(x * uhat)  (always 0)", sum(o3_x * lm(o3_y ~ o3_x)$residuals))
+blk("O3", "sum of x times residual")
+ans("sum of x x residual (always 0)", sum(o3_x * resid(lm(o3_y ~ o3_x))))
 
 ## ======================================================================
-## [O4] SSR from SSE and R^2:  SST = SSE/R^2, SSR = SST - SSE ----
-## LOOKS LIKE: "SSE = 53 and R^2 = 0.89. Find SSR."  (PS8 #9, Q7 #9)   DEFAULT -> 6.55
-o4_SSE <- 53; o4_R2 <- 0.89                                 # <-- CHANGE
-ans("[O4] SST = SSE/R^2", o4_SSE / o4_R2)
-ans("[O4] SSR = SST - SSE", o4_SSE / o4_R2 - o4_SSE)
+## [O4] SSR FROM SSE AND R^2: SST = SSE / R^2, SSR = SST - SSE ----
+## LOOKS LIKE: "SSE = 53 and R^2 = 0.89. Find SSR."  (PS8 #9, Q7 #9)   DEFAULT: 6.55
+o4_SSE <- 53     # <-- CHANGE  explained sum of squares
+o4_R2  <- 0.89   # <-- CHANGE  R^2 (decimal)
+blk("O4", "SSR from SSE and R^2")
+ans(sprintf("SST = %g / %g", o4_SSE, o4_R2), o4_SSE / o4_R2)
+ans("SSR = SST - SSE", o4_SSE / o4_R2 - o4_SSE)
 
 ## ======================================================================
-## [O5] SST from n and the sample variance:  SST = (n-1) * S_y^2 ----
+## [O5] SST FROM n AND THE SAMPLE VARIANCE: SST = (n - 1) x S_y^2 ----
 ## LOOKS LIKE: "n = 54 observations, sample variance S_y^2 = 20. Find SST." (PS8 #10, Q7 #10)
-## DEFAULT -> 1060.00
-o5_n <- 54; o5_S2 <- 20                                     # <-- CHANGE
-ans("[O5] SST", (o5_n - 1) * o5_S2)
+## DEFAULT: 1060.00
+o5_n  <- 54   # <-- CHANGE  n
+o5_S2 <- 20   # <-- CHANGE  sample VARIANCE of y (given the SD? square it)
+blk("O5", "SST from n and variance")
+ans(sprintf("SST = (%g - 1) x %g", o5_n, o5_S2), (o5_n - 1) * o5_S2)
 
 ## ======================================================================
 ## [V1] Var(b1) = sigma^2 / SST_x ----
-## LOOKS LIKE: "sigma^2 = 66 and SST_X = 53. Find Var(b1-hat)."  (PS9 #11)   DEFAULT -> 1.25
-v1_sigma2 <- 66; v1_SST <- 53                               # <-- CHANGE (given sigma? type its square: 4^2)
-ans("[V1] Var(b1)", v1_sigma2 / v1_SST)
+## LOOKS LIKE: "sigma^2 = 66 and SST_X = 53. Find Var(b1-hat)."  (PS9 #11)   DEFAULT: 1.25
+v1_sigma2 <- 66   # <-- CHANGE  sigma^2 (given sigma = 4? type 4^2)
+v1_SST    <- 53   # <-- CHANGE  SST_x
+blk("V1", "Var(b1)")
+ans(sprintf("Var(b1) = %g / %g", v1_sigma2, v1_SST), v1_sigma2 / v1_SST)
 
 ## ======================================================================
-## [V2] sd(b1) or se(b1) from sigma (or sigma-hat), n, and S_X or S_X^2 ----
+## [V2] sd(b1) or se(b1) FROM sigma (or sigma-hat), n, and S_X or S_X^2 ----
 ## LOOKS LIKE: "sigma = 20, n = 6, sample variance S_X^2 = 2. Find sd(b1-hat)." (PS9 #12)
 ##   "n = 23, sigma-hat = 9.4, sample SD S_X = 0.7. Find se(b1-hat)." (Q9 #6, PS10 #7)
-## SST_X = (n-1)*S_X^2. Given the SD S_X? set v2_is_var <- FALSE (it gets squared).
-## DEFAULT -> 6.32   (Q9 #6 numbers -> 2.86)
-v2_n <- 6                                                   # <-- CHANGE n
-v2_sigma <- 20                                              # <-- CHANGE sigma or sigma-hat
-v2_S <- 2                                                   # <-- CHANGE the S_X number given
-v2_is_var <- TRUE                                           # <-- CHANGE TRUE if they gave S_X^2 (variance), FALSE if S_X (sd)
+## SST_X = (n - 1) x S_X^2.   DEFAULT: 6.32   (the Q9 #6 numbers give 2.86)
+v2_n      <- 6      # <-- CHANGE  n
+v2_sigma  <- 20     # <-- CHANGE  sigma or sigma-hat
+v2_S      <- 2      # <-- CHANGE  the S_X number given
+v2_is_var <- TRUE   # <-- CHANGE  TRUE if they gave S_X^2 (variance), FALSE if S_X (sd)
 v2_SST <- (v2_n - 1) * if (v2_is_var) v2_S else v2_S^2
-ans("[V2] SST_X", v2_SST)
-ans("[V2] sd/se(b1) = sigma/sqrt(SST)", v2_sigma / sqrt(v2_SST))
+blk("V2", "sd/se of the slope")
+ans(sprintf("SST_x = (%g - 1) x %s", v2_n, if (v2_is_var) format(v2_S) else paste0(v2_S, "^2")), v2_SST)
+ans(sprintf("sd(b1) = %g / sqrt(%g)", v2_sigma, v2_SST), v2_sigma / sqrt(v2_SST))
 
 ## ======================================================================
-## [V3] sd(b1) from sigma and the raw x values ----
-## LOOKS LIKE: "sigma = 6. The five X values are x = (3,4,7,8,9). Find sd(b1-hat)."
-##   (PS9 #14, Q8 #9)   DEFAULT -> 1.16
-v3_sigma <- 6                                               # <-- CHANGE
-v3_x <- c(3, 4, 7, 8, 9)                                    # <-- CHANGE
-ans("[V3] SST_X", sum((v3_x - mean(v3_x))^2))
-ans("[V3] sd(b1)", v3_sigma / sqrt(sum((v3_x - mean(v3_x))^2)))
+## [V3] sd(b1) FROM sigma AND THE RAW x VALUES ----
+## LOOKS LIKE: "sigma = 6. The five X values are x = (3,4,7,8,9). Find sd(b1-hat)."  (PS9 #14, Q8 #9)
+## DEFAULT: 1.16
+v3_sigma <- 6                 # <-- CHANGE  sigma
+v3_x     <- c(3, 4, 7, 8, 9)  # <-- CHANGE  the x values
+blk("V3", "sd of the slope from raw x")
+ans("SST_x = sum of (x - mean)^2", sum((v3_x - mean(v3_x))^2))
+ans(sprintf("sd(b1) = %g / sqrt(SST_x)", v3_sigma), v3_sigma / sqrt(sum((v3_x - mean(v3_x))^2)))
 
 ## ======================================================================
 ## [V4] sigma^2-hat = SSR / (n - k - 1)   (simple regression: k = 1 -> n - 2) ----
-## LOOKS LIKE: "Simple regression, n = 14, SSR = 268. Estimate of the error variance?"
-##   (PS9 #15, Q8 #10)   DEFAULT -> 22.33
-v4_SSR <- 268; v4_n <- 14; v4_k <- 1                        # <-- CHANGE (k = number of slopes)
-ans("[V4] sigma^2-hat", v4_SSR / (v4_n - v4_k - 1))
-ans("[V4] sigma-hat", sqrt(v4_SSR / (v4_n - v4_k - 1)))
+## LOOKS LIKE: "Simple regression, n = 14, SSR = 268. Estimate of the error variance?"  (PS9 #15, Q8 #10)
+## DEFAULT: 22.33
+v4_SSR <- 268   # <-- CHANGE  SSR
+v4_n   <- 14    # <-- CHANGE  n
+v4_k   <- 1     # <-- CHANGE  number of slopes
+blk("V4", "estimated error variance")
+ans(sprintf("sigma^2-hat = %g / (%g - %g - 1)", v4_SSR, v4_n, v4_k), v4_SSR / (v4_n - v4_k - 1))
+ans("sigma-hat = sqrt of that", sqrt(v4_SSR / (v4_n - v4_k - 1)))
 
 ## ======================================================================
-## [V5] se(b1) from SSR, n and SST_x ----
-## LOOKS LIKE: "n = 13, SSR = 437, SST_X = 12. Find se(b1-hat)."  (PS9 #16, Q8 #11)
-## DEFAULT -> 1.82
-v5_SSR <- 437; v5_n <- 13; v5_SST <- 12                     # <-- CHANGE
-ans("[V5] sigma-hat", sqrt(v5_SSR / (v5_n - 2)))
-ans("[V5] se(b1)", sqrt(v5_SSR / (v5_n - 2)) / sqrt(v5_SST))
+## [V5] se(b1) FROM SSR, n AND SST_x ----
+## LOOKS LIKE: "n = 13, SSR = 437, SST_X = 12. Find se(b1-hat)."  (PS9 #16, Q8 #11)   DEFAULT: 1.82
+v5_SSR <- 437   # <-- CHANGE  SSR
+v5_n   <- 13    # <-- CHANGE  n
+v5_SST <- 12    # <-- CHANGE  SST_x
+blk("V5", "se of the slope")
+ans(sprintf("sigma-hat = sqrt(%g / (%g - 2))", v5_SSR, v5_n), sqrt(v5_SSR / (v5_n - 2)))
+ans(sprintf("se(b1) = sigma-hat / sqrt(%g)", v5_SST), sqrt(v5_SSR / (v5_n - 2)) / sqrt(v5_SST))
 
 ## ======================================================================
-## [V6] sd(b1) when the sample is k times as large: divide by sqrt(k) ----
-## LOOKS LIKE: "sd(b1-hat) = 0.34. Sample 6 times as large (SST_X also 6x). New sd?"
-##   (Q9 #7, PS10 #9)   DEFAULT -> 0.14     (sigma doubles -> multiply sd by 2)
-v6_sd <- 0.34; v6_k <- 6                                    # <-- CHANGE
-ans("[V6] new sd = sd/sqrt(k)", v6_sd / sqrt(v6_k))
+## [V6] sd(b1) WHEN THE SAMPLE IS k TIMES AS LARGE: divide by sqrt(k) ----
+## LOOKS LIKE: "sd(b1-hat) = 0.34. Sample 6 times as large (SST_X also 6x). New sd?"  (Q9 #7, PS10 #9)
+## DEFAULT: 0.14      (sigma doubles instead -> multiply the sd by 2)
+v6_sd <- 0.34   # <-- CHANGE  current sd
+v6_k  <- 6      # <-- CHANGE  how many times as large
+blk("V6", "bigger sample")
+ans(sprintf("new sd = %g / sqrt(%g)", v6_sd, v6_k), v6_sd / sqrt(v6_k))
 
 ## ======================================================================
-## [V7] multiple regression: Var(bj) = sigma^2 / [SST_j (1 - Rj^2)],  VIF = 1/(1 - Rj^2) ----
-v7_sigma2 <- 15; v7_SSTj <- 120; v7_Rj2 <- 0.6              # <-- CHANGE   DEFAULTS -> VIF 2.50, Var 0.31
-ans("[V7] VIF", 1 / (1 - v7_Rj2)); ans("[V7] Var(bj)", v7_sigma2 / (v7_SSTj * (1 - v7_Rj2)))
-ans("[V7] sd(bj)", sqrt(v7_sigma2 / (v7_SSTj * (1 - v7_Rj2))))
+## [V7] MULTIPLE REGRESSION: Var(bj) = sigma^2 / [SST_j (1 - Rj^2)],  VIF = 1 / (1 - Rj^2) ----
+## LOOKS LIKE: "sigma^2 = 15, SST_1 = 120, R_1^2 = 0.6. Var(b1-hat)? VIF?"   DEFAULTS: VIF 2.50, Var 0.31
+v7_sigma2 <- 15    # <-- CHANGE  sigma^2
+v7_SSTj   <- 120   # <-- CHANGE  SST_j
+v7_Rj2    <- 0.6   # <-- CHANGE  R_j^2 (x_j regressed on the other x's)
+blk("V7", "multicollinearity")
+ans(sprintf("VIF = 1 / (1 - %g)", v7_Rj2), 1 / (1 - v7_Rj2))
+ans(sprintf("Var(bj) = %g / (%g x (1 - %g))", v7_sigma2, v7_SSTj, v7_Rj2), v7_sigma2 / (v7_SSTj * (1 - v7_Rj2)))
+ans("sd(bj) = sqrt of that", sqrt(v7_sigma2 / (v7_SSTj * (1 - v7_Rj2))))
 
 ## ======================================================================
-## [B1] OVB formula (3.23): b1tilde = b1hat + b2hat * delta1. Put NA on the one asked. ----
-## LOOKS LIKE: "Simple regression gives b1tilde = -0.36. Multiple gives b2hat = -1.18,
-##   slope of X2 on X1 is delta1 = -0.51. Find b1hat."  (PS11 #11, PS10 #18)  DEFAULT -> -0.96
-b1_b1tilde <- -0.36                                         # <-- CHANGE simple slope (NA if asked)
-b1_b1hat   <- NA                                            # <-- CHANGE multiple slope on x1 (NA if asked)
-b1_b2hat   <- -1.18                                         # <-- CHANGE coef on x2 (NA if asked)
-b1_delta1  <- -0.51                                         # <-- CHANGE slope of x2 on x1 (NA if asked)
-if (is.na(b1_b1hat))   ans("[B1] b1hat", b1_b1tilde - b1_b2hat * b1_delta1)
-if (is.na(b1_b1tilde)) ans("[B1] b1tilde", b1_b1hat + b1_b2hat * b1_delta1)
-if (is.na(b1_b2hat))   ans("[B1] b2hat", (b1_b1tilde - b1_b1hat) / b1_delta1)
-if (is.na(b1_delta1))  ans("[B1] delta1", (b1_b1tilde - b1_b1hat) / b1_b2hat)
+## [B1] OVB FORMULA (3.23): b1-tilde = b1-hat + b2-hat x delta1. Type 3 pieces, NA on the asked one ----
+## LOOKS LIKE: "Simple regression gives b1-tilde = -0.36. Multiple gives b2-hat = -1.18; slope of
+##   X2 on X1 is delta1 = -0.51. Find b1-hat."  (PS11 #11, PS10 #18)   DEFAULT: b1-hat -0.96
+## "short regression" = simple (b1-tilde). "long regression" = multiple (b1-hat, b2-hat).
+b1_b1tilde <- -0.36   # <-- CHANGE  SIMPLE slope on x1 (NA if that's what's asked)
+b1_b1hat   <- NA      # <-- CHANGE  MULTIPLE slope on x1 (NA if asked)
+b1_b2hat   <- -1.18   # <-- CHANGE  coefficient on x2 in the multiple regression (NA if asked)
+b1_delta1  <- -0.51   # <-- CHANGE  slope from regressing x2 on x1 (NA if asked)
+blk("B1", "formula (3.23)")
+if (is.na(b1_b1hat))   ans(sprintf("b1-hat = %g - (%g x %g)", b1_b1tilde, b1_b2hat, b1_delta1), b1_b1tilde - b1_b2hat * b1_delta1)
+if (is.na(b1_b1tilde)) ans(sprintf("b1-tilde = %g + %g x %g", b1_b1hat, b1_b2hat, b1_delta1), b1_b1hat + b1_b2hat * b1_delta1)
+if (is.na(b1_b2hat))   ans(sprintf("b2-hat = (%g - %g) / %g", b1_b1tilde, b1_b1hat, b1_delta1), (b1_b1tilde - b1_b1hat) / b1_delta1)
+if (is.na(b1_delta1))  ans(sprintf("delta1 = (%g - %g) / %g", b1_b1tilde, b1_b1hat, b1_b2hat), (b1_b1tilde - b1_b1hat) / b1_b2hat)
 
 ## ======================================================================
-## [B2] Bias(b1tilde) = beta2 * delta1 ----
-## LOOKS LIKE: "beta2 = -1.17. Omit X2; slope of X2 on X1 is delta1 = -0.26. Bias?"
-##   (PS10 #19)   DEFAULT -> 0.30  (positive = biased upward)
-b2_beta2 <- -1.17; b2_delta1 <- -0.26                       # <-- CHANGE
-ans("[B2] bias = beta2*delta1", b2_beta2 * b2_delta1)
+## [B2] BIAS = beta2 x delta1 (and the expected simple slope) ----
+## LOOKS LIKE: "beta2 = -1.17. Omit X2; slope of X2 on X1 is delta1 = -0.26. Bias?"  (PS10 #19)
+##   / "beta1 = 2, beta2 = 0.9, delta1 = -0.3: E[b1-tilde]?"   DEFAULT: bias 0.30 (biased UP)
+b2_beta2  <- -1.17   # <-- CHANGE  true effect of the omitted x2 on y
+b2_delta1 <- -0.26   # <-- CHANGE  slope of x2 on x1
+b2_beta1  <- NA      # <-- CHANGE  true beta1, only if they ask for E[b1-tilde]
+blk("B2", "bias from leaving x2 out")
+ans(sprintf("bias = %g x %g", b2_beta2, b2_delta1), b2_beta2 * b2_delta1)
+pick("direction", ifelse(b2_beta2 * b2_delta1 > 0, "UPWARD (estimate too big)", "DOWNWARD (estimate too small)"))
+if (!is.na(b2_beta1)) ans(sprintf("E[b1-tilde] = %g + bias", b2_beta1), b2_beta1 + b2_beta2 * b2_delta1)
 
 ## ======================================================================
-## [B3] DIRECTION of bias (Table 3.2): sign(beta2) x sign(corr(x1, x2)) ----
-## LOOKS LIKE: "An omitted X2 lowers Y and is negatively correlated with X1. The simple
-##   slope is..." / fertilizer & land quality / tutoring & ability  (PS11 #16-18, PS10 #20)
-## Same signs -> UPWARD (overstates). Opposite -> DOWNWARD (understates).
-b3_b2 <- -1                                                 # <-- CHANGE +1 if omitted x2 RAISES y, -1 if it lowers y
-b3_corr <- -1                                               # <-- CHANGE +1 if x2 moves WITH x1, -1 if opposite
-pick("[B3] bias", ifelse(b3_b2 * b3_corr > 0, "UPWARD (overstates the effect)", "DOWNWARD (understates the effect)"))
+## [B3] DIRECTION OF BIAS (Table 3.2): sign of beta2 x sign of corr(x1, x2) ----
+## LOOKS LIKE: "An omitted X2 lowers Y and is negatively correlated with X1. The simple slope
+##   is..." / fertilizer and land quality / tutoring and ability  (PS11 #16-18, PS10 #20)
+## Same signs -> UPWARD (overstates). Opposite signs -> DOWNWARD (understates).
+b3_b2   <- -1   # <-- CHANGE  +1 if the omitted x2 RAISES y, -1 if it LOWERS y
+b3_corr <- -1   # <-- CHANGE  +1 if x2 is usually HIGH when x1 is high, -1 if LOW
+blk("B3", sprintf("x2 %s y, x2 %s with x1", ifelse(b3_b2 > 0, "raises", "lowers"), ifelse(b3_corr > 0, "moves together", "moves opposite")))
+pick("bias", ifelse(b3_b2 * b3_corr > 0, "UPWARD (overstates the effect)", "DOWNWARD (understates the effect)"))
 
 ## ======================================================================
-## [P1] sd(aX + b) from E[X] and E[X^2]:  Var = E[X^2] - E[X]^2, sd(aX+b) = |a|*sd(X) ----
-## LOOKS LIKE: "E[X] = 4 and E[X^2] = 20. Find the sd of 3X - 4."  (PS8 #3, Q7 #4)  DEFAULT -> 6.00
-p1_EX <- 4; p1_EX2 <- 20; p1_a <- 3                         # <-- CHANGE (b doesn't matter)
-ans("[P1] sd(aX + b)", abs(p1_a) * sqrt(p1_EX2 - p1_EX^2))
+## [P1] sd(aX + b) FROM E[X] AND E[X^2] ----
+## LOOKS LIKE: "E[X] = 4 and E[X^2] = 20. Find the sd of 3X - 4."  (PS8 #3, Q7 #4)   DEFAULT: 6.00
+p1_EX  <- 4    # <-- CHANGE  E[X]
+p1_EX2 <- 20   # <-- CHANGE  E[X^2]
+p1_a   <- 3    # <-- CHANGE  a, the number in front of X (b doesn't matter for sd)
+blk("P1", "sd of aX + b")
+ans(sprintf("Var(X) = %g - %g^2", p1_EX2, p1_EX), p1_EX2 - p1_EX^2)
+ans(sprintf("sd(%gX + b) = |%g| x sd(X)", p1_a, p1_a), abs(p1_a) * sqrt(p1_EX2 - p1_EX^2))
 
 ## ======================================================================
-## [P2] Var(aX + bY) = a^2 VarX + b^2 VarY + 2ab Cov   (the minus sign goes INTO b) ----
-## LOOKS LIKE: "Var(X) = 4, Var(Y) = 3, Cov = -1.9. Find Var(2X - 3Y)." (PS8 #4, Q7 #5) DEFAULT -> 65.80
-p2_vx <- 4; p2_vy <- 3; p2_cov <- -1.9; p2_a <- 2; p2_b <- -3   # <-- CHANGE
-ans("[P2] Var(aX + bY)", p2_a^2 * p2_vx + p2_b^2 * p2_vy + 2 * p2_a * p2_b * p2_cov)
+## [P2] Var(aX + bY) = a^2 Var(X) + b^2 Var(Y) + 2ab Cov(X, Y)   (a minus sign goes INTO b) ----
+## LOOKS LIKE: "Var(X) = 4, Var(Y) = 3, Cov = -1.9. Find Var(2X - 3Y)."  (PS8 #4, Q7 #5)   DEFAULT: 65.80
+p2_vx  <- 4      # <-- CHANGE  Var(X)
+p2_vy  <- 3      # <-- CHANGE  Var(Y)
+p2_cov <- -1.9   # <-- CHANGE  Cov(X, Y)
+p2_a   <- 2      # <-- CHANGE  a, in front of X
+p2_b   <- -3     # <-- CHANGE  b, in front of Y (with its sign)
+blk("P2", "variance of a sum")
+ans(sprintf("Var(%gX %s %gY)", p2_a, ifelse(p2_b < 0, "-", "+"), abs(p2_b)), p2_a^2 * p2_vx + p2_b^2 * p2_vy + 2 * p2_a * p2_b * p2_cov)
 
 ## ======================================================================
-## [P3] correlation from a JOINT PROBABILITY table (weight by p; never cor()) ----
-## LOOKS LIKE: "X and Y have the joint distribution below. Find Cor(X, Y)." (PS8 #5, Q7 #6)
-## DEFAULT -> -0.59
-p3_x <- c(1, 5, 7, 8)                                       # <-- CHANGE x column
-p3_y <- c(3, 3, 1, 3)                                       # <-- CHANGE y column
-p3_p <- c(0.2, 0.3, 0.4, 0.1)                               # <-- CHANGE probability column
+## [P3] CORRELATION FROM A JOINT PROBABILITY TABLE (weight by p; never cor()) ----
+## LOOKS LIKE: "X and Y have the joint distribution below. Find Cor(X, Y)."  (PS8 #5, Q7 #6)   DEFAULT: -0.59
+p3_x <- c(1, 5, 7, 8)             # <-- CHANGE  x column
+p3_y <- c(3, 3, 1, 3)             # <-- CHANGE  y column
+p3_p <- c(0.2, 0.3, 0.4, 0.1)     # <-- CHANGE  probability column
 p3_EX <- sum(p3_x * p3_p); p3_EY <- sum(p3_y * p3_p)
 p3_cov <- sum(p3_x * p3_y * p3_p) - p3_EX * p3_EY
-ans("[P3] Cov(X,Y)", p3_cov)
-ans("[P3] Cor(X,Y)", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^2) * (sum(p3_y^2 * p3_p) - p3_EY^2)))
+blk("P3", "joint probability table")
+ans("E[X]", p3_EX); ans("E[Y]", p3_EY)
+ans("Cov(X,Y) = E[XY] - E[X]E[Y]", p3_cov)
+ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^2) * (sum(p3_y^2 * p3_p) - p3_EY^2)))
 
 ## ======================================================================
-## [T1] t-statistic from an estimate and se; critical values; p-values; decisions ----
+## [T1] t-STATISTIC FROM AN ESTIMATE AND se; critical values; p-values; decisions ----
 ## LOOKS LIKE: "b-hat = 0.54, se = 0.05. t?" / "H0: b = 0 vs H1: b > 0 at 5%, df = 522"
-## t = (b - h0)/se. One-sided c = qt(1 - a, df). Two-sided c = qt(1 - a/2, df).
-## DEFAULT -> t 10.80
-t1_b <- 0.54; t1_se <- 0.05; t1_h0 <- 0                     # <-- CHANGE estimate, se, null value
-t1_df <- 522; t1_alpha <- 0.05                              # <-- CHANGE df = n - k - 1, alpha
-## Given n and k instead of df?  df = n - k - 1 (e.g. n = 526, k = 3 -> 522). Given b and t, not se? se = b / t.
-t1_t <- (t1_b - t1_h0) / t1_se
-ans("[T1] t", t1_t)
-ans("[T1] c one-sided", qt(1 - t1_alpha, t1_df)); ans("[T1] c two-sided", qt(1 - t1_alpha / 2, t1_df))
-ans("[T1] p two-sided", 2 * pt(-abs(t1_t), t1_df)); ans("[T1] p one-sided (H1: b > h0)", pt(t1_t, t1_df, lower.tail = FALSE))
-pick("[T1] H1: b >  h0 (reject if t > c)", ifelse(t1_t > qt(1 - t1_alpha, t1_df), "REJECT H0", "fail to reject"))
-pick("[T1] H1: b <  h0 (reject if t < -c)", ifelse(t1_t < -qt(1 - t1_alpha, t1_df), "REJECT H0", "fail to reject"))
-pick("[T1] H1: b != h0 (reject if |t| > c)", ifelse(abs(t1_t) > qt(1 - t1_alpha / 2, t1_df), "REJECT H0", "fail to reject"))
+## df = n - k - 1 (n = 526, k = 3 -> 522).  Given b and t but not se? se = b / t.
+## "raises / positive" -> H1: b > 0.  "lowers / negative" -> H1: b < 0.   DEFAULT: t 10.80
+t1_b     <- 0.54   # <-- CHANGE  the estimate
+t1_se    <- 0.05   # <-- CHANGE  its standard error
+t1_h0    <- 0      # <-- CHANGE  null value (usually 0)
+t1_df    <- 522    # <-- CHANGE  df = n - k - 1
+t1_alpha <- 0.05   # <-- CHANGE  significance level
+t1_t <- (t1_b - t1_h0) / t1_se; t1_c1 <- qt(1 - t1_alpha, t1_df); t1_c2 <- qt(1 - t1_alpha / 2, t1_df)
+blk("T1", sprintf("t-test, df = %g, alpha = %g", t1_df, t1_alpha))
+ans(sprintf("t = (%g - %g) / %g", t1_b, t1_h0, t1_se), t1_t)
+ans(sprintf("critical c, ONE-sided %g%%", 100 * t1_alpha), t1_c1)
+ans(sprintf("critical c, TWO-sided %g%%", 100 * t1_alpha), t1_c2)
+ans("p-value, two-sided", 2 * pt(-abs(t1_t), t1_df)); ans("p-value, one-sided H1: b > h0", pt(t1_t, t1_df, lower.tail = FALSE))
+pick("H1: b >  h0  (reject if t > c)", ifelse(t1_t > t1_c1, "REJECT H0", "fail to reject H0"))
+pick("H1: b <  h0  (reject if t < -c)", ifelse(t1_t < -t1_c1, "REJECT H0", "fail to reject H0"))
+pick("H1: b != h0  (reject if |t| > c)", ifelse(abs(t1_t) > t1_c2, "REJECT H0", "fail to reject H0"))
 
 ## ======================================================================
-## [T2] decision from a GIVEN t and critical value c, or from a p-value ----
+## [T2] DECISION FROM A GIVEN t AND c, OR FROM A p-VALUE ----
 ## LOOKS LIKE: "H0: b = 0 vs H1: b > 0, c = 1.68. t = 2.4: reject?" / "p = 0.03 at 5%?"
-t2_t <- 2.4; t2_c <- 1.68                                   # <-- CHANGE
-pick("[T2] H1: b >  0", ifelse(t2_t > t2_c, "REJECT H0", "fail to reject"))
-pick("[T2] H1: b <  0", ifelse(t2_t < -t2_c, "REJECT H0", "fail to reject"))
-pick("[T2] H1: b != 0", ifelse(abs(t2_t) > t2_c, "REJECT H0", "fail to reject"))
-t2_p <- 0.03                                                # <-- CHANGE p-value
-for (a in c(0.10, 0.05, 0.01)) pick(sprintf("[T2] p = %g at alpha %g", t2_p, a), ifelse(t2_p < a, "REJECT H0", "fail to reject"))
+t2_t <- 2.4    # <-- CHANGE  the t-statistic
+t2_c <- 1.68   # <-- CHANGE  the critical value they give
+t2_p <- 0.03   # <-- CHANGE  a p-value (for p-value questions)
+blk("T2", sprintf("t = %g, c = %g, p = %g", t2_t, t2_c, t2_p))
+pick(sprintf("H1: b >  0  (is %g > %g?)", t2_t, t2_c), ifelse(t2_t > t2_c, "REJECT H0", "fail to reject H0"))
+pick(sprintf("H1: b <  0  (is %g < -%g?)", t2_t, t2_c), ifelse(t2_t < -t2_c, "REJECT H0", "fail to reject H0"))
+pick(sprintf("H1: b != 0  (is |%g| > %g?)", t2_t, t2_c), ifelse(abs(t2_t) > t2_c, "REJECT H0", "fail to reject H0"))
+for (a in c(0.10, 0.05, 0.01)) pick(sprintf("p = %g at alpha = %g", t2_p, a), ifelse(t2_p < a, "REJECT H0", "fail to reject H0"))
 
-## [T3] confidence interval: b +/- c*se. a inside -> fail to reject H0: b = a. ----
-t3_b <- 0.30; t3_se <- 0.10; t3_c <- 1.96                   # <-- CHANGE   DEFAULT -> [0.10, 0.50]
-ans("[T3] CI lower", t3_b - t3_c * t3_se); ans("[T3] CI upper", t3_b + t3_c * t3_se)
+## ======================================================================
+## [T3] CONFIDENCE INTERVAL: b +/- c x se. A value inside -> fail to reject H0: b = that value ----
+t3_b  <- 0.30   # <-- CHANGE  estimate
+t3_se <- 0.10   # <-- CHANGE  standard error
+t3_c  <- 1.96   # <-- CHANGE  critical value (95% large sample: 1.96)   DEFAULT: [0.10, 0.50]
+blk("T3", "confidence interval")
+ans(sprintf("lower = %g - %g x %g", t3_b, t3_c, t3_se), t3_b - t3_c * t3_se)
+ans(sprintf("upper = %g + %g x %g", t3_b, t3_c, t3_se), t3_b + t3_c * t3_se)
 
-## [T4] F = ((SSR_r - SSR_ur)/q) / (SSR_ur/(n-k-1)) ----
-t4_SSRr <- 198.311; t4_SSRur <- 183.186; t4_q <- 3; t4_n <- 353; t4_k <- 5   # <-- CHANGE  DEFAULT -> 9.55
-ans("[T4] F", ((t4_SSRr - t4_SSRur) / t4_q) / (t4_SSRur / (t4_n - t4_k - 1)))
+## ======================================================================
+## [T4] F-STATISTIC: F = ((SSR_r - SSR_ur) / q) / (SSR_ur / (n - k - 1)) ----
+t4_SSRr  <- 198.311   # <-- CHANGE  SSR of the RESTRICTED model (fewer x's)
+t4_SSRur <- 183.186   # <-- CHANGE  SSR of the UNRESTRICTED model (all x's)
+t4_q     <- 3         # <-- CHANGE  number of restrictions (x's dropped)
+t4_n     <- 353       # <-- CHANGE  n
+t4_k     <- 5         # <-- CHANGE  slopes in the unrestricted model   DEFAULT: F 9.55
+blk("T4", "F-test")
+ans(sprintf("F = ((%g - %g)/%g) / (%g/%g)", t4_SSRr, t4_SSRur, t4_q, t4_SSRur, t4_n - t4_k - 1), ((t4_SSRr - t4_SSRur) / t4_q) / (t4_SSRur / (t4_n - t4_k - 1)))
 
 # PART 3 - MULTIPLE CHOICE ##################################################
 cat("\n#################### PART 3 - MULTIPLE CHOICE ####################\n")
