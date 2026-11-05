@@ -564,7 +564,7 @@ ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "compl
 ## DEFAULTS: slope 0.18 | prediction 6.76 | change 2.31 | R^2 12.03% | row 12 residual 3.14
 # ---- YOUR NUMBERS: change these lines ----
 d1_data    <- "wage1"          # <-- CHANGE  dataset name, in quotes
-d1_formula <- wage ~ tenure    # <-- CHANGE  y ~ x
+d1_formula <- wage ~ tenure    # <-- CHANGE  y ~ x  (formula only: no lm(), no dataset name)
 d1_at      <- 10               # <-- CHANGE  prediction: "predicted y when x = ___"
 d1_from    <- 3                # <-- CHANGE  change: x goes FROM ___ ...
 d1_to      <- 16               # <-- CHANGE  ... TO ___
@@ -615,7 +615,7 @@ pick("R^2", "unchanged (rescaling never changes R^2)")
 ## DEFAULT: 4.36%
 # ---- YOUR NUMBERS: change these lines ----
 d3_data    <- "wage1"              # <-- CHANGE  dataset name, in quotes
-d3_formula <- log(wage) ~ exper    # <-- CHANGE  log(y) ~ x
+d3_formula <- log(wage) ~ exper    # <-- CHANGE  log(y) ~ x  (formula only: no lm(), no dataset name)
 d3_dx      <- 10                   # <-- CHANGE  change in x, in x's units (falls = negative)
 # ---- ANSWERS: nothing to change below ----
 d3_reg <- fit(d3_formula, d3_data); d3_b <- coef(d3_reg)[2]
@@ -632,7 +632,7 @@ ans(sprintf("%% change in %s when %s %+g  (EXACT)", d3_yn, d3_xn, d3_dx), 100 * 
 ## DEFAULT: 26.29 (in y's units: $1000s)
 # ---- YOUR NUMBERS: change these lines ----
 d4_data    <- "ceosal1"              # <-- CHANGE  dataset name, in quotes
-d4_formula <- salary ~ log(sales)    # <-- CHANGE  y ~ log(x)
+d4_formula <- salary ~ log(sales)    # <-- CHANGE  y ~ log(x)  (formula only: no lm(), no dataset name)
 d4_pctx    <- 10                     # <-- CHANGE  % change in x (falls = negative)
 # ---- ANSWERS: nothing to change below ----
 d4_reg <- fit(d4_formula, d4_data); d4_b <- coef(d4_reg)[2]
@@ -649,7 +649,7 @@ ans(sprintf("change in %s (its units) when %s %+g%%", d4_yn, d4_xn, d4_pctx), d4
 ## DEFAULT: 0.31%
 # ---- YOUR NUMBERS: change these lines ----
 d5_data    <- "bwght"                     # <-- CHANGE  dataset name, in quotes
-d5_formula <- log(bwght) ~ log(faminc)    # <-- CHANGE  log(y) ~ log(x)
+d5_formula <- log(bwght) ~ log(faminc)    # <-- CHANGE  log(y) ~ log(x)  (formula only: no lm(), no dataset name)
 d5_pctx    <- 15                          # <-- CHANGE  % change in x (falls = negative)
 # ---- ANSWERS: nothing to change below ----
 d5_reg <- fit(d5_formula, d5_data); d5_b <- coef(d5_reg)[2]
@@ -665,7 +665,7 @@ ans(sprintf("%% change in %s when %s %+g%%", d5_yn, d5_xn, d5_pctx), d5_b * d5_p
 ## DEFAULTS: sigma-hat 3.38 | SST_x 4025.43 | se 0.05
 # ---- YOUR NUMBERS: change these lines ----
 d6_data    <- "wage1"        # <-- CHANGE  dataset name, in quotes
-d6_formula <- wage ~ educ    # <-- CHANGE  y ~ x  (simple regression)
+d6_formula <- wage ~ educ    # <-- CHANGE  y ~ x  (formula only: no lm(), no dataset name)
 # ---- ANSWERS: nothing to change below ----
 d6_reg <- fit(d6_formula, d6_data); d6_xn <- all.vars(d6_formula)[2]
 d6_x <- model.frame(d6_reg)[[2]]; d6_SSR <- sum(resid(d6_reg)^2); d6_df <- d6_reg$df.residual
@@ -688,7 +688,7 @@ ans4("check: R's Std. Error for the slope", summary(d6_reg)$coefficients[2, 2])
 ## DEFAULTS: prediction 7.16 | change 0.22
 # ---- YOUR NUMBERS: change these lines ----
 d7_data    <- "wage1"                      # <-- CHANGE  dataset name, in quotes
-d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...  (COLUMN names, no dataset name)
+d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
 d7_at      <- c(16, 5, 2)                  # <-- CHANGE  prediction: the x VALUES, formula order
 d7_dx      <- c(0, 10, 0)                  # <-- CHANGE  change: how much each x CHANGES (fixed = 0)
 # ---- ANSWERS: nothing to change below ----
@@ -710,7 +710,7 @@ ans("R^2", summary(d7_reg)$r.squared)
 ## DEFAULTS: 3.03% | predicted log(wage) 1.50 | $4.46
 # ---- YOUR NUMBERS: change these lines ----
 d8_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
-d8_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  log(y) ~ x1 + x2 + ...
+d8_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  log(y) ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
 d8_dx      <- c(0, 2, 1)                        # <-- CHANGE  % question: how much each x CHANGES (fixed = 0)
 d8_at      <- c(12, 10, 3)                      # <-- CHANGE  dollars question: the x VALUES, formula order
 # ---- ANSWERS: nothing to change below ----
@@ -731,7 +731,7 @@ ans(sprintf("predicted %s in DOLLARS = exp(%.3f)", d8_yn, d8_lp), exp(d8_lp))
 ## Why: the OLS line always passes through the point of means.   DEFAULT: 3.06
 # ---- YOUR NUMBERS: change these lines ----
 d9_data    <- "gpa1"                 # <-- CHANGE  dataset name, in quotes
-d9_formula <- colGPA ~ ACT + hsGPA   # <-- CHANGE  y ~ x1 + x2 + ...
+d9_formula <- colGPA ~ ACT + hsGPA   # <-- CHANGE  y ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
 # ---- ANSWERS: nothing to change below ----
 d9_reg <- fit(d9_formula, d9_data); d9_mf <- model.frame(d9_reg)
 d9_xbar <- colMeans(d9_mf[-1]); d9_yn <- all.vars(d9_formula)[1]
@@ -784,7 +784,7 @@ pick("coefficient on the exact combination", "NA (dropped: perfect collinearity,
 ## DEFAULTS: t 2.39 | c (one-sided 5%) 1.65 -> reject for H1: b > 0
 # ---- YOUR NUMBERS: change these lines ----
 d12_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
-d12_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  the regression
+d12_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  the regression  (formula only: no lm(), no dataset name)
 d12_var     <- "exper"                           # <-- CHANGE  the variable being tested, in quotes
 d12_h0      <- 0                                 # <-- CHANGE  null value (usually 0)
 d12_alpha   <- 0.05                              # <-- CHANGE  significance level (5% = 0.05)
