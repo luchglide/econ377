@@ -878,6 +878,11 @@ s2_SX2    <- NA     # <-- CHANGE  OR the sample VARIANCE of x, S_x^2
 s2_Rj2    <- 0      # <-- CHANGE  multiple regression only: R^2 of x_j on the other x's
 # ---- ANSWERS: nothing to change below ----
 blk("S2", "variance / sd / se of the slope")
+if (!is.na(s2_SSTx) && (!is.null(s2_x) || !is.na(s2_SX) || !is.na(s2_SX2)))
+  info("!! WARNING: you typed SST_x AND x / S_x.", "Set the one the question didn't give to NA.")
+if (sum(!is.na(c(s2_sigma, s2_sigma2, s2_SSR))) > 1)
+  info("!! WARNING: more than one of sigma / sigma^2 / SSR typed.", "Keep only the one the question gives.")
+if (!is.na(s2_SSTx) && is.null(s2_x)) ans("SST_x (typed in)", s2_SSTx)
 if (!is.null(s2_x)) { s2_SSTx <- sum((s2_x - mean(s2_x))^2); if (is.na(s2_n)) s2_n <- length(s2_x)
   ans("SST_x from the x values", s2_SSTx) }
 if (is.na(s2_SSTx) && !is.na(s2_SX2)) { s2_SSTx <- (s2_n - 1) * s2_SX2; ans(sprintf("SST_x = (%g - 1) x %g", s2_n, s2_SX2), s2_SSTx) }
