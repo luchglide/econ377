@@ -153,6 +153,13 @@ cat("---------------------\n")
 ans  <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 2), nsmall = 2)))
 ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 4), nsmall = 4)))
 pick <- function(label, x) cat(sprintf(">>> PICK   %-50s -> %s\n", label, x))
+fit  <- function(formula, dname) {                                    # lm() with a plain-English check
+  d <- get(dname); bad <- setdiff(all.vars(formula), names(d))
+  if (length(bad)) stop(sprintf("\n  '%s' is not a column of %s.\n  The formula uses COLUMN names only: y ~ x1 + x2 (e.g. price ~ sqrft + bdrms), never the dataset name.\n  Columns in %s: %s",
+                                bad[1], dname, dname, paste(head(names(d), 20), collapse = ", ")), call. = FALSE)
+  lm(formula, data = d) }
+nx   <- function(v, xn, what) if (length(v) != length(xn)) stop(sprintf("\n  %s needs ONE number per x, in formula order: %s (%d numbers). You typed %d.",
+                                what, paste(xn, collapse = ", "), length(xn), length(v)), call. = FALSE)
 blk  <- function(tag, what) cat(sprintf("\n==== [%s] %s ====\n", tag, what))     # heading printed when a block runs
 info <- function(label, x) cat(sprintf("    %-45s %s\n", label, x))
 part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-heading inside a block
@@ -563,7 +570,7 @@ d1_from    <- 3                # <-- CHANGE  change: x goes FROM ___ ...
 d1_to      <- 16               # <-- CHANGE  ... TO ___
 d1_row     <- 12               # <-- CHANGE  residual of row number ___
 # ---- ANSWERS: nothing to change below ----
-d1_reg <- lm(d1_formula, data = get(d1_data)); d1_b <- coef(d1_reg)
+d1_reg <- fit(d1_formula, d1_data); d1_b <- coef(d1_reg)
 d1_yn <- all.vars(d1_formula)[1]; d1_xn <- all.vars(d1_formula)[2]
 blk("D1", sprintf("%s regressed on %s (%s)", d1_yn, d1_xn, d1_data))
 ans4(sprintf("slope on %s", d1_xn), d1_b[2]); ans4("intercept", d1_b[1])
@@ -611,7 +618,7 @@ d3_data    <- "wage1"              # <-- CHANGE  dataset name, in quotes
 d3_formula <- log(wage) ~ exper    # <-- CHANGE  log(y) ~ x
 d3_dx      <- 10                   # <-- CHANGE  change in x, in x's units (falls = negative)
 # ---- ANSWERS: nothing to change below ----
-d3_reg <- lm(d3_formula, data = get(d3_data)); d3_b <- coef(d3_reg)[2]
+d3_reg <- fit(d3_formula, d3_data); d3_b <- coef(d3_reg)[2]
 d3_yn <- all.vars(d3_formula)[1]; d3_xn <- all.vars(d3_formula)[2]
 blk("D3", sprintf("log(%s) on %s (%s)", d3_yn, d3_xn, d3_data))
 ans4(sprintf("slope on %s", d3_xn), d3_b)
@@ -628,7 +635,7 @@ d4_data    <- "ceosal1"              # <-- CHANGE  dataset name, in quotes
 d4_formula <- salary ~ log(sales)    # <-- CHANGE  y ~ log(x)
 d4_pctx    <- 10                     # <-- CHANGE  % change in x (falls = negative)
 # ---- ANSWERS: nothing to change below ----
-d4_reg <- lm(d4_formula, data = get(d4_data)); d4_b <- coef(d4_reg)[2]
+d4_reg <- fit(d4_formula, d4_data); d4_b <- coef(d4_reg)[2]
 d4_yn <- all.vars(d4_formula)[1]; d4_xn <- all.vars(d4_formula)[2]
 blk("D4", sprintf("%s on log(%s) (%s)", d4_yn, d4_xn, d4_data))
 ans4(sprintf("slope on log(%s)", d4_xn), d4_b)
@@ -645,7 +652,7 @@ d5_data    <- "bwght"                     # <-- CHANGE  dataset name, in quotes
 d5_formula <- log(bwght) ~ log(faminc)    # <-- CHANGE  log(y) ~ log(x)
 d5_pctx    <- 15                          # <-- CHANGE  % change in x (falls = negative)
 # ---- ANSWERS: nothing to change below ----
-d5_reg <- lm(d5_formula, data = get(d5_data)); d5_b <- coef(d5_reg)[2]
+d5_reg <- fit(d5_formula, d5_data); d5_b <- coef(d5_reg)[2]
 d5_yn <- all.vars(d5_formula)[1]; d5_xn <- all.vars(d5_formula)[2]
 blk("D5", sprintf("log(%s) on log(%s) (%s)", d5_yn, d5_xn, d5_data))
 ans4(sprintf("slope = elasticity of %s w.r.t. %s", d5_yn, d5_xn), d5_b)
@@ -660,7 +667,7 @@ ans(sprintf("%% change in %s when %s %+g%%", d5_yn, d5_xn, d5_pctx), d5_b * d5_p
 d6_data    <- "wage1"        # <-- CHANGE  dataset name, in quotes
 d6_formula <- wage ~ educ    # <-- CHANGE  y ~ x  (simple regression)
 # ---- ANSWERS: nothing to change below ----
-d6_reg <- lm(d6_formula, data = get(d6_data)); d6_xn <- all.vars(d6_formula)[2]
+d6_reg <- fit(d6_formula, d6_data); d6_xn <- all.vars(d6_formula)[2]
 d6_x <- model.frame(d6_reg)[[2]]; d6_SSR <- sum(resid(d6_reg)^2); d6_df <- d6_reg$df.residual
 d6_SST <- sum((d6_x - mean(d6_x))^2)
 blk("D6", sprintf("%s by hand (%s)", deparse(d6_formula), d6_data))
@@ -681,12 +688,13 @@ ans4("check: R's Std. Error for the slope", summary(d6_reg)$coefficients[2, 2])
 ## DEFAULTS: prediction 7.16 | change 0.22
 # ---- YOUR NUMBERS: change these lines ----
 d7_data    <- "wage1"                      # <-- CHANGE  dataset name, in quotes
-d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...
+d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...  (COLUMN names, no dataset name)
 d7_at      <- c(16, 5, 2)                  # <-- CHANGE  prediction: the x VALUES, formula order
 d7_dx      <- c(0, 10, 0)                  # <-- CHANGE  change: how much each x CHANGES (fixed = 0)
 # ---- ANSWERS: nothing to change below ----
-d7_reg <- lm(d7_formula, data = get(d7_data)); d7_b <- coef(d7_reg)
+d7_reg <- fit(d7_formula, d7_data); d7_b <- coef(d7_reg)
 d7_xn <- names(d7_b)[-1]; d7_yn <- all.vars(d7_formula)[1]
+nx(d7_at, d7_xn, "d7_at"); nx(d7_dx, d7_xn, "d7_dx")
 blk("D7", sprintf("%s (%s)", deparse(d7_formula), d7_data))
 for (i in seq_along(d7_b)) ans4(sprintf("coefficient on %s", names(d7_b)[i]), d7_b[i])
 ans(sprintf("predicted %s at %s", d7_yn, paste(d7_xn, d7_at, sep = " = ", collapse = ", ")), d7_b[1] + sum(d7_b[-1] * d7_at))
@@ -706,8 +714,9 @@ d8_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  log(y) ~ x1 + x2 +
 d8_dx      <- c(0, 2, 1)                        # <-- CHANGE  % question: how much each x CHANGES (fixed = 0)
 d8_at      <- c(12, 10, 3)                      # <-- CHANGE  dollars question: the x VALUES, formula order
 # ---- ANSWERS: nothing to change below ----
-d8_reg <- lm(d8_formula, data = get(d8_data)); d8_b <- coef(d8_reg)
+d8_reg <- fit(d8_formula, d8_data); d8_b <- coef(d8_reg)
 d8_xn <- names(d8_b)[-1]; d8_yn <- all.vars(d8_formula)[1]
+nx(d8_at, d8_xn, "d8_at"); nx(d8_dx, d8_xn, "d8_dx")
 blk("D8", sprintf("%s (%s)", deparse(d8_formula), d8_data))
 for (i in seq_along(d8_b)) ans4(sprintf("coefficient on %s", names(d8_b)[i]), d8_b[i])
 ans(sprintf("%% change in %s when %s", d8_yn, paste(sprintf("%s %+g", d8_xn, d8_dx)[d8_dx != 0], collapse = ", ")), 100 * sum(d8_b[-1] * d8_dx))
@@ -724,7 +733,7 @@ ans(sprintf("predicted %s in DOLLARS = exp(%.3f)", d8_yn, d8_lp), exp(d8_lp))
 d9_data    <- "gpa1"                 # <-- CHANGE  dataset name, in quotes
 d9_formula <- colGPA ~ ACT + hsGPA   # <-- CHANGE  y ~ x1 + x2 + ...
 # ---- ANSWERS: nothing to change below ----
-d9_reg <- lm(d9_formula, data = get(d9_data)); d9_mf <- model.frame(d9_reg)
+d9_reg <- fit(d9_formula, d9_data); d9_mf <- model.frame(d9_reg)
 d9_xbar <- colMeans(d9_mf[-1]); d9_yn <- all.vars(d9_formula)[1]
 blk("D9", sprintf("%s at the means (%s)", deparse(d9_formula), d9_data))
 for (v in names(d9_xbar)) ans(sprintf("mean of %s", v), d9_xbar[v])
@@ -780,7 +789,7 @@ d12_var     <- "exper"                           # <-- CHANGE  the variable bein
 d12_h0      <- 0                                 # <-- CHANGE  null value (usually 0)
 d12_alpha   <- 0.05                              # <-- CHANGE  significance level (5% = 0.05)
 # ---- ANSWERS: nothing to change below ----
-d12_reg <- lm(d12_formula, data = get(d12_data)); d12_s <- summary(d12_reg)$coefficients
+d12_reg <- fit(d12_formula, d12_data); d12_s <- summary(d12_reg)$coefficients
 d12_b <- d12_s[d12_var, "Estimate"]; d12_se <- d12_s[d12_var, "Std. Error"]
 d12_t <- (d12_b - d12_h0) / d12_se; d12_df <- d12_reg$df.residual
 d12_c1 <- qt(1 - d12_alpha, d12_df); d12_c2 <- qt(1 - d12_alpha / 2, d12_df)
