@@ -1038,13 +1038,18 @@ s7_b    <- c(2.9, -0.6)  # <-- CHANGE  slopes, keep the signs
 s7_at   <- c(1, 2)       # <-- CHANGE  prediction: x VALUES
 s7_dx   <- c(1, -3)      # <-- CHANGE  change: how much each x CHANGES (falls = negative, fixed = 0)
 s7_xbar <- c(5, 2)       # <-- CHANGE  y-bar: the MEANS of the x's
+s7_ybar <- NA            # <-- CHANGE  FLIPPED question "y-bar is 20, find x1-bar": type y-bar here and put NA
+                         #             in s7_xbar for the mean they ask for, e.g. s7_xbar <- c(NA, 4)
 # ---- ANSWERS: nothing to change below ----
 s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
 s7_eq <- paste0("y-hat = ", s7_b0, paste(sprintf(" %s %g x%d", ifelse(s7_b < 0, "-", "+"), abs(s7_b), seq_along(s7_b)), collapse = ""))
 blk("S7", s7_eq)
 ans(sprintf("PREDICTION at %s", paste(sprintf("x%d = %g", seq_along(s7_at), s7_at), collapse = ", ")), s7_pred)
 ans(sprintf("CHANGE when %s", paste(sprintf("x%d %+g", seq_along(s7_dx), s7_dx), collapse = ", ")), s7_chg)
-ans(sprintf("y-bar at %s", paste(sprintf("x%d-bar = %g", seq_along(s7_xbar), s7_xbar), collapse = ", ")), s7_b0 + sum(s7_b * s7_xbar))
+if (!is.na(s7_ybar) && length(s7_xbar) == length(s7_b) && sum(is.na(s7_xbar)) == 1) {
+  j <- which(is.na(s7_xbar)); s7_known <- s7_b0 + sum(s7_b[-j] * s7_xbar[-j])
+  ans(sprintf("MISSING x%d-bar = (%g - %g) / %g", j, s7_ybar, s7_known, s7_b[j]), (s7_ybar - s7_known) / s7_b[j])
+} else ans(sprintf("y-bar at %s", paste(sprintf("x%d-bar = %g", seq_along(s7_xbar), s7_xbar), collapse = ", ")), s7_b0 + sum(s7_b * s7_xbar))
 part("ONLY if the left side is log(y)")
 ans("% change in y = 100 x CHANGE", 100 * s7_chg)
 ans("predicted y in levels/$ = exp(PREDICTION)", exp(s7_pred))
