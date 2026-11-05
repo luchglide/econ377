@@ -1352,10 +1352,14 @@ ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^
 t1_b     <- 0.54   # <-- CHANGE  the estimate
 t1_se    <- 0.05   # <-- CHANGE  its standard error
 t1_h0    <- 0      # <-- CHANGE  null value (usually 0)
-t1_df    <- 522    # <-- CHANGE  df = n - k - 1
+t1_df    <- 522    # <-- CHANGE  df, IF the question gives df directly
+t1_n     <- NA     # <-- CHANGE  OR give n ...
+t1_k     <- NA     # <-- CHANGE  ... and k = number of slopes (then df = n - k - 1 is computed for you)
 t1_alpha <- 0.05   # <-- CHANGE  significance level
+if (!is.na(t1_n) && !is.na(t1_k)) t1_df <- t1_n - t1_k - 1
 t1_t <- (t1_b - t1_h0) / t1_se; t1_c1 <- qt(1 - t1_alpha, t1_df); t1_c2 <- qt(1 - t1_alpha / 2, t1_df)
 blk("T1", sprintf("t-test, df = %g, alpha = %g", t1_df, t1_alpha))
+if (!is.na(t1_n) && !is.na(t1_k)) ans(sprintf("df = n - k - 1 = %g - %g - 1", t1_n, t1_k), t1_df)
 ans(sprintf("t = (%g - %g) / %g", t1_b, t1_h0, t1_se), t1_t)
 ans(sprintf("critical c, ONE-sided %g%%", 100 * t1_alpha), t1_c1)
 ans(sprintf("critical c, TWO-sided %g%%", 100 * t1_alpha), t1_c2)
