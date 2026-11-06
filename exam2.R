@@ -354,6 +354,9 @@ GO <- function(tag) {
   if (num && ssonly) add("S2", 1.8)
   if (num && !ssonly && !pts && has("\\bsse\\b|\\bssr\\b|\\bsst\\b(?!_?x)|r\\^2|r-squared|r2\\b|explained|sum of squares|sample variance of (y|the dependent)") &&
       !has("sigma|se\\s*\\(|sd\\s*\\(|standard error|sst_?x|vif")) add(c("S1"), 1.4)
+  if (num && logeq && has("dollars|in levels|predicted (hourly )?(wage|price|salary|y)\\b") && has("=\\s*-?[0-9.]+\\s*[+-]") && !has("percent|%")) add("S7", 1.8)
+  if (has("you add|adding|add an?|include an?") && has("no effect on y|irrelevant|has no effect")) add("K13", 2.2)
+  if (num && has("tilde|simple[- ]regression slope|short regression") && has("multiple[- ]regression|beta hat|b1hat|long regression") && !has("population|true")) add("B1", 1.2)
   if (num && !logeq && !has("percent|%") && has("x_?1\\b.*x_?2\\b") && has("change|up|down|rises|falls|predict")) add("S7", 1.2)
   if (num && !ttest && !has("correlation") && has("sigma|sst_?x|sst_?[0-9j]|se\\s*\\(|sd\\s*\\(|standard error|standard deviation of the slope|variance of the (ols )?slope|error variance|var\\s*\\(\\s*b|s_?x")) add(c("S2"), 1.2)
   if (has("measured in|instead|divided by|multiplied by|re-measured|in cents|in thousands|decimals?\\b|in months|converted|units"))
@@ -379,7 +382,7 @@ GO <- function(tag) {
   if (has("irrelevant|every (available )?variable|too many|over-?control")) add("K13", 2.0)
   if (has("holding (\\w+ )?(other )?(\\w+ )?(fixed|constant)(?! in)") && !has("holding everything else fixed|which change makes")) add("K14", 1.0)
   if (has("ceteris paribus|partialling|partial(l)?ing-out|measure\\?|why does the coefficient .* change|controlling for|simple and multiple .* (same|equal)")) add("K14", 1.3)
-  if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y")) add("K15", 1.9)
+  if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y") && !has("you add|adding|add an?\\b|include an?\\b")) add("K15", 1.9)
   if (!num && has("\\bblue\\b|gauss-markov|normality|mlr\\.?\\s*6|classical linear|t statistic measures|distribution of|p-value (means|is)|small p-value|statistically significant|reject h|when do you reject")) add("K16", 1.4)
   if (has("minimi[sz]e|least squares estimates|candidate lines")) add("K1", 1.6)
   if (!num && has("r-squared|r\\^2|r2\\b")) add(c("K10", "K13"), 0.8)
