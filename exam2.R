@@ -580,9 +580,10 @@ ans4(sprintf("slope on %s", d1_xn), d1_b[2]); ans4("intercept", d1_b[1])
 ans(sprintf("predicted %s at %s = %g", d1_yn, d1_xn, d1_at), d1_b[1] + d1_b[2] * d1_at)
 ans(sprintf("change in %s when %s goes %g -> %g", d1_yn, d1_xn, d1_from, d1_to), d1_b[2] * (d1_to - d1_from))
 ans("R^2 (share explained)", summary(d1_reg)$r.squared); ans("R^2 in percent", 100 * summary(d1_reg)$r.squared)
-ans(sprintf("row %d: actual %s", d1_row, d1_yn), model.response(model.frame(d1_reg))[d1_row])
-ans(sprintf("row %d: fitted (predicted) %s", d1_row, d1_yn), fitted(d1_reg)[d1_row])
-ans(sprintf("row %d: residual = actual - fitted", d1_row), resid(d1_reg)[d1_row])
+if (!is.na(d1_row)) {
+  ans(sprintf("row %d: actual %s", d1_row, d1_yn), model.response(model.frame(d1_reg))[d1_row])
+  ans(sprintf("row %d: fitted (predicted) %s", d1_row, d1_yn), fitted(d1_reg)[d1_row])
+  ans(sprintf("row %d: residual = actual - fitted", d1_row), resid(d1_reg)[d1_row]) }
 d1_y <- model.response(model.frame(d1_reg))
 ans("SSE (EXPLAINED sum of squares)", sum((fitted(d1_reg) - mean(d1_y))^2))
 ans("SSR (RESIDUAL sum of squares)", sum(resid(d1_reg)^2))
@@ -1030,9 +1031,10 @@ ans("covariance of x and y", cov(s6_x, s6_y)); ans("correlation of x and y", cor
 part("the OLS line")
 ans4("slope b1", s6_b[2]); ans4("intercept b0", s6_b[1])
 ans(sprintf("predicted y at x = %g", s6_x0), s6_b[1] + s6_b[2] * s6_x0)
-part(sprintf("observation %d: x = %g, y = %g", s6_i, s6_x[s6_i], s6_y[s6_i]))
-ans(sprintf("fitted y for observation %d", s6_i), fitted(s6_reg)[s6_i])
-ans(sprintf("residual of observation %d = y - fitted", s6_i), resid(s6_reg)[s6_i])
+if (!is.na(s6_i)) {
+  part(sprintf("observation %d: x = %g, y = %g", s6_i, s6_x[s6_i], s6_y[s6_i]))
+  ans(sprintf("fitted y for observation %d", s6_i), fitted(s6_reg)[s6_i])
+  ans(sprintf("residual of observation %d = y - fitted", s6_i), resid(s6_reg)[s6_i]) }
 part("always-true properties and sums of squares")
 ans("sum of residuals (always 0)", sum(resid(s6_reg))); ans("sum of x * residual (always 0)", sum(s6_x * resid(s6_reg)))
 ans("SST (total)", sum((s6_y - mean(s6_y))^2)); ans("SSE (explained)", sum((fitted(s6_reg) - mean(s6_y))^2))
