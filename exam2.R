@@ -160,6 +160,8 @@ fit  <- function(formula, dname) {                                    # lm() wit
   lm(formula, data = d) }
 nx   <- function(v, xn, what) if (length(v) != length(xn)) stop(sprintf("\n  %s needs ONE number per x, in formula order: %s (%d numbers). You typed %d.",
                                 what, paste(xn, collapse = ", "), length(xn), length(v)), call. = FALSE)
+same_len <- function(a, b, an, bn) if (!all(is.na(b)) && length(a) != length(b))
+  info(sprintf("!! WARNING: %d numbers in %s but %d in %s.", length(a), an, length(b), bn), "Typed a comma instead of a decimal point? 0,02 must be 0.02")
 blk  <- function(tag, what) cat(sprintf("\n==== [%s] %s ====\n", tag, what))     # heading printed when a block runs
 info <- function(label, x) cat(sprintf("    %-45s %s\n", label, x))
 part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-heading inside a block
@@ -564,6 +566,7 @@ ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "compl
 ##   residual of the worker in row 12?"   (Exam I Q32-38, PS8 #11)
 ## PREDICTION = a level ("has 10 years"): keeps the intercept.
 ## CHANGE = "rises by" / "from 3 to 16": no intercept. "Rises by 13" = from 0 to 13.
+## "FALLS by 300" = from 300 to 0 (NOT from -300 to 0, which is a rise).
 ## DEFAULTS: slope 0.18 | prediction 6.76 | change 2.31 | R^2 12.03% | row 12 residual 3.14
 # >> YOUR NUMBERS: change these lines
 d1_data    <- "wage1"          # <-- CHANGE  dataset name, in quotes
@@ -627,7 +630,7 @@ d3_yn <- all.vars(d3_formula)[1]; d3_xn <- all.vars(d3_formula)[2]
 blk("D3", sprintf("log(%s) on %s (%s)", d3_yn, d3_xn, d3_data))
 ans4(sprintf("slope on %s", d3_xn), d3_b)
 ans(sprintf("%% change in %s when %s %+g  (about)", d3_yn, d3_xn, d3_dx), 100 * d3_b * d3_dx)
-ans(sprintf("%% change in %s when %s %+g  (EXACT)", d3_yn, d3_xn, d3_dx), 100 * (exp(d3_b * d3_dx) - 1))
+ans(sprintf("  EXACT version (ONLY if the question says exact)"), 100 * (exp(d3_b * d3_dx) - 1))
 
 ## ======================================================================
 ## [D4] DATA, LEVEL-LOG: lm(y ~ log(x)) -> change in y = (slope / 100) x % change in x ----
@@ -798,12 +801,13 @@ d12_b <- d12_s[d12_var, "Estimate"]; d12_se <- d12_s[d12_var, "Std. Error"]
 d12_t <- (d12_b - d12_h0) / d12_se; d12_df <- d12_reg$df.residual
 d12_c1 <- qt(1 - d12_alpha, d12_df); d12_c2 <- qt(1 - d12_alpha / 2, d12_df)
 blk("D12", sprintf("t-test on %s in %s (%s)", d12_var, deparse(d12_formula), d12_data))
-ans4(sprintf("estimate on %s", d12_var), d12_b); ans4("its standard error", d12_se)
+ans4(sprintf("estimate on %s", d12_var), d12_b); ans4(sprintf("se of the %s estimate (NOT sigma-hat)", d12_var), d12_se)
 ans(sprintf("t = (%.4f - %g) / %.4f", d12_b, d12_h0, d12_se), d12_t)
 ans(sprintf("df = n - k - 1 = %d - %d - 1", nobs(d12_reg), length(coef(d12_reg)) - 1), d12_df)
 ans(sprintf("critical c, ONE-sided %g%%", 100 * d12_alpha), d12_c1)
 ans(sprintf("critical c, TWO-sided %g%%", 100 * d12_alpha), d12_c2)
 ans("p-value, two-sided", 2 * pt(-abs(d12_t), d12_df))
+ans("sigma-hat = standard error of the REGRESSION", summary(d12_reg)$sigma)
 pick(sprintf("H1: %s >  %g  (reject if t > c)", d12_var, d12_h0), ifelse(d12_t > d12_c1, "REJECT H0", "fail to reject H0"))
 pick(sprintf("H1: %s <  %g  (reject if t < -c)", d12_var, d12_h0), ifelse(d12_t < -d12_c1, "REJECT H0", "fail to reject H0"))
 pick(sprintf("H1: %s != %g  (reject if |t| > c)", d12_var, d12_h0), ifelse(abs(d12_t) > d12_c2, "REJECT H0", "fail to reject H0"))
@@ -945,8 +949,8 @@ pick("what changed", paste(ifelse(abs(s3_new[1] - s3_b0) > 1e-9, "intercept CHAN
 s4_b    <- 0.083   # <-- CHANGE  the slope
 s4_dx   <- 1       # <-- CHANGE  change in x in x's UNITS (log-level, level-level; falls = negative)
 s4_pctx <- 10      # <-- CHANGE  change in x in PERCENT (level-log, log-log; falls = negative)
-s4_old  <- 5.6     # <-- CHANGE  a rate BEFORE (percent vs points questions)
-s4_new  <- 6.6     # <-- CHANGE  the rate AFTER
+s4_old  <- NA      # <-- CHANGE  ONLY for "a rate went from 5.6% to 6.6%": the rate BEFORE
+s4_new  <- NA      # <-- CHANGE  ... and the rate AFTER
 # >> ANSWERS: nothing to change below
 blk("S4", sprintf("reading a slope of %g", s4_b))
 part("pick the model by where the log is")
@@ -955,9 +959,10 @@ ans(sprintf("log(y) = ... + b x   %%Dy = 100 x %g x %g", s4_b, s4_dx), 100 * s4_
 ans("log(y) = ... + b x   %Dy EXACT", 100 * (exp(s4_b * s4_dx) - 1))
 ans(sprintf("y = ... + b log(x)   Dy = %g/100 x %g%%", s4_b, s4_pctx), s4_b / 100 * s4_pctx)
 ans(sprintf("log(y) = ... + b log(x)  %%Dy = %g x %g%%", s4_b, s4_pctx), s4_b * s4_pctx)
-part(sprintf("a rate going from %g%% to %g%%", s4_old, s4_new))
-ans(sprintf("PERCENT change = 100 x (%g - %g) / %g", s4_new, s4_old, s4_old), 100 * (s4_new - s4_old) / s4_old)
-ans(sprintf("PERCENTAGE-POINT change = %g - %g", s4_new, s4_old), s4_new - s4_old)
+if (!is.na(s4_old) && !is.na(s4_new)) {
+  part(sprintf("a rate going from %g%% to %g%%", s4_old, s4_new))
+  ans(sprintf("PERCENT change = 100 x (%g - %g) / %g", s4_new, s4_old, s4_old), 100 * (s4_new - s4_old) / s4_old)
+  ans(sprintf("PERCENTAGE-POINT change = %g - %g", s4_new, s4_old), s4_new - s4_old) }
 
 ## ======================================================================
 ## [S5] PROBABILITY SOLVER: moments, transforms, Var of sums, probability tables ----
@@ -1055,6 +1060,7 @@ s7_xbar <- c(5, 2)       # <-- CHANGE  y-bar: the MEANS of the x's
 s7_ybar <- NA            # <-- CHANGE  FLIPPED question "y-bar is 20, find x1-bar": type y-bar here and put NA
                          #             in s7_xbar for the mean they ask for, e.g. s7_xbar <- c(NA, 4)
 # >> ANSWERS: nothing to change below
+same_len(s7_b, s7_at, "s7_b", "s7_at"); same_len(s7_b, s7_dx, "s7_b", "s7_dx")
 s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
 s7_eq <- paste0("y-hat = ", s7_b0, paste(sprintf(" %s %g x%d", ifelse(s7_b < 0, "-", "+"), abs(s7_b), seq_along(s7_b)), collapse = ""))
 blk("S7", s7_eq)
@@ -1135,8 +1141,8 @@ ans(sprintf("change in y (units) = %g/100 x %g%%", l3_b1, l3_pctx), l3_b1 / 100 
 ## LOOKS LIKE: "log(y)-hat = 2.4 + 0.015x1 - 0.037x2. If x1 rises by 3 and x2 rises by 4,
 ##   about what percent does y change?"  (PS11 #1)   DEFAULT: -10.30
 l4_b  <- c(0.015, -0.037)   # <-- CHANGE  slopes, keep minus signs, NO intercept
-l4_dx <- c(3, 4)            # <-- CHANGE  changes in each x (falls = negative, fixed = 0)
-blk("L4", "log-level, several x's")
+l4_dx <- c(3, 4)            # <-- CHANGE  changes in each x: "FALLS by 4" -> -4 (fixed = 0)
+blk("L4", "log-level, several x's"); same_len(l4_b, l4_dx, "l4_b", "l4_dx")
 ans(sprintf("%% change in y = 100 x (%s)", paste(sprintf("%g x %g", l4_b, l4_dx), collapse = " + ")), 100 * sum(l4_b * l4_dx))
 
 ## ======================================================================
@@ -1146,7 +1152,7 @@ ans(sprintf("%% change in y = 100 x (%s)", paste(sprintf("%g x %g", l4_b, l4_dx)
 m1_b0 <- 5            # <-- CHANGE  intercept
 m1_b  <- c(2.9, 2.2)  # <-- CHANGE  slopes, keep signs
 m1_x  <- c(13, 12)    # <-- CHANGE  x VALUES
-blk("M1", "prediction")
+blk("M1", "prediction"); same_len(m1_b, m1_x, "m1_b", "m1_x")
 ans(sprintf("predicted y = %g + %s", m1_b0, paste(sprintf("%g x %g", m1_b, m1_x), collapse = " + ")), m1_b0 + sum(m1_b * m1_x))
 
 ## ======================================================================
@@ -1155,7 +1161,7 @@ ans(sprintf("predicted y = %g + %s", m1_b0, paste(sprintf("%g x %g", m1_b, m1_x)
 ##   y-hat change?"  (Q9 #9, Exam I Q14)   DEFAULT: -6.70
 m2_b  <- c(0.9, -1.9)   # <-- CHANGE  slopes, keep signs
 m2_dx <- c(1, 4)        # <-- CHANGE  changes (falls = negative, fixed = 0)
-blk("M2", "change")
+blk("M2", "change"); same_len(m2_b, m2_dx, "m2_b", "m2_dx")
 ans(sprintf("change in y-hat = %s", paste(sprintf("%g x %g", m2_b, m2_dx), collapse = " + ")), sum(m2_b * m2_dx))
 
 ## ======================================================================
@@ -1363,6 +1369,7 @@ ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", p3_cov / sqrt((sum(p3_x^2 * p3_p) - p3_EX^
 ## LOOKS LIKE: "b-hat = 0.54, se = 0.05. t?" / "H0: b = 0 vs H1: b > 0 at 5%, df = 522"
 ## df = n - k - 1 (n = 526, k = 3 -> 522).  Given b and t but not se? se = b / t.
 ## "raises / positive" -> H1: b > 0.  "lowers / negative" -> H1: b < 0.   DEFAULT: t 10.80
+## The question GIVES t already (no estimate + se)? Don't use this block: go to [T2].
 t1_b     <- 0.54   # <-- CHANGE  the estimate
 t1_se    <- 0.05   # <-- CHANGE  its standard error
 t1_h0    <- 0      # <-- CHANGE  null value (usually 0)
