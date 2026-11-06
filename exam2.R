@@ -331,7 +331,7 @@ GO <- function(tag) {
   logeq <- has("\\b(log|ln)\\s*\\(|\\blog \\w+ on\\b|\\bon log\\b|\\blog y\\b|\\blog x\\b|log-log|log-level|level-log|constant[- ]elasticity|elasticity")
   short <- has("\\bgiven\\b|\\bgave\\b|\\bwant\\b|\\bknow\\b|\\bneed\\b|\\bfind\\b")
   num <- short || grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
-  # ---------- PART II: numbers in the question ----------
+  # >> PART II: numbers in the question
   if (has("residuals?[^.?]*-?[0-9.]+\\s*,\\s*-?[0-9.]+") && has("one more|missing|final|last|\\?\\s*[.,]|, \\?|(sixth|fifth|seventh|last) residual")) add("O2", 1.6)
   if (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]|sample (standard deviation|variance|mean) of x")) add(c("S6"), 1.4)
   pts <- has("\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)\\s*,\\s*\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)") || (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]"))
@@ -366,7 +366,7 @@ GO <- function(tag) {
   if (num && !logeq && has("by (about )?what percent") && has("x_?2\\b")) add("L4", 1.4)
   if (num && has("percentage[- ]point|from [0-9.]+% to [0-9.]+%|rises from [0-9.]+%|falls from [0-9.]+%")) add("S4", 1.4)
   if (num && !logeq && has("yhat|y-hat|-hat\\s*=|\\bhat\\s*=|=\\s*-?[0-9.]+\\s*[+-]\\s*[0-9.]+\\s*\\*?\\s*[a-z]|y-bar|ybar|mean of y|sample mean of y|intercept\\?")) add(c("S7"), 1.2)
-  # ---------- PART I: concepts / multiple choice ----------
+  # >> PART I: concepts / multiple choice
   if (has("part of u|error term|e\\s*\\(\\s*u|zero conditional|exogenous|endogenous|mlr\\.?\\s*4|slr\\.?\\s*4|key assumption")) add(c("K2", "K12"), 1.6)
   if (has("leav(es|ing) out|left out|omit|leave out") && has("bias|overstate|understate|too (high|low)|upward|downward|direction|up or down|likely:|most likely|slope (on \\w+ )?is:|correlated")) add(c("B3", "K17"), 1.4)
   if (has("which (omitted )?(variable|factor).*(bias|left out)|most likely to (cause|contribute)|two conditions|omitted factor")) add("K3", 1.4)
@@ -539,12 +539,12 @@ cat("\n#################### PART 1 - REAL DATA ####################\n")
 ## A correlation NEVER comes from lm() and is always between -1 and 1.
 ## A 0/1 column (female, smoker): its MEAN is the SHARE that are 1 (0.48 -> 48% women).
 ## DEFAULTS: n 209 | mean of roe 17.18 | sd of roe 8.52 | correlation 0.11
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d0_data <- "ceosal1"     # <-- CHANGE  dataset name, in quotes
 d0_x    <- "roe"         # <-- CHANGE  the column the question is about
 d0_y    <- "salary"      # <-- CHANGE  a second column (only for correlation / covariance)
 d0_cut  <- 20            # <-- CHANGE  only for "how many have <column> above ___?"
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 blk("D0", sprintf("summary of %s in %s", d0_x, d0_data))
 d0_df <- get(d0_data); d0_v <- d0_df[[d0_x]]; d0_w <- d0_df[[d0_y]]
 ans(sprintf("n = number of rows in %s", d0_data), nrow(d0_df))
@@ -565,14 +565,14 @@ ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "compl
 ## PREDICTION = a level ("has 10 years"): keeps the intercept.
 ## CHANGE = "rises by" / "from 3 to 16": no intercept. "Rises by 13" = from 0 to 13.
 ## DEFAULTS: slope 0.18 | prediction 6.76 | change 2.31 | R^2 12.03% | row 12 residual 3.14
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d1_data    <- "wage1"          # <-- CHANGE  dataset name, in quotes
 d1_formula <- wage ~ tenure    # <-- CHANGE  y ~ x  (formula only: no lm(), no dataset name)
 d1_at      <- 10               # <-- CHANGE  prediction: "predicted y when x = ___"
 d1_from    <- 3                # <-- CHANGE  change: x goes FROM ___ ...
 d1_to      <- 16               # <-- CHANGE  ... TO ___
 d1_row     <- 12               # <-- CHANGE  residual of row number ___
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d1_reg <- fit(d1_formula, d1_data); d1_b <- coef(d1_reg)
 d1_yn <- all.vars(d1_formula)[1]; d1_xn <- all.vars(d1_formula)[2]
 blk("D1", sprintf("%s regressed on %s (%s)", d1_yn, d1_xn, d1_data))
@@ -596,13 +596,13 @@ ans("n (observations used)", nobs(d1_reg))
 ## Thousands -> dollars: x 1000.  Percent -> decimal: x 1/100.  Years -> months: x 12.
 ## y times c -> slope times c.  x times c -> slope divided by c.  R^2 never changes.
 ## DEFAULT: new slope 15.47
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d2_data   <- "ceosal1"   # <-- CHANGE  dataset name, in quotes
 d2_y      <- "salary"    # <-- CHANGE  y column
 d2_x      <- "sales"     # <-- CHANGE  x column
 d2_ytimes <- 1000        # <-- CHANGE  what y is MULTIPLIED by (1 = y unchanged)
 d2_xtimes <- 1           # <-- CHANGE  what x is MULTIPLIED by (1 = x unchanged; divided by 100 -> 1/100)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 blk("D2", sprintf("%s on %s (%s), y x %g, x x %g", d2_y, d2_x, d2_data, d2_ytimes, d2_xtimes))
 d2_df <- get(d2_data)
 d2_old <- coef(lm(d2_df[[d2_y]] ~ d2_df[[d2_x]]))
@@ -616,11 +616,11 @@ pick("R^2", "unchanged (rescaling never changes R^2)")
 ## LOOKS LIKE: "Data: wage1. Run lm(log(wage) ~ exper). By about what percent does
 ##   predicted wage change with 10 more years of experience?"   (PS8 #21, PS9 #6)
 ## DEFAULT: 4.36%
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d3_data    <- "wage1"              # <-- CHANGE  dataset name, in quotes
 d3_formula <- log(wage) ~ exper    # <-- CHANGE  log(y) ~ x  (formula only: no lm(), no dataset name)
 d3_dx      <- 10                   # <-- CHANGE  change in x, in x's units (falls = negative)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d3_reg <- fit(d3_formula, d3_data); d3_b <- coef(d3_reg)[2]
 d3_yn <- all.vars(d3_formula)[1]; d3_xn <- all.vars(d3_formula)[2]
 blk("D3", sprintf("log(%s) on %s (%s)", d3_yn, d3_xn, d3_data))
@@ -633,11 +633,11 @@ ans(sprintf("%% change in %s when %s %+g  (EXACT)", d3_yn, d3_xn, d3_dx), 100 * 
 ## LOOKS LIKE: "Data: ceosal1. Run lm(salary ~ log(sales)). By about how many thousand
 ##   dollars does predicted salary change when sales rise by 10%?"   (PS9 #7)
 ## DEFAULT: 26.29 (in y's units: $1000s)
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d4_data    <- "ceosal1"              # <-- CHANGE  dataset name, in quotes
 d4_formula <- salary ~ log(sales)    # <-- CHANGE  y ~ log(x)  (formula only: no lm(), no dataset name)
 d4_pctx    <- 10                     # <-- CHANGE  % change in x (falls = negative)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d4_reg <- fit(d4_formula, d4_data); d4_b <- coef(d4_reg)[2]
 d4_yn <- all.vars(d4_formula)[1]; d4_xn <- all.vars(d4_formula)[2]
 blk("D4", sprintf("%s on log(%s) (%s)", d4_yn, d4_xn, d4_data))
@@ -650,11 +650,11 @@ ans(sprintf("change in %s (its units) when %s %+g%%", d4_yn, d4_xn, d4_pctx), d4
 ##   percent does birth weight change when income rises by 15%?"   (Q9 #3, PS10 #3)
 ## "Constant elasticity model" also means log-log. The slope IS the elasticity.
 ## DEFAULT: 0.31%
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d5_data    <- "bwght"                     # <-- CHANGE  dataset name, in quotes
 d5_formula <- log(bwght) ~ log(faminc)    # <-- CHANGE  log(y) ~ log(x)  (formula only: no lm(), no dataset name)
 d5_pctx    <- 15                          # <-- CHANGE  % change in x (falls = negative)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d5_reg <- fit(d5_formula, d5_data); d5_b <- coef(d5_reg)[2]
 d5_yn <- all.vars(d5_formula)[1]; d5_xn <- all.vars(d5_formula)[2]
 blk("D5", sprintf("log(%s) on log(%s) (%s)", d5_yn, d5_xn, d5_data))
@@ -666,10 +666,10 @@ ans(sprintf("%% change in %s when %s %+g%%", d5_yn, d5_xn, d5_pctx), d5_b * d5_p
 ## LOOKS LIKE: "Data: wage1. Run lm(wage ~ educ). What is sigma-hat (the standard error of
 ##   the regression)?" / "SST_X for educ?" / "compute se(b1) by hand"   (PS9 #18-19, PS10 #10)
 ## DEFAULTS: sigma-hat 3.38 | SST_x 4025.43 | se 0.05
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d6_data    <- "wage1"        # <-- CHANGE  dataset name, in quotes
 d6_formula <- wage ~ educ    # <-- CHANGE  y ~ x  (formula only: no lm(), no dataset name)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d6_reg <- fit(d6_formula, d6_data); d6_xn <- all.vars(d6_formula)[2]
 d6_x <- model.frame(d6_reg)[[2]]; d6_SSR <- sum(resid(d6_reg)^2); d6_df <- d6_reg$df.residual
 d6_SST <- sum((d6_x - mean(d6_x))^2)
@@ -689,12 +689,12 @@ ans4("check: R's Std. Error for the slope", summary(d6_reg)$coefficients[2, 2])
 ##   educ and tenure fixed?"   (Q9 #10-11, PS10 #14-15)
 ## Values go in the SAME ORDER as the x's in the formula. "Holding fixed" = change of 0.
 ## DEFAULTS: prediction 7.16 | change 0.22
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d7_data    <- "wage1"                      # <-- CHANGE  dataset name, in quotes
 d7_formula <- wage ~ educ + exper + tenure # <-- CHANGE  y ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
 d7_at      <- c(16, 5, 2)                  # <-- CHANGE  prediction: the x VALUES, formula order
 d7_dx      <- c(0, 10, 0)                  # <-- CHANGE  change: how much each x CHANGES (fixed = 0)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d7_reg <- fit(d7_formula, d7_data); d7_b <- coef(d7_reg)
 d7_xn <- names(d7_b)[-1]; d7_yn <- all.vars(d7_formula)[1]
 nx(d7_at, d7_xn, "d7_at"); nx(d7_dx, d7_xn, "d7_dx")
@@ -711,12 +711,12 @@ ans("R^2", summary(d7_reg)$r.squared)
 ##   at 12 educ, 10 exper, 3 tenure?"   (PS11 #2-3, PS10 #16-17)
 ## "In dollars" with log(y) -> exp() of the predicted log. That's the DOLLARS line.
 ## DEFAULTS: 3.03% | predicted log(wage) 1.50 | $4.46
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d8_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
 d8_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  log(y) ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
 d8_dx      <- c(0, 2, 1)                        # <-- CHANGE  % question: how much each x CHANGES (fixed = 0)
 d8_at      <- c(12, 10, 3)                      # <-- CHANGE  dollars question: the x VALUES, formula order
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d8_reg <- fit(d8_formula, d8_data); d8_b <- coef(d8_reg)
 d8_xn <- names(d8_b)[-1]; d8_yn <- all.vars(d8_formula)[1]
 nx(d8_at, d8_xn, "d8_at"); nx(d8_dx, d8_xn, "d8_dx")
@@ -732,10 +732,10 @@ ans(sprintf("predicted %s in DOLLARS = exp(%.3f)", d8_yn, d8_lp), exp(d8_lp))
 ## LOOKS LIKE: "Run lm(colGPA ~ ACT + hsGPA). Compute predicted colGPA at ACT = mean(ACT)
 ##   and hsGPA = mean(hsGPA). Why is it the same as mean(colGPA)?"   (PS11 #5)
 ## Why: the OLS line always passes through the point of means.   DEFAULT: 3.06
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d9_data    <- "gpa1"                 # <-- CHANGE  dataset name, in quotes
 d9_formula <- colGPA ~ ACT + hsGPA   # <-- CHANGE  y ~ x1 + x2 + ...  (formula only: no lm(), no dataset name)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d9_reg <- fit(d9_formula, d9_data); d9_mf <- model.frame(d9_reg)
 d9_xbar <- colMeans(d9_mf[-1]); d9_yn <- all.vars(d9_formula)[1]
 blk("D9", sprintf("%s at the means (%s)", deparse(d9_formula), d9_data))
@@ -749,12 +749,12 @@ ans(sprintf("mean of %s (always the same number)", d9_yn), mean(d9_mf[[1]]))
 ##   "regress faminc on cigs; compute b2-hat x delta1"   (PS11 #12-14, PS10 #21)
 ## x1 = the variable in BOTH regressions. x2 = the one left out of the simple regression.
 ## DEFAULTS: simple -0.51 | multiple -0.46 | b2 0.09 | delta1 -0.54 | b2 x delta1 -0.05
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d10_data <- "bwght"     # <-- CHANGE  dataset name, in quotes
 d10_y    <- "bwght"     # <-- CHANGE  y column
 d10_x1   <- "cigs"      # <-- CHANGE  x1: the variable whose slope they ask about
 d10_x2   <- "faminc"    # <-- CHANGE  x2: the variable that gets added / left out
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d10_df <- get(d10_data)
 d10_s <- coef(lm(reformulate(d10_x1, d10_y), data = d10_df))
 d10_m <- coef(lm(reformulate(c(d10_x1, d10_x2), d10_y), data = d10_df))
@@ -785,13 +785,13 @@ pick("coefficient on the exact combination", "NA (dropped: perfect collinearity,
 ##   H1: b_exper > 0 at 5%."   (Example 4.1)
 ## "raises / positive" -> H1: b > 0.  "lowers / negative" -> H1: b < 0.
 ## DEFAULTS: t 2.39 | c (one-sided 5%) 1.65 -> reject for H1: b > 0
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 d12_data    <- "wage1"                           # <-- CHANGE  dataset name, in quotes
 d12_formula <- log(wage) ~ educ + exper + tenure # <-- CHANGE  the regression  (formula only: no lm(), no dataset name)
 d12_var     <- "exper"                           # <-- CHANGE  the variable being tested, in quotes
 d12_h0      <- 0                                 # <-- CHANGE  null value (usually 0)
 d12_alpha   <- 0.05                              # <-- CHANGE  significance level (5% = 0.05)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 d12_reg <- fit(d12_formula, d12_data); d12_s <- summary(d12_reg)$coefficients
 d12_b <- d12_s[d12_var, "Estimate"]; d12_se <- d12_s[d12_var, "Std. Error"]
 d12_t <- (d12_b - d12_h0) / d12_se; d12_df <- d12_reg$df.residual
@@ -841,7 +841,7 @@ cat("\n#################### PART 2 - NUMBERS IN THE QUESTION ###################
 ##   / "n = 44, S_y^2 = 7. Find SST." / "What fraction is UNEXPLAINED?"   (Exam I Q24-25, PS8 #9-10)
 ## SST = SSE + SSR      R^2 = SSE / SST      SST = (n - 1) x (sample variance of y)
 ## SSE = EXPLAINED.  SSR = RESIDUAL (unexplained).   DEFAULT (Exam I Q25): SSR 615.00
-# ---- YOUR NUMBERS: type what's GIVEN, leave the rest NA ----
+# >> YOUR NUMBERS: type what's GIVEN, leave the rest NA
 s1_SST <- NA     # <-- CHANGE  total sum of squares
 s1_SSE <- 135    # <-- CHANGE  EXPLAINED sum of squares
 s1_SSR <- NA     # <-- CHANGE  RESIDUAL sum of squares
@@ -849,7 +849,7 @@ s1_R2  <- 0.18   # <-- CHANGE  R^2 as a decimal (18% -> 0.18)
 s1_n   <- NA     # <-- CHANGE  n, if given
 s1_S2y <- NA     # <-- CHANGE  sample VARIANCE of y, if given
 s1_k   <- NA     # <-- CHANGE  number of slopes k (only for ADJUSTED R^2)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 s1_given <- c(SST = !is.na(s1_SST), SSE = !is.na(s1_SSE), SSR = !is.na(s1_SSR), R2 = !is.na(s1_R2))
 for (s1_i in 1:4) {
   if (is.na(s1_SST) && !is.na(s1_n) && !is.na(s1_S2y)) s1_SST <- (s1_n - 1) * s1_S2y
@@ -877,7 +877,7 @@ if (!is.na(s1_n) && !is.na(s1_k)) ans("ADJUSTED R^2 = 1 - (1-R^2)(n-1)/(n-k-1)",
 ##   / "sigma-hat = 9.4, n = 23, S_X = 0.7: se?" / "sigma^2 = 66, SST = 53: Var?"   (PS9, PS10, Q8, Q9)
 ## Var(b1) = sigma^2 / SST_x        sigma^2-hat = SSR / (n - k - 1)       SST_x = (n - 1) x S_x^2
 ## DEFAULT (PS9 #16): se 1.82
-# ---- YOUR NUMBERS: type what's GIVEN, leave the rest NA ----
+# >> YOUR NUMBERS: type what's GIVEN, leave the rest NA
 s2_sigma  <- NA     # <-- CHANGE  error SD: sigma or sigma-hat
 s2_sigma2 <- NA     # <-- CHANGE  OR error VARIANCE: sigma^2 or sigma^2-hat
 s2_SSR    <- 437    # <-- CHANGE  OR SSR (then sigma^2-hat = SSR / (n - k - 1))
@@ -888,7 +888,7 @@ s2_x      <- NULL   # <-- CHANGE  OR the raw x values, e.g. c(3, 4, 7, 8, 9)
 s2_SX     <- NA     # <-- CHANGE  OR the sample SD of x, S_x (gets squared)
 s2_SX2    <- NA     # <-- CHANGE  OR the sample VARIANCE of x, S_x^2
 s2_Rj2    <- 0      # <-- CHANGE  multiple regression only: R^2 of x_j on the other x's
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 blk("S2", "variance / sd / se of the slope")
 if (!is.na(s2_SSTx) && (!is.null(s2_x) || !is.na(s2_SX) || !is.na(s2_SX2)))
   info("!! WARNING: you typed SST_x AND x / S_x.", "Set the one the question didn't give to NA.")
@@ -917,13 +917,13 @@ ans("se(b1) if the sample were 2x as large", sqrt(s2_var) / sqrt(2))
 ##   "log(salary) = 3.36 + 0.44 log(sales); salary in dollars: new intercept?"  (PS8 #13-16, PS9 #1,#3)
 ## Thousands -> dollars: 1000.  Dollars -> thousands: 1/1000.  Percent -> decimal: 1/100.  Years -> months: 12.
 ## R^2 NEVER changes.   DEFAULT (PS9 #3): intercept 10.27, slope 0.44
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 s3_model <- "log-log"  # <-- CHANGE  "level-level" | "log-level" (log y) | "level-log" (log x) | "log-log"
 s3_b0    <- 3.36       # <-- CHANGE  original intercept (0 if not given)
 s3_b1    <- 0.44       # <-- CHANGE  original slope
 s3_cy    <- 1000       # <-- CHANGE  what y is MULTIPLIED by (1 = y unchanged)
 s3_cx    <- 1          # <-- CHANGE  what x is MULTIPLIED by (1 = x unchanged)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 s3_new <- switch(s3_model,
   "level-level" = c(s3_cy * s3_b0, s3_cy * s3_b1 / s3_cx),
   "log-level"   = c(s3_b0 + log(s3_cy), s3_b1 / s3_cx),
@@ -940,13 +940,13 @@ pick("what changed", paste(ifelse(abs(s3_new[1] - s3_b0) > 1e-9, "intercept CHAN
 ##   "the rate rises from 5.6% to 6.6%: percent change? percentage-point change?"
 ## log on y -> answer in PERCENT.  log on x -> x moves in PERCENT.
 ## DEFAULTS (slope 0.083): level 0.08 | log-level 8.30% | level-log 0.01 | log-log 0.83%
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 s4_b    <- 0.083   # <-- CHANGE  the slope
 s4_dx   <- 1       # <-- CHANGE  change in x in x's UNITS (log-level, level-level; falls = negative)
 s4_pctx <- 10      # <-- CHANGE  change in x in PERCENT (level-log, log-log; falls = negative)
 s4_old  <- 5.6     # <-- CHANGE  a rate BEFORE (percent vs points questions)
 s4_new  <- 6.6     # <-- CHANGE  the rate AFTER
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 blk("S4", sprintf("reading a slope of %g", s4_b))
 part("pick the model by where the log is")
 ans(sprintf("y = ... + b x        Dy = %g x %g", s4_b, s4_dx), s4_b * s4_dx)
@@ -965,7 +965,7 @@ ans(sprintf("PERCENTAGE-POINT change = %g - %g", s4_new, s4_old), s4_new - s4_ol
 ## "4 - 2X" means a = -2, b = 4 (the number in front of X is a). Unknown things stay NA.
 ## Four PARTS below; change only the part your question is about.
 ## DEFAULTS (Exam I): sd(3X - 2) 12.73 | Var(2X - 2Y) 79.20 | Cor -0.43 | E[3Y + 4] 46.00
-# ---- PART A: one variable X and a transform aX + b ----
+# >> PART A: one variable X and a transform aX + b
 s5_EX   <- 3     # <-- CHANGE  E[X]
 s5_EX2  <- 27    # <-- CHANGE  E[X^2]
 s5_VarX <- NA    # <-- CHANGE  OR Var(X) directly (then E[X^2] is ignored)
@@ -979,7 +979,7 @@ ans("sd(X)", sqrt(s5_VarX))
 ans(sprintf("E[%s]", fx(s5_a, s5_b)), s5_a * s5_EX + s5_b)
 ans(sprintf("Var(%s) = (%g)^2 x Var(X)", fx(s5_a, s5_b), s5_a), s5_a^2 * s5_VarX)
 ans(sprintf("sd(%s) = |%g| x sd(X)", fx(s5_a, s5_b), s5_a), abs(s5_a) * sqrt(s5_VarX))
-# ---- PART B: two variables, Var(c1 X + c2 Y) ----
+# >> PART B: two variables, Var(c1 X + c2 Y)
 s5_vx  <- 8      # <-- CHANGE  Var(X)
 s5_vy  <- 6      # <-- CHANGE  Var(Y)
 s5_cov <- -2.9   # <-- CHANGE  Cov(X, Y)
@@ -989,7 +989,7 @@ part(sprintf("PART B: two variables, Var(X)=%g Var(Y)=%g Cov=%g", s5_vx, s5_vy, 
 ans(sprintf("Var(%s%s%s)", fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")),
     s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
 ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", s5_cov / sqrt(s5_vx * s5_vy))
-# ---- PART C: a JOINT probability table of X and Y (one row per cell) ----
+# >> PART C: a JOINT probability table of X and Y (one row per cell)
 s5_x <- c(1, 4, 5, 6)            # <-- CHANGE  the x column
 s5_y <- c(4, 7, 4, 2)            # <-- CHANGE  the y column
 s5_p <- c(0.1, 0.4, 0.3, 0.2)    # <-- CHANGE  the probability column
@@ -1000,7 +1000,7 @@ s5_C <- sum(s5_x * s5_y * s5_p) - s5_EXt * s5_EYt
 ans("table E[X]", s5_EXt); ans("table E[Y]", s5_EYt); ans("table E[XY]", sum(s5_x * s5_y * s5_p))
 ans("table Var(X)", s5_Vx); ans("table Var(Y)", s5_Vy)
 ans("table Cov(X,Y) = E[XY] - E[X]E[Y]", s5_C); ans("table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
-# ---- PART D: ONE variable Y with values and probabilities ----
+# >> PART D: ONE variable Y with values and probabilities
 s5_v  <- c(6, 14, 34)        # <-- CHANGE  the values Y takes
 s5_pv <- c(0.5, 0.3, 0.2)    # <-- CHANGE  their probabilities
 s5_A  <- 3                   # <-- CHANGE  A in E[AY + B]
@@ -1015,12 +1015,12 @@ ans(sprintf("E[%s]", fx(s5_A, s5_B, "Y")), s5_A * s5_E + s5_B)
 ## LOOKS LIKE: "For x = (...), y = (...): slope? intercept? residual of obs 3? predict at x = 5?
 ##   sum x*uhat? R^2? sample sd / cov / cor?"   (Exam I Q16-17, 22-23, 28; PS8 #6, #8)
 ## DEFAULT (Exam I Q23): residual of observation 3 = 1.80
-# ---- YOUR NUMBERS: change these lines ----
+# >> YOUR NUMBERS: change these lines
 s6_x  <- c(4, 6, 7, 8, 10)   # <-- CHANGE  the x values
 s6_y  <- c(4, 6, 7, 1, 8)    # <-- CHANGE  the y values (same order)
 s6_i  <- 3                   # <-- CHANGE  which observation (for its fitted value / residual)
 s6_x0 <- 7                   # <-- CHANGE  x to predict at
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 s6_reg <- lm(s6_y ~ s6_x); s6_b <- coef(s6_reg)
 blk("S6", sprintf("x = (%s), y = (%s)", paste(s6_x, collapse = ", "), paste(s6_y, collapse = ", ")))
 part("the sample")
@@ -1044,7 +1044,7 @@ ans("SSR (residual)", sum(resid(s6_reg)^2)); ans("R^2", summary(s6_reg)$r.square
 ##   sample mean of y / % change / predicted $ when y is logged    (Q9 #8-9, PS11 #1, #6)
 ## PREDICTION keeps b0.  CHANGE drops b0.  y-bar = b0 + b1 x1-bar + ...
 ## DEFAULTS (y-hat = 4 + 2.9 x1 - 0.6 x2): prediction 5.70 | change 4.70 | y-bar 17.30
-# ---- YOUR NUMBERS: change these lines (one number per x, same order) ----
+# >> YOUR NUMBERS: change these lines (one number per x, same order)
 s7_b0   <- 4             # <-- CHANGE  intercept
 s7_b    <- c(2.9, -0.6)  # <-- CHANGE  slopes, keep the signs
 s7_at   <- c(1, 2)       # <-- CHANGE  prediction: x VALUES
@@ -1052,7 +1052,7 @@ s7_dx   <- c(1, -3)      # <-- CHANGE  change: how much each x CHANGES (falls = 
 s7_xbar <- c(5, 2)       # <-- CHANGE  y-bar: the MEANS of the x's
 s7_ybar <- NA            # <-- CHANGE  FLIPPED question "y-bar is 20, find x1-bar": type y-bar here and put NA
                          #             in s7_xbar for the mean they ask for, e.g. s7_xbar <- c(NA, 4)
-# ---- ANSWERS: nothing to change below ----
+# >> ANSWERS: nothing to change below
 s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
 s7_eq <- paste0("y-hat = ", s7_b0, paste(sprintf(" %s %g x%d", ifelse(s7_b < 0, "-", "+"), abs(s7_b), seq_along(s7_b)), collapse = ""))
 blk("S7", s7_eq)
