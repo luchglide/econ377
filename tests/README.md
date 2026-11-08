@@ -14,7 +14,8 @@ Results on Nov 4 (test half / real questions):
 | | top 1 | top 2 | top 4 |
 |---|---|---|---|
 | before (main) | 58% / 70% | 74% / 88% | 83% |
-| now | 97% / 93% | 99% / 99% | 100% |
+| Nov 4 | 97% / 93% | 99% / 99% | 100% |
+| Nov 8 (+ textbook) | 98% / 92% | 99% / 98% | 100% |
 
 Run from this folder:
 
@@ -22,3 +23,7 @@ Run from this folder:
 Rscript ask_bank_test.R ../exam2.R out.csv
 Rscript ask_real_loo.R ../exam2.R
 ```
+
+## Textbook bank (Nov 8)
+
+64 Wooldridge Ch 2–3 problems and computer exercises (`../Wooldridge_ch2_ch3_practice.md`). Before the rule fixes, ASK() routed 48/64 top-1 and 55/64 top-2. After them, 64/64 top-1. Those rules were tuned on these items, so that number is not held out. With the 64 items added to EXAMPLES, the real-question leave-one-out score is 200/217 top-1 and 213/217 top-2.
