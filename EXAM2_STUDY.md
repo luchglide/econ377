@@ -2,6 +2,12 @@
 
 Script: `exam2.R`. Run the whole file once before the exam. Every block prints its default answer, so you can confirm it works.
 
+## STUDY GUIDE POSTED (Nov 6): what changed
+- **Chapter 4 t-tests (Day 22) are NOT on the exam.** Skip the t-test parts of L5, the mocks and the drill. Gauss–Markov (BLUE) is still in.
+- **A few questions from before Exam I:** E[X]/Var from a probability table, Var(X + b) = Var(X), population quantity vs sample statistic, sample mean/sd, and the **mean within a group**, e.g. `mean(wage1$wage[wage1$female == 1])` → [D0] group mean.
+- **Problem Set 12** (optional): about five exam questions closely follow PS12 problems 2, 4, 6, 9 and 12. See `PS12_questions.md`. Blocks: [S2] given numbers, [D14] se by hand on data, [K18] concepts.
+- Study guide sections: units/logs (D13) · unbiasedness, Var(β̂₁) = σ²/SST_X, sd ÷ √k (D15–16) · multiple regression, MLR1–4, MLR3 failures, endogeneity (D17–19) · OVB (3.23) both directions, Table 3.2, the story in words (D19–20) · Var(β̂ⱼ) with R_j², df, σ̂, se by hand in R, Gauss–Markov (D20–21).
+
 ## What's on it (updated Nov 2)
 On Nov 2 the course schedule shifted one slot: D20 now stops before Gauss–Markov, and two-sided tests, p-values and confidence intervals moved to after the exam. The exam most likely covers **D13 and D15–D22**. If a study guide posts, it decides.
 
