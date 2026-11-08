@@ -81,3 +81,44 @@ Notes on the trickier ones:
 - **C2.3b:** 2 hours = 120 minutes, so 120 × slope.
 - **C3.2b:** 140·b_sqrft + 1·b_bdrms (both change).
 - **C3.4b:** the prediction is 104.37%, above 100. That is impossible for an attendance rate, and Wooldridge asks you to notice it.
+
+## In-chapter worked examples (Examples 2.5–3.6)
+
+Loh's data questions so far have all used the textbook's own example regressions (Examples 2.3, 2.4, 2.10, 2.11, 3.1, 3.2). These are the Chapter 2–3 examples he hasn't used yet, written in his style. The numbers come from the real data.
+
+| # | Question | Block | Answer |
+|---|---|---|---|
+| Ex2.5a | Data: vote1 (voteA = percent of the vote received by Candidate A; shareA = Candidate A's percentage of total campaign spending). Regress voteA on shareA. What is the OLS slope? | D1 | 0.46 |
+| Ex2.5b | Data: vote1. Using the regression of voteA on shareA, what is the predicted vote share of Candidate A when shareA = 60? | D1 | 54.64 |
+| Ex2.9a | Data: vote1. What percentage of the variation in voteA is explained by shareA in the simple regression? | D1 | 85.61% |
+| Ex2.6a | Data: ceosal1 (salary = CEO salary in thousands of dollars; roe = return on equity, in percent). Using the OLS regression of salary on roe, what is the residual for the first CEO in the data set (row 1)? | D1 | -129.06 |
+| Ex2.6b | Data: ceosal1. Using the regression of salary on roe, what is the fitted value (salaryhat) for the fifth CEO (row 5)? | D1 | 1218.51 |
+| Ex2.8a | Data: ceosal1. In the regression of salary on roe, what percentage of the variation in salary is left unexplained? | D1 | 98.68% |
+| Ex2.7a | Data: wage1 (wage = hourly wage in dollars; educ = years of education). Run the regression of wage on educ. What is the predicted wage at the sample mean of educ? | D9 | 5.90 |
+| Ex2.12a | Data: meap93 (math10 = percent of students passing a math test; lnchprg = percent of students eligible for the school lunch program). Regress math10 on lnchprg. What is the slope on lnchprg? | D1 | -0.32 |
+| Ex2.12b | math10 = b0 + b1 lnchprg + u, where lnchprg measures poverty. Poverty rate is left out. School quality and family resources in u are negatively correlated with lnchprg and raise math scores. Is the simple-regression slope on lnchprg likely biased upward or downward? | B3 (two-legged table) | **Downward** (too negative). Family resources and school quality raise scores and are negatively correlated with lnchprg, so the bias is (+)(−) < 0. |
+| Ex3.1a | Data: gpa1 (colGPA = college GPA; hsGPA = high school GPA; ACT = achievement test score). Estimate colGPA = b0 + b1 hsGPA + b2 ACT + u. What is the coefficient on hsGPA? | D7 | 0.45 |
+| Ex3.1b | Data: gpa1. Using colGPA on hsGPA and ACT, what is the predicted college GPA for a student with hsGPA = 3.4 and ACT = 24? | D7 | 3.05 |
+| Ex3.1c | Data: gpa1. Using colGPA on hsGPA and ACT, holding hsGPA fixed, how much higher is predicted colGPA for a student whose ACT score is 10 points higher? | D7 | 0.09 |
+| Ex3.1d | Data: gpa1. Regress colGPA on ACT alone. What is the simple-regression slope on ACT, and is it larger than the slope on ACT when hsGPA is included? | D10 | 0.0271. Yes, larger than 0.0094 (the ACT slope with hsGPA held fixed) |
+| Ex3.4a | Data: gpa1. What percentage of the variation in colGPA do hsGPA and ACT explain together? | D7 | 17.64% |
+| Ex3.2a | Data: wage1 (wage = hourly wage; educ = years of education; exper = years of experience; tenure = years with current employer). Run lm(log(wage) ~ educ + exper + tenure, data = wage1). Holding exper and tenure fixed, by about what percent does one more year of education raise predicted wage? | D8 | 9.20% |
+| Ex3.2b | Data: wage1. Using log(wage) on educ, exper and tenure: a worker stays at the same firm for one more year, so exper and tenure both increase by one year. By about what percent does predicted wage change? | D8 | 2.62% |
+| Ex3.3a | Data: k401k (prate = percent of eligible workers participating in the 401(k) plan; mrate = the firm's match rate; age = age of the plan in years). Run lm(prate ~ mrate + age, data = k401k). What is the coefficient on mrate? | D7 | 5.52 |
+| Ex3.3b | Data: k401k. Run the simple regression of prate on mrate, leaving out age. What is the simple-regression slope on mrate? | D10 | 5.86 |
+| Ex3.3c | Data: k401k. Regress age on mrate. What is the slope (delta-tilde) used in formula (3.23) to link the simple and multiple regression slopes on mrate? | D10 | 1.40 |
+| Ex3.3d | Data: k401k. Using prate on mrate and age, what is the predicted participation rate for a plan with mrate = 0.75 and age = 10? | D7 | 86.69 |
+| Ex3.5a | Data: crime1 (narr86 = number of times arrested in 1986; pcnv = proportion of prior arrests that led to conviction; ptime86 = months in prison in 1986; qemp86 = quarters employed in 1986). Run lm(narr86 ~ pcnv + ptime86 + qemp86, data = crime1). What is the coefficient on pcnv? | D7 | -0.15 |
+| Ex3.5b | Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if pcnv increases by 0.50, holding the other variables fixed, by how much does the predicted number of arrests change? | D7 | -0.07 |
+| Ex3.5c | Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: for a group of 100 men, if pcnv increases by 0.50, by how many arrests does the predicted total change? | D7 | -7.50 |
+| Ex3.5d | Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if ptime86 increases from 0 to 12 months, by how much does predicted narr86 change? | D7 | -0.41 |
+| Ex3.5e | Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if a man is employed for 4 more quarters, by how much does predicted narr86 change? | D7 | -0.42 |
+| Ex3.5f | Data: crime1. What percentage of the variation in narr86 is explained by pcnv, ptime86 and qemp86? | D7 | 4.13% |
+| Ex3.5g | Data: crime1. Add avgsen (average sentence length from prior convictions): run lm(narr86 ~ pcnv + avgsen + ptime86 + qemp86, data = crime1). What is the coefficient on avgsen? | D7 | 0.0074 |
+| Ex3.6a | log(wage) = b0 + b1 educ + b2 abil + u, but ability is not in the data, so we estimate the simple regression of log(wage) on educ. Ability raises wages and is positively correlated with education. Is the simple-regression slope on educ likely too high or too low? | B3 (two-legged table) | **Too high (upward bias).** β₂ > 0 and Corr(educ, abil) > 0, so the bias is (+)(+) > 0. Wooldridge: "the average of the estimates across all random samples would be too large." |
+| Ex3.6b | avgscore = b0 + b1 expend + b2 povrate + u. The poverty rate is not observed, so we regress avgscore on expend alone. Poverty lowers scores, and expend is negatively correlated with povrate. What is the likely direction of the bias in the simple-regression slope on expend? | B3 (two-legged table) | **Upward.** β₂ < 0 (poverty lowers scores) and Corr(expend, povrate) < 0, so the bias is (−)(−) > 0. The simple slope overstates the effect of spending. |
+
+Checks against the book:
+- **3.3:** 5.86 ≈ 5.52 + 0.243 × δ̃, which is formula (3.23).
+- **3.5:** the effects are small per man, so the textbook scales them by 100 men.
+- **3.6:** the omitted-ability story behind Table 3.2.
