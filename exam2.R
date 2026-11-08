@@ -300,7 +300,7 @@ GO <- function(tag) {
   NA }
 .strip_desc <- function(s, d) {                             # drop "salary = CEO pay in $1000s;" definitions
   cols <- tryCatch(tolower(names(get(d, envir = globalenv()))), error = function(e) c())
-  s <- gsub("\\([^()]*=[^()]*\\)", " ", s)
+  s <- gsub("(?<!lm)\\([^()]*=[^()]*\\)", " ", s, perl = TRUE)
   if (length(cols)) s <- gsub(paste0("\\b(", paste(cols, collapse = "|"), ")\\s*=\\s*(?!b0|beta)[a-z=][^;.()]*[;.]?"), " ", s, perl = TRUE)
   sub("^.*variables:", "", s)
 }
@@ -315,16 +315,16 @@ GO <- function(tag) {
     h <- function(p) grepl(p, q, perl = TRUE)
     logy <- h("(regress|lm\\(|estimate|of|with)\\s*(the\\s*)?(natural\\s*)?log\\s*(\\(|of\\s)\\s*\\w+\\)?\\s*(~|on|as the dependent|=)|log\\(\\w+\\)\\s*(~|as the dependent|=)|natural log of \\w+ as the dependent|log\\(\\w+\\) as the dependent")
     logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity|\\bon log\\s+\\w+")
-    if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b|same percentage effect|constant percentage|log\\(\\w+\\)\\s*=\\s*b\\s?0")) logy <- TRUE
+    if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b|\\blog\\(\\w+\\)\\s+on\\b|same percentage effect|constant percentage|log\\(\\w+\\)\\s*=\\s*b\\s?0")) logy <- TRUE
     if (h("log-log|constant[- ]elasticity|elasticity of")) { logy <- TRUE; logx <- TRUE } else if (h("log-level")) { logy <- TRUE; logx <- FALSE } else if (h("level-log")) { logy <- FALSE; logx <- TRUE }
-    two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors|\\bb\\s?2\\b|beta\\s?2|with and without|explained by [^.?]* and ")
+    two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors|\\bb\\s?2\\b|beta\\s?2|with and without|explained by [^.?]* and |\\w+ and \\w+ explain")
     if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
     else if (h("t[ -]?stat|t ratio|significan|reject|p-value|critical value|h0|null hypothesis|one-sided|two-sided|h1:")) add("D12", 1.6)
-    else if (h("\\balone\\b|with and without|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
+    else if (h("\\balone\\b|with and without|leaving out|leave out|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
     else if (h("sst\\W{0,3}_?\\W{0,2}j\\b|\\br\\W{0,3}_\\W{0,2}j|x\\W{0,3}_\\W{0,2}j\\b|\\bdf\\b|degrees of freedom|for the \\w+ coefficient|coefficient by hand|other independent variables") ||
              ((two || h("~[^.?]*\\+")) && h("by hand|standard error of the regression|sigma"))) add(c("D14"), 1.8)
     else if (h("standard error of the regression|sigma|error variance|sst_?x|total variation in|total sum of squares of|se\\(|standard error of the slope|standard error of b|by hand")) add(c("D6"), 1.6)
-    else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)") || grepl("=\\s*mean\\s*\\(", s)) add("D9", 1.6)
+    else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)|at the (sample )?mean of") || grepl("=\\s*mean\\s*\\(", s)) add("D9", 1.6)
     else if (h("instead of|divided by|multipl(y|ied|ying|ication)|in cents|re-express|/\\s*100|/\\s*1000|rescal|in dollars rather|measured in")) add("D2", 1.6)
     else if (logy && logx && two && !h("elasticity|by [0-9.]+\\s*(%|percent(?!age))")) { add("D8", 1.6); add("D5", 0.6) }
     else if (logy && logx) { add("D5", 1.6); if (two) add("D8", 0.8) }
@@ -333,7 +333,7 @@ GO <- function(tag) {
     else if (logx && two) { add("D7", 1.6); add("D4", 0.6) }
     else if (logx) add(c("D4"), 1.6)
     else if (two) add(c("D7"), 1.6)
-    else if (!h("regress|\\blm\\(|ols|fitted|predicted|slope|residual|r-squared|r\\^2|explained|estimate|sum of squared")) add("D0", 1.6)
+    else if (!h("regress|\\blm\\(|ols|fitted|predicted|slope|residual|r-squared|r\\^2|explained|explain|estimate|sum of squared")) add("D0", 1.6)
     else add("D1", 1.6)
     if (h("adjusted r|everything|all the output")) add("D13", 0.8)
     return(list(bonus = b, gate = "data"))
@@ -1775,7 +1775,37 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "D7",
   "D8",
   "D0",
-  "D7"),
+  "D7",
+  # Wooldridge Ch2-3 in-chapter worked examples
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D9",
+  "D1",
+  "B3",
+  "D7",
+  "D7",
+  "D7",
+  "D10",
+  "D7",
+  "D8",
+  "D8",
+  "D7",
+  "D10",
+  "D10",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "B3",
+  "B3"),
 text = c(
   "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
   "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
@@ -1994,4 +2024,34 @@ text = c(
   "Data: discrim. Estimate psoda = b0 + b1 prpblck + b2 income + u. What is the coefficient on prpblck?",
   "Data: discrim. Estimate log(psoda) = b0 + b1 prpblck + b2 log(income) + u. If prpblck increases by .20 (20 percentage points), what is the estimated percentage change in psoda?",
   "Data: htv. What percentage of men completed 12th grade but no higher grade (educ = 12)?",
-  "Data: htv. Estimate educ = b0 + b1 motheduc + b2 fatheduc + u. How much sample variation in educ is explained by parents' education (R-squared)?"))
+  "Data: htv. Estimate educ = b0 + b1 motheduc + b2 fatheduc + u. How much sample variation in educ is explained by parents' education (R-squared)?",
+  # Wooldridge Ch2-3 in-chapter worked examples
+  "Data: vote1 (voteA = percent of the vote received by Candidate A; shareA = Candidate A's percentage of total campaign spending). Regress voteA on shareA. What is the OLS slope?",
+  "Data: vote1. Using the regression of voteA on shareA, what is the predicted vote share of Candidate A when shareA = 60?",
+  "Data: vote1. What percentage of the variation in voteA is explained by shareA in the simple regression?",
+  "Data: ceosal1 (salary = CEO salary in thousands of dollars; roe = return on equity, in percent). Using the OLS regression of salary on roe, what is the residual for the first CEO in the data set (row 1)?",
+  "Data: ceosal1. Using the regression of salary on roe, what is the fitted value (salaryhat) for the fifth CEO (row 5)?",
+  "Data: ceosal1. In the regression of salary on roe, what percentage of the variation in salary is left unexplained?",
+  "Data: wage1 (wage = hourly wage in dollars; educ = years of education). Run the regression of wage on educ. What is the predicted wage at the sample mean of educ?",
+  "Data: meap93 (math10 = percent of students passing a math test; lnchprg = percent of students eligible for the school lunch program). Regress math10 on lnchprg. What is the slope on lnchprg?",
+  "math10 = b0 + b1 lnchprg + u, where lnchprg measures poverty. Poverty rate is left out. School quality and family resources in u are negatively correlated with lnchprg and raise math scores. Is the simple-regression slope on lnchprg likely biased upward or downward?",
+  "Data: gpa1 (colGPA = college GPA; hsGPA = high school GPA; ACT = achievement test score). Estimate colGPA = b0 + b1 hsGPA + b2 ACT + u. What is the coefficient on hsGPA?",
+  "Data: gpa1. Using colGPA on hsGPA and ACT, what is the predicted college GPA for a student with hsGPA = 3.4 and ACT = 24?",
+  "Data: gpa1. Using colGPA on hsGPA and ACT, holding hsGPA fixed, how much higher is predicted colGPA for a student whose ACT score is 10 points higher?",
+  "Data: gpa1. Regress colGPA on ACT alone. What is the simple-regression slope on ACT, and is it larger than the slope on ACT when hsGPA is included?",
+  "Data: gpa1. What percentage of the variation in colGPA do hsGPA and ACT explain together?",
+  "Data: wage1 (wage = hourly wage; educ = years of education; exper = years of experience; tenure = years with current employer). Run lm(log(wage) ~ educ + exper + tenure, data = wage1). Holding exper and tenure fixed, by about what percent does one more year of education raise predicted wage?",
+  "Data: wage1. Using log(wage) on educ, exper and tenure: a worker stays at the same firm for one more year, so exper and tenure both increase by one year. By about what percent does predicted wage change?",
+  "Data: k401k (prate = percent of eligible workers participating in the 401(k) plan; mrate = the firm's match rate; age = age of the plan in years). Run lm(prate ~ mrate + age, data = k401k). What is the coefficient on mrate?",
+  "Data: k401k. Run the simple regression of prate on mrate, leaving out age. What is the simple-regression slope on mrate?",
+  "Data: k401k. Regress age on mrate. What is the slope (delta-tilde) used in formula (3.23) to link the simple and multiple regression slopes on mrate?",
+  "Data: k401k. Using prate on mrate and age, what is the predicted participation rate for a plan with mrate = 0.75 and age = 10?",
+  "Data: crime1 (narr86 = number of times arrested in 1986; pcnv = proportion of prior arrests that led to conviction; ptime86 = months in prison in 1986; qemp86 = quarters employed in 1986). Run lm(narr86 ~ pcnv + ptime86 + qemp86, data = crime1). What is the coefficient on pcnv?",
+  "Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if pcnv increases by 0.50, holding the other variables fixed, by how much does the predicted number of arrests change?",
+  "Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: for a group of 100 men, if pcnv increases by 0.50, by how many arrests does the predicted total change?",
+  "Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if ptime86 increases from 0 to 12 months, by how much does predicted narr86 change?",
+  "Data: crime1. Using narr86 on pcnv, ptime86 and qemp86: if a man is employed for 4 more quarters, by how much does predicted narr86 change?",
+  "Data: crime1. What percentage of the variation in narr86 is explained by pcnv, ptime86 and qemp86?",
+  "Data: crime1. Add avgsen (average sentence length from prior convictions): run lm(narr86 ~ pcnv + avgsen + ptime86 + qemp86, data = crime1). What is the coefficient on avgsen?",
+  "log(wage) = b0 + b1 educ + b2 abil + u, but ability is not in the data, so we estimate the simple regression of log(wage) on educ. Ability raises wages and is positively correlated with education. Is the simple-regression slope on educ likely too high or too low?",
+  "avgscore = b0 + b1 expend + b2 povrate + u. The poverty rate is not observed, so we regress avgscore on expend alone. Poverty lowers scores, and expend is negatively correlated with povrate. What is the likely direction of the bias in the simple-regression slope on expend?"))
