@@ -175,7 +175,8 @@ get_data <- function(name) {
 }
 ## Loads every dataset the course has used (all have offline copies in data/).
 for (d in c("wage1", "wage2", "ceosal1", "ceosal2", "bwght", "gpa1", "gpa2", "vote1", "campus", "rdchem",
-            "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain"))
+            "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain",
+            "charity", "hprice2", "htv"))
   assign(d, get_data(d))
 ## Any other dataset: name <- get_data("name")  (needs the wooldridge package if no CSV)
 
@@ -286,7 +287,7 @@ GO <- function(tag) {
   tolower(gsub("\\s+", " ", s))
 }
 .DSNAMES <- local({ nm <- c("wage1", "wage2", "ceosal1", "ceosal2", "bwght", "gpa1", "gpa2", "vote1", "campus", "rdchem",
-  "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain")
+  "mlb1", "meap93", "hprice1", "k401k", "discrim", "attend", "crime1", "sleep75", "lawsch85", "jtrain", "charity", "hprice2", "htv")
   if (requireNamespace("wooldridge", quietly = TRUE)) { p <- tryCatch(data(package = "wooldridge")$results[, "Item"], error = function(e) c())
     nm <- unique(c(nm, grep("[0-9]", tolower(p), value = TRUE))) }
   nm })
@@ -314,17 +315,18 @@ GO <- function(tag) {
     h <- function(p) grepl(p, q, perl = TRUE)
     logy <- h("(regress|lm\\(|estimate|of|with)\\s*(the\\s*)?(natural\\s*)?log\\s*(\\(|of\\s)\\s*\\w+\\)?\\s*(~|on|as the dependent|=)|log\\(\\w+\\)\\s*(~|as the dependent|=)|natural log of \\w+ as the dependent|log\\(\\w+\\) as the dependent")
     logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity|\\bon log\\s+\\w+")
-    if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b")) logy <- TRUE
+    if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b|same percentage effect|constant percentage|log\\(\\w+\\)\\s*=\\s*b\\s?0")) logy <- TRUE
     if (h("log-log|constant[- ]elasticity|elasticity of")) { logy <- TRUE; logx <- TRUE } else if (h("log-level")) { logy <- TRUE; logx <- FALSE } else if (h("level-log")) { logy <- FALSE; logx <- TRUE }
-    two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors")
+    two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors|\\bb\\s?2\\b|beta\\s?2|with and without|explained by [^.?]* and ")
     if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
     else if (h("t[ -]?stat|t ratio|significan|reject|p-value|critical value|h0|null hypothesis|one-sided|two-sided|h1:")) add("D12", 1.6)
-    else if (h("\\balone\\b|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
+    else if (h("\\balone\\b|with and without|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
     else if (h("sst\\W{0,3}_?\\W{0,2}j\\b|\\br\\W{0,3}_\\W{0,2}j|x\\W{0,3}_\\W{0,2}j\\b|\\bdf\\b|degrees of freedom|for the \\w+ coefficient|coefficient by hand|other independent variables") ||
              ((two || h("~[^.?]*\\+")) && h("by hand|standard error of the regression|sigma"))) add(c("D14"), 1.8)
     else if (h("standard error of the regression|sigma|error variance|sst_?x|total variation in|total sum of squares of|se\\(|standard error of the slope|standard error of b|by hand")) add(c("D6"), 1.6)
-    else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)")) add("D9", 1.6)
-    else if (h("instead of|divided by|multipl|in cents|re-express|/\\s*100|/\\s*1000|rescal|in dollars rather|measured in")) add("D2", 1.6)
+    else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)") || grepl("=\\s*mean\\s*\\(", s)) add("D9", 1.6)
+    else if (h("instead of|divided by|multipl(y|ied|ying|ication)|in cents|re-express|/\\s*100|/\\s*1000|rescal|in dollars rather|measured in")) add("D2", 1.6)
+    else if (logy && logx && two && !h("elasticity|by [0-9.]+\\s*(%|percent(?!age))")) { add("D8", 1.6); add("D5", 0.6) }
     else if (logy && logx) { add("D5", 1.6); if (two) add("D8", 0.8) }
     else if (logy && two) add(c("D8"), 1.6)
     else if (logy) add(c("D3"), 1.6)
@@ -344,7 +346,8 @@ GO <- function(tag) {
   if (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]|sample (standard deviation|variance|mean) of x")) add(c("S6"), 1.4)
   pts <- has("\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)\\s*,\\s*\\([0-9.-]+\\s*,\\s*[0-9.-]+\\)") || (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]"))
   if (has("x and y (lists?|values|data|points)|lists? of x|x list|raw x and y")) pts <- TRUE
-  if (pts) add("S6", 1.8)
+  if (length(gregexpr("=\\s*[\\[(]\\s*-?[0-9.]+\\s*,", s)[[1]]) >= 2 || has("same (eight|\\w+) (students|observations|data points|people|firms)")) pts <- TRUE
+  if (pts) { add("S6", 1.8); num <- TRUE }
   if (has("\\bx\\s*=\\s*[\\[(]|x takes the values|x values") && has("sigma|error (standard deviation|variance)|ssr")) add(c("S2"), 1.6)
   if (has("correlation") && has("covariance|cov\\s*\\(|s_?\\{?xy")) add("S5", 1.8)
   if (has("lies exactly on|all .* on the (ols )?line|perfect(ly)? fit")) add("S1", 1.6)
@@ -393,6 +396,9 @@ GO <- function(tag) {
   if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y") && !has("you add|adding|add an?\\b|include an?\\b")) add("K15", 1.9)
   if (!num && has("\\bblue\\b|gauss-markov|normality|mlr\\.?\\s*6|classical linear|t statistic measures|distribution of|p-value (means|is)|small p-value|statistically significant|reject h|when do you reject")) add("K16", 1.4)
   if (has("minimi[sz]e|least squares estimates|candidate lines")) add("K1", 1.6)
+  if (has("can cause (the )?ols( estimators?)? (to be )?biased|which (of the following )?(can )?cause.* bias")) add("K12", 3)
+  if (has("would you expect|expect the (simple|multiple)") && has("\\bse\\b|standard error|variance")) add("K7", 2.2)
+  if (has("add up to (one|1|100)|sum to (one|1|100)|must (one of .* )?be omitted|why must one")) add("K11", 2.4)
   if (has("which regression gives r_?j|r_?j\\^?2? (measures|comes|from)|what is x_?j|sigma hat estimate|what does sigma hat|r_?j\\^?2? gets close to 1|residual standard error|missing (data|values)|\\bna\\b\\)?.*drops")) add("K18", 2.2)
   if (!num && has("r-squared|r\\^2|r2\\b")) add(c("K10", "K13"), 0.8)
   list(bonus = b, gate = if (num) "numbers" else "concept")
@@ -548,6 +554,7 @@ cat("\n#################### PART 1 - REAL DATA ####################\n")
 ## A correlation NEVER comes from lm() and is always between -1 and 1.
 ## A 0/1 column (female, smoker): its MEAN is the SHARE that are 1 (0.48 -> 48% women).
 ## GROUP mean ("average wage of women"): d0_x <- "wage", d0_by <- "female", d0_val <- 1
+## COUNT or PERCENT equal to a value ("how many have ceoten = 0?" / "% with gift = 0"): d0_by <- that column, d0_val <- the value
 ##   = mean(wage1$wage[wage1$female == 1])   (study guide, section 0)
 ## DEFAULTS: n 209 | mean of roe 17.18 | sd of roe 8.52 | correlation 0.11
 # >> YOUR NUMBERS: change these lines
@@ -572,7 +579,8 @@ ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "compl
 if (!is.na(d0_val)) { d0_g <- d0_df[[d0_by]] == d0_val
   ans(sprintf("GROUP mean of %s where %s == %g", d0_x, d0_by, d0_val), mean(d0_v[d0_g], na.rm = TRUE))
   ans(sprintf("GROUP sd of %s where %s == %g", d0_x, d0_by, d0_val), sd(d0_v[d0_g], na.rm = TRUE))
-  ans(sprintf("how many rows with %s == %g", d0_by, d0_val), sum(d0_g, na.rm = TRUE)) }
+  ans(sprintf("how many rows with %s == %g", d0_by, d0_val), sum(d0_g, na.rm = TRUE))
+  ans(sprintf("PERCENT of rows with %s == %g", d0_by, d0_val), 100 * mean(d0_g, na.rm = TRUE)) }
 
 ## ======================================================================
 ## [D1] SIMPLE REGRESSION ON DATA: slope, prediction, change, R^2, residual, SSE/SSR/SST ----
@@ -1096,6 +1104,7 @@ ans("SSR (residual)", sum(resid(s6_reg)^2)); ans("R^2", summary(s6_reg)$r.square
 ## LOOKS LIKE: any "y-hat = b0 + b1 x1 + b2 x2 ..." question: predicted value / change /
 ##   sample mean of y / % change / predicted $ when y is logged    (Q9 #8-9, PS11 #1, #6)
 ## PREDICTION keeps b0.  CHANGE drops b0.  y-bar = b0 + b1 x1-bar + ...
+## BACKWARDS (they give the y-hat or the change and want an x): use s7_yhat / s7_dy below.
 ## DEFAULTS (y-hat = 4 + 2.9 x1 - 0.6 x2): prediction 5.70 | change 4.70 | y-bar 17.30
 # >> YOUR NUMBERS: change these lines (one number per x, same order)
 s7_b0   <- 4             # <-- CHANGE  intercept
@@ -1105,13 +1114,21 @@ s7_dx   <- c(1, -3)      # <-- CHANGE  change: how much each x CHANGES (falls = 
 s7_xbar <- c(5, 2)       # <-- CHANGE  y-bar: the MEANS of the x's
 s7_ybar <- NA            # <-- CHANGE  FLIPPED question "y-bar is 20, find x1-bar": type y-bar here and put NA
                          #             in s7_xbar for the mean they ask for, e.g. s7_xbar <- c(NA, 4)
+s7_yhat <- NA            # <-- CHANGE  BACKWARDS "what x1 gives a predicted y of 125?": type 125 here, NA in s7_at for that x
+s7_dy   <- NA            # <-- CHANGE  BACKWARDS "how much must x1 change to move y-hat by 0.50?": type 0.50 here, NA in s7_dx for that x
 # >> ANSWERS: nothing to change below
 same_len(s7_b, s7_at, "s7_b", "s7_at"); same_len(s7_b, s7_dx, "s7_b", "s7_dx")
 s7_pred <- s7_b0 + sum(s7_b * s7_at); s7_chg <- sum(s7_b * s7_dx)
 s7_eq <- paste0("y-hat = ", s7_b0, paste(sprintf(" %s %g x%d", ifelse(s7_b < 0, "-", "+"), abs(s7_b), seq_along(s7_b)), collapse = ""))
 blk("S7", s7_eq)
-ans(sprintf("PREDICTION at %s", paste(sprintf("x%d = %g", seq_along(s7_at), s7_at), collapse = ", ")), s7_pred)
-ans(sprintf("CHANGE when %s", paste(sprintf("x%d %+g", seq_along(s7_dx), s7_dx), collapse = ", ")), s7_chg)
+if (!is.na(s7_yhat) && sum(is.na(s7_at)) == 1) {
+  j <- which(is.na(s7_at)); s7_known <- s7_b0 + sum(s7_b[-j] * s7_at[-j])
+  ans(sprintf("BACKWARDS: x%d needed for y-hat = %g -> (%g - %g) / %g", j, s7_yhat, s7_yhat, s7_known, s7_b[j]), (s7_yhat - s7_known) / s7_b[j])
+} else ans(sprintf("PREDICTION at %s", paste(sprintf("x%d = %g", seq_along(s7_at), s7_at), collapse = ", ")), s7_pred)
+if (!is.na(s7_dy) && sum(is.na(s7_dx)) == 1) {
+  j <- which(is.na(s7_dx)); s7_known <- sum(s7_b[-j] * s7_dx[-j])
+  ans(sprintf("BACKWARDS: change in x%d for a y-hat change of %g -> (%g - %g) / %g", j, s7_dy, s7_dy, s7_known, s7_b[j]), (s7_dy - s7_known) / s7_b[j])
+} else ans(sprintf("CHANGE when %s", paste(sprintf("x%d %+g", seq_along(s7_dx), s7_dx), collapse = ", ")), s7_chg)
 if (!is.na(s7_ybar) && length(s7_xbar) == length(s7_b) && sum(is.na(s7_xbar)) == 1) {
   j <- which(is.na(s7_xbar)); s7_known <- s7_b0 + sum(s7_b[-j] * s7_xbar[-j])
   ans(sprintf("MISSING x%d-bar = (%g - %g) / %g", j, s7_ybar, s7_known, s7_b[j]), (s7_ybar - s7_known) / s7_b[j])
@@ -1693,7 +1710,72 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "D14",
   "D14",
   "K18",
-  "K18"),
+  "K18",
+  # Wooldridge Ch2-3 problems and computer exercises
+  "S6",
+  "S6",
+  "S6",
+  "S6",
+  "S7",
+  "S7",
+  "S7",
+  "K9",
+  "K6",
+  "K2",
+  "D0",
+  "D0",
+  "D1",
+  "D1",
+  "D1",
+  "D0",
+  "D0",
+  "D0",
+  "D3",
+  "D1",
+  "D1",
+  "D0",
+  "D1",
+  "D3",
+  "D5",
+  "D4",
+  "D0",
+  "D0",
+  "D1",
+  "S7",
+  "S7",
+  "S7",
+  "S7",
+  "S7",
+  "S7",
+  "S4",
+  "S4",
+  "K9",
+  "K11",
+  "K12",
+  "B3",
+  "B3",
+  "D10",
+  "K7",
+  "K11",
+  "D10",
+  "D7",
+  "D7",
+  "D7",
+  "D7",
+  "D13",
+  "D8",
+  "D5",
+  "D0",
+  "D7",
+  "D7",
+  "D10",
+  "D10",
+  "D10",
+  "D0",
+  "D7",
+  "D8",
+  "D0",
+  "D7"),
 text = c(
   "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
   "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
@@ -1847,4 +1929,69 @@ text = c(
   "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Put the pieces together: compute \\(\\mathrm{se}(\\hat\\beta_j)=\\hat\\sigma/\\sqrt{\\mathrm{SST}_j\\,(1-R_j^2)}\\) for the bdrms coefficient. (round to the hundredths)",
   "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Now the quick way. In summary(reg)$coefficients, the \"Std. Error\" column holds every standard error. What is the standard error of the bdrms coefficient there? (It should match problem 12.) (round to the hundredths)",
   "Print summary(reg). Near the bottom is a line \"Residual standard error: ... on 84 degrees of freedom\". Which of your answers does it match? None of them Problem 9 (\\(\\hat\\sigma\\)), and its degrees of freedom match problem 8 Problem 12 (the standard error of the bdrms coefficient) Problem 10 (\\(\\mathrm{SST}_j\\))",
-  "A warning about missing data. Some datasets have missing values (NA). lm() silently drops every row with an NA in any variable of the regression. Suppose \\(Y\\) (or another independent variable) has missing values but \\(X_j\\) does not, and you compute \\(\\mathrm{SST}_j\\) by hand from all the rows of \\(X_j\\). What happens? Your hand-computed standard error can differ from summary(reg), because \\(\\mathrm{SST}_j\\) uses rows the regression dropped. Compute every piece on the same rows the regression used. Only \\(R^2\\) is affected, never the standard errors. R stops with an error, so you notice right away. Nothing: missing values never change any statistic."))
+  "A warning about missing data. Some datasets have missing values (NA). lm() silently drops every row with an NA in any variable of the regression. Suppose \\(Y\\) (or another independent variable) has missing values but \\(X_j\\) does not, and you compute \\(\\mathrm{SST}_j\\) by hand from all the rows of \\(X_j\\). What happens? Your hand-computed standard error can differ from summary(reg), because \\(\\mathrm{SST}_j\\) uses rows the regression dropped. Compute every piece on the same rows the regression used. Only \\(R^2\\) is affected, never the standard errors. R stops with an error, so you notice right away. Nothing: missing values never change any statistic.",
+  # Wooldridge Ch2-3 problems and computer exercises
+  "For eight students, GPA = (2.8, 3.4, 3.0, 3.5, 3.6, 3.0, 2.7, 3.7) and ACT = (21, 24, 26, 27, 29, 25, 25, 30). Estimate GPA = b0 + b1 ACT by OLS. What is the slope?",
+  "Same eight students. How much higher is the predicted GPA if the ACT score is increased by five points?",
+  "Same eight students. What is the predicted value of GPA when ACT = 20?",
+  "Same eight students. How much of the variation in GPA is explained by ACT (R-squared)?",
+  "bwght-hat = 119.77 - 0.514 cigs. What is the predicted birth weight when cigs = 20 (one pack per day)?",
+  "bwght-hat = 119.77 - 0.514 cigs. To predict a birth weight of 125 ounces, what would cigs have to be?",
+  "cons-hat = -124.84 + 0.853 inc, with both in dollars. What is the predicted consumption when family income is $30,000?",
+  "log(price) = 9.40 + 0.312 log(dist), where dist is distance from a garbage incinerator. What does the coefficient 0.312 mean?",
+  "sav = b0 + b1 inc + u, where u = sqrt(inc)*e and e is independent of inc. Var(u|inc) grows with inc. Which assumption fails, and is OLS still unbiased?",
+  "sat = b0 + b1 hours + u, where students choose their hours in an SAT prep course. Which factors in u (like ability or motivation) are likely correlated with hours, and what does that mean for the zero conditional mean assumption?",
+  "Data: k401k. Find the average participation rate prate in the sample of plans.",
+  "Data: k401k. Find the average match rate mrate in the sample.",
+  "Data: k401k. Estimate prate = b0 + b1 mrate by OLS. What is the slope on mrate?",
+  "Data: k401k. Using the regression of prate on mrate, find the predicted prate when mrate = 3.5.",
+  "Data: k401k. How much of the variation in prate is explained by mrate? Give a percent.",
+  "Data: ceosal2 (salary = annual compensation in thousands of dollars; ceoten = prior years as company CEO). Find the average salary in the sample.",
+  "Data: ceosal2. How many CEOs are in their first year as CEO (that is, ceoten = 0)?",
+  "Data: ceosal2. What is the longest tenure as a CEO (the maximum of ceoten)?",
+  "Data: ceosal2. Estimate log(salary) = b0 + b1 ceoten + u. What is the approximate predicted percentage increase in salary given one more year as a CEO?",
+  "Data: sleep75 (sleep = minutes of sleep per week; totwrk = minutes worked per week). Estimate sleep = b0 + b1 totwrk + u. What is the intercept?",
+  "Data: sleep75. Using the regression of sleep on totwrk, if totwrk increases by 2 hours, by how much is sleep estimated to change (in minutes)?",
+  "Data: wage2 (wage = monthly salary; IQ = IQ score). What is the sample standard deviation of IQ?",
+  "Data: wage2. Estimate a simple regression where a one-point increase in IQ changes wage by a constant dollar amount. What is the predicted increase in wage for an increase in IQ of 15 points?",
+  "Data: wage2. Estimate a model where each one-point increase in IQ has the same percentage effect on wage. If IQ increases by 15 points, what is the approximate percentage increase in predicted wage?",
+  "Data: rdchem (rd = R&D expenditures; sales = annual sales, both in millions). Estimate a constant elasticity model of rd on sales. What is the estimated elasticity of rd with respect to sales?",
+  "Data: meap93 (math10 = math pass rate; expend = spending per student). Estimate math10 = b0 + b1 log(expend) + u. If spending increases by 10%, what is the estimated percentage point increase in math10?",
+  "Data: charity. What is the average gift in the sample (in Dutch guilders)?",
+  "Data: charity. What percentage of people gave no gift (gift = 0)?",
+  "Data: charity. Estimate gift = b0 + b1 mailsyear + u by OLS. What is the slope on mailsyear?",
+  "colgpa-hat = 1.392 - 0.0135 hsperc + 0.00148 sat. What is the predicted college GPA when hsperc = 20 and sat = 1,050?",
+  "colgpa-hat = 1.392 - 0.0135 hsperc + 0.00148 sat. Students A and B graduated in the same percentile, but A's SAT score was 140 points higher. What is the predicted difference in college GPA?",
+  "colgpa-hat = 1.392 - 0.0135 hsperc + 0.00148 sat. Holding hsperc fixed, what difference in SAT scores leads to a predicted colgpa difference of 0.50?",
+  "educ-hat = 10.36 - 0.094 sibs + 0.131 meduc + 0.210 feduc. Holding meduc and feduc fixed, by how much does sibs have to increase to reduce predicted years of education by one year?",
+  "educ-hat = 10.36 - 0.094 sibs + 0.131 meduc + 0.210 feduc. Man A has no siblings and his parents each have 12 years of education; Man B has no siblings and his parents each have 16. What is the predicted difference in years of education between B and A?",
+  "sleep-hat = 3638.25 - 0.148 totwrk - 11.13 educ + 2.20 age, with sleep and totwrk in minutes per week. If someone works five more hours per week, by how many minutes is sleep predicted to change?",
+  "log(salary)-hat = 8.34 + 0.0047 LSAT + 0.248 GPA + 0.095 log(libvol) + 0.038 log(cost) - 0.0033 rank. What is the predicted ceteris paribus difference in salary for schools with a median GPA different by one point? (Report a percentage.)",
+  "log(salary)-hat = 8.34 + 0.0047 LSAT + 0.248 GPA + 0.095 log(libvol) + 0.038 log(cost) - 0.0033 rank. How much is a difference in ranking of 20 worth in terms of predicted starting salary? (Report a percentage.)",
+  "In the law school salary equation, log(salary) includes 0.095 log(libvol). How do you interpret the coefficient on log(libvol)?",
+  "GPA = b0 + b1 study + b2 sleep + b3 work + b4 leisure + u, where for every student study + sleep + work + leisure = 168 hours. Why does this model violate MLR.3?",
+  "Which of the following can cause OLS estimators to be biased: heteroskedasticity, omitting an important variable, or a sample correlation of .95 between two included independent variables?",
+  "avgprod = b0 + b1 avgtrain + b2 avgabil + u. Grants went to firms whose workers have less than average ability, so avgtrain and avgabil are negatively correlated. What is the likely bias in the simple-regression slope of avgprod on avgtrain?",
+  "log(price) = b0 + b1 log(nox) + b2 rooms + u. Rooms raise price, and log(nox) and rooms are negatively correlated. Does the simple regression of log(price) on log(nox) produce an upward or a downward biased estimator of b1?",
+  "Data: hprice2. Regress log(price) on log(nox) alone, then on log(nox) and rooms. What is the simple-regression slope on log(nox)?",
+  "You regress y on x1 alone and on x1, x2, x3. x1 is highly correlated with x2 and x3, and x2 and x3 have small partial effects on y. Would you expect the simple or the multiple regression se of the x1 slope to be smaller?",
+  "growth = b0 + b1 shareP + b2 shareI + b3 shareS + b4 shareF + u, where the four tax shares add up to one. Why must one of the tax share variables be omitted?",
+  "Data: bwght. Estimate bwght on cigs with and without faminc. What is the slope on cigs in the regression that includes faminc?",
+  "Data: hprice1. Estimate price = b0 + b1 sqrft + b2 bdrms + u. What is the estimated increase in price for a house with one more bedroom, holding square footage constant?",
+  "Data: hprice1. Using price on sqrft and bdrms, what is the estimated increase in price for a house with an additional bedroom that is 140 square feet in size?",
+  "Data: hprice1. What percentage of the variation in price is explained by square footage and number of bedrooms?",
+  "Data: hprice1. The first house in the sample has sqrft = 2,438 and bdrms = 4. Find the predicted selling price for this house from the regression of price on sqrft and bdrms.",
+  "Data: hprice1. The actual selling price of the first house was $300,000 (price = 300). Using price on sqrft and bdrms, find the residual for this house.",
+  "Data: ceosal2. Estimate log(salary) on log(sales), log(mktval), profits and ceoten. What is the estimated percentage return for another year of CEO tenure, holding other factors fixed?",
+  "Data: ceosal2. Estimate a constant elasticity model of salary on sales and market value (log(salary) on log(sales) and log(mktval)). What is the coefficient on log(sales)?",
+  "Data: attend (atndrte = percent of classes attended; priGPA = prior GPA; ACT = ACT score). What is the minimum value of atndrte?",
+  "Data: attend. Estimate atndrte = b0 + b1 priGPA + b2 ACT + u. What is the predicted atndrte if priGPA = 3.65 and ACT = 20?",
+  "Data: attend. Using atndrte on priGPA and ACT: Student A has priGPA = 3.1 and ACT = 21; Student B has priGPA = 2.1 and ACT = 26. What is the predicted difference in their attendance rates (A minus B)?",
+  "Data: wage2. Run a simple regression of IQ on educ. What is the slope coefficient (delta-tilde)?",
+  "Data: wage2. Run the multiple regression of log(wage) on educ and IQ. What is the slope on educ?",
+  "Data: meap93. Run the simple regression of math10 on log(expend) and compare with math10 on log(expend) and lnchprg. What is the simple-regression slope on log(expend)?",
+  "Data: discrim (prpblck = proportion black; income = median family income). Find the average value of prpblck in the sample.",
+  "Data: discrim. Estimate psoda = b0 + b1 prpblck + b2 income + u. What is the coefficient on prpblck?",
+  "Data: discrim. Estimate log(psoda) = b0 + b1 prpblck + b2 log(income) + u. If prpblck increases by .20 (20 percentage points), what is the estimated percentage change in psoda?",
+  "Data: htv. What percentage of men completed 12th grade but no higher grade (educ = 12)?",
+  "Data: htv. Estimate educ = b0 + b1 motheduc + b2 fatheduc + u. How much sample variation in educ is explained by parents' education (R-squared)?"))
