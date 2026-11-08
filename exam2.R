@@ -202,6 +202,8 @@ CATALOG <- list(
   c("D11", "Data: perfect collinearity, R reports NA", "data na reports coefficient total exact linear function collinearity"),
   c("D12", "Data: t-statistic, one-sided/two-sided test", "data t statistic test reject h0 null positive significant critical"),
   c("D13", "Data: REG() prints everything for one regression", "data regression everything all report"),
+  c("D14", "Data: se of a multiple-regression coefficient by hand (sigma-hat, SST_j, R_j^2)", "data standard error by hand coefficient sigma-hat sst_j r_j^2 r2_j degrees of freedom df residual standard error other independent variables multiple"),
+  c("K18", "MC: pieces of se(b_j): x_j, R_j^2 regression, sigma-hat, multicollinearity, NA rows", "x_j r_j^2 which regression gives sigma-hat estimate standard deviation of the error residual standard error matches missing values na grows without bound"),
   c("U1",  "x multiplied/divided by c: new slope", "x divided multiplied 1000 100 new slope percent decimal units"),
   c("U2",  "y multiplied by c: new slope/intercept", "y multiplied 1000 dollars cents new slope intercept units"),
   c("U3",  "log(y) model, y rescaled: new intercept", "log intercept new measured dollars thousands log(1000)"),
@@ -304,6 +306,8 @@ GO <- function(tag) {
 .rules <- function(raw) {                                   # bonus per tag from the question's shape
   s <- .norm(raw); b <- c(); add <- function(tags, v = 1) for (t in tags) b[t] <<- max(c(b[t], 0), na.rm = TRUE) + v
   has <- function(p) grepl(p, s, perl = TRUE)
+  if (has("which regression gives|r\\W{0,3}_\\W{0,2}j\\W{0,4}2? measures|what is \\W{0,3}x\\W{0,3}_\\W{0,2}j|residual standard error.*which of your answers|warning about missing data"))
+    return(list(bonus = c(K18 = 2.5), gate = "concept"))
   ds <- .dataset_in(s)
   if (!is.na(ds)) {                                          # ---------- PART III: real data ----------
     q <- if (ds != "?") .strip_desc(s, ds) else s
@@ -316,6 +320,8 @@ GO <- function(tag) {
     if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
     else if (h("t[ -]?stat|t ratio|significan|reject|p-value|critical value|h0|null hypothesis|one-sided|two-sided|h1:")) add("D12", 1.6)
     else if (h("\\balone\\b|delta|3\\.23|when \\w+ is added|slope when|omitted|left out|simple regression slope .* (with|larger|smaller)|regress \\w+ on \\w+\\. what is the slope \\(delta")) add("D10", 1.6)
+    else if (h("sst\\W{0,3}_?\\W{0,2}j\\b|\\br\\W{0,3}_\\W{0,2}j|x\\W{0,3}_\\W{0,2}j\\b|\\bdf\\b|degrees of freedom|for the \\w+ coefficient|coefficient by hand|other independent variables") ||
+             ((two || h("~[^.?]*\\+")) && h("by hand|standard error of the regression|sigma"))) add(c("D14"), 1.8)
     else if (h("standard error of the regression|sigma|error variance|sst_?x|total variation in|total sum of squares of|se\\(|standard error of the slope|standard error of b|by hand")) add(c("D6"), 1.6)
     else if (h("sample means|their (sample )?means|at the means|averages of .* into|means of .* into|passes through the means|at their (sample )?(means|averages)")) add("D9", 1.6)
     else if (h("instead of|divided by|multipl|in cents|re-express|/\\s*100|/\\s*1000|rescal|in dollars rather|measured in")) add("D2", 1.6)
@@ -387,6 +393,7 @@ GO <- function(tag) {
   if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y") && !has("you add|adding|add an?\\b|include an?\\b")) add("K15", 1.9)
   if (!num && has("\\bblue\\b|gauss-markov|normality|mlr\\.?\\s*6|classical linear|t statistic measures|distribution of|p-value (means|is)|small p-value|statistically significant|reject h|when do you reject")) add("K16", 1.4)
   if (has("minimi[sz]e|least squares estimates|candidate lines")) add("K1", 1.6)
+  if (has("which regression gives r_?j|r_?j\\^?2? (measures|comes|from)|what is x_?j|sigma hat estimate|what does sigma hat|r_?j\\^?2? gets close to 1|residual standard error|missing (data|values)|\\bna\\b\\)?.*drops")) add("K18", 2.2)
   if (!num && has("r-squared|r\\^2|r2\\b")) add(c("K10", "K13"), 0.8)
   list(bonus = b, gate = if (num) "numbers" else "concept")
 }
@@ -540,12 +547,16 @@ cat("\n#################### PART 1 - REAL DATA ####################\n")
 ##   / "sample correlation between salary and roe?" / "what share of wage1 is female?"  (Exam I Q29-31)
 ## A correlation NEVER comes from lm() and is always between -1 and 1.
 ## A 0/1 column (female, smoker): its MEAN is the SHARE that are 1 (0.48 -> 48% women).
+## GROUP mean ("average wage of women"): d0_x <- "wage", d0_by <- "female", d0_val <- 1
+##   = mean(wage1$wage[wage1$female == 1])   (study guide, section 0)
 ## DEFAULTS: n 209 | mean of roe 17.18 | sd of roe 8.52 | correlation 0.11
 # >> YOUR NUMBERS: change these lines
 d0_data <- "ceosal1"     # <-- CHANGE  dataset name, in quotes
 d0_x    <- "roe"         # <-- CHANGE  the column the question is about
 d0_y    <- "salary"      # <-- CHANGE  a second column (only for correlation / covariance)
 d0_cut  <- 20            # <-- CHANGE  only for "how many have <column> above ___?"
+d0_by   <- "salary"      # <-- CHANGE  GROUP mean: the column that defines the group (e.g. "female")
+d0_val  <- NA            # <-- CHANGE  ... and its value (e.g. 1). NA = no group question
 # >> ANSWERS: nothing to change below
 blk("D0", sprintf("summary of %s in %s", d0_x, d0_data))
 d0_df <- get(d0_data); d0_v <- d0_df[[d0_x]]; d0_w <- d0_df[[d0_y]]
@@ -558,6 +569,10 @@ ans(sprintf("median of %s", d0_x), median(d0_v, na.rm = TRUE))
 ans(sprintf("how many rows with %s > %g", d0_x, d0_cut), sum(d0_v > d0_cut, na.rm = TRUE))
 ans(sprintf("correlation of %s and %s", d0_y, d0_x), cor(d0_w, d0_v, use = "complete.obs"))
 ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "complete.obs"))
+if (!is.na(d0_val)) { d0_g <- d0_df[[d0_by]] == d0_val
+  ans(sprintf("GROUP mean of %s where %s == %g", d0_x, d0_by, d0_val), mean(d0_v[d0_g], na.rm = TRUE))
+  ans(sprintf("GROUP sd of %s where %s == %g", d0_x, d0_by, d0_val), sd(d0_v[d0_g], na.rm = TRUE))
+  ans(sprintf("how many rows with %s == %g", d0_by, d0_val), sum(d0_g, na.rm = TRUE)) }
 
 ## ======================================================================
 ## [D1] SIMPLE REGRESSION ON DATA: slope, prediction, change, R^2, residual, SSE/SSR/SST ----
@@ -667,6 +682,7 @@ ans(sprintf("%% change in %s when %s %+g%%", d5_yn, d5_xn, d5_pctx), d5_b * d5_p
 
 ## ======================================================================
 ## [D6] DATA, BY HAND: sigma-hat, SSR, SST_x, standard error of the slope ----
+## (several x's and you need the se of ONE coefficient by hand? use [D14])
 ## LOOKS LIKE: "Data: wage1. Run lm(wage ~ educ). What is sigma-hat (the standard error of
 ##   the regression)?" / "SST_X for educ?" / "compute se(b1) by hand"   (PS9 #18-19, PS10 #10)
 ## DEFAULTS: sigma-hat 3.38 | SST_x 4025.43 | se 0.05
@@ -678,10 +694,10 @@ d6_reg <- fit(d6_formula, d6_data); d6_xn <- all.vars(d6_formula)[2]
 d6_x <- model.frame(d6_reg)[[2]]; d6_SSR <- sum(resid(d6_reg)^2); d6_df <- d6_reg$df.residual
 d6_SST <- sum((d6_x - mean(d6_x))^2)
 blk("D6", sprintf("%s by hand (%s)", deparse(d6_formula), d6_data))
-ans("n", nobs(d6_reg)); ans("df = n - 2", d6_df)
+ans("n", nobs(d6_reg)); ans("df = n - k - 1", d6_df)
 ans("SSR (sum of squared residuals)", d6_SSR)
-ans("sigma^2-hat = SSR / (n - 2)", d6_SSR / d6_df)
-ans("sigma-hat = sqrt(SSR / (n - 2))", sqrt(d6_SSR / d6_df))
+ans("sigma^2-hat = SSR / df", d6_SSR / d6_df)
+ans("sigma-hat = sqrt(SSR / df)  (= Residual standard error)", sqrt(d6_SSR / d6_df))
 ans(sprintf("SST_x = total variation in %s", d6_xn), d6_SST)
 ans4("se(slope) = sigma-hat / sqrt(SST_x)", sqrt(d6_SSR / d6_df) / sqrt(d6_SST))
 ans4("check: R's Std. Error for the slope", summary(d6_reg)$coefficients[2, 2])
@@ -811,6 +827,36 @@ ans("sigma-hat = standard error of the REGRESSION", summary(d12_reg)$sigma)
 pick(sprintf("H1: %s >  %g  (reject if t > c)", d12_var, d12_h0), ifelse(d12_t > d12_c1, "REJECT H0", "fail to reject H0"))
 pick(sprintf("H1: %s <  %g  (reject if t < -c)", d12_var, d12_h0), ifelse(d12_t < -d12_c1, "REJECT H0", "fail to reject H0"))
 pick(sprintf("H1: %s != %g  (reject if |t| > c)", d12_var, d12_h0), ifelse(abs(d12_t) > d12_c2, "REJECT H0", "fail to reject H0"))
+
+## ======================================================================
+## [D14] DATA, se OF A MULTIPLE-REGRESSION COEFFICIENT BY HAND (PS12 #8-14) ----
+## LOOKS LIKE: "Data: hprice1. reg <- lm(price ~ sqrft + bdrms + lotsize). Find the standard error
+##   of the bdrms coefficient by hand: df? sigma-hat? SST_j? R_j^2? se?"   (PS12 #8-14; exam: #9, #12)
+## se(b_j) = sigma-hat / sqrt( SST_j x (1 - R_j^2) )
+##   x_j    = the x whose coefficient you want the se of
+##   R_j^2  = R^2 from regressing x_j on the OTHER x's (y is NOT in it)
+##   SST_j  = sum((x_j - mean(x_j))^2), on the SAME rows the regression used (NA rows dropped)
+## DEFAULTS (PS12): df 84 | sigma-hat 59.83 | SST_j 61.59 | R_j^2 0.28 | se 9.01
+# >> YOUR NUMBERS: change these lines
+d14_data    <- "hprice1"                       # <-- CHANGE  dataset name, in quotes
+d14_formula <- price ~ sqrft + bdrms + lotsize # <-- CHANGE  the full regression  (formula only: no lm(), no dataset name)
+d14_xj      <- "bdrms"                         # <-- CHANGE  x_j: the variable whose se they want, in quotes
+# >> ANSWERS: nothing to change below
+d14_reg <- fit(d14_formula, d14_data); d14_mf <- model.frame(d14_reg)   # rows actually used
+d14_others <- setdiff(names(d14_mf)[-1], d14_xj)
+d14_SSR <- sum(resid(d14_reg)^2); d14_df <- d14_reg$df.residual; d14_sig <- sqrt(d14_SSR / d14_df)
+d14_x <- d14_mf[[d14_xj]]; d14_SST <- sum((d14_x - mean(d14_x))^2)
+d14_R2 <- summary(lm(reformulate(d14_others, d14_xj), data = d14_mf))$r.squared
+blk("D14", sprintf("se of the %s coefficient in %s (%s)", d14_xj, deparse(d14_formula), d14_data))
+ans(sprintf("n (rows used) = %d,  K = %d slopes", nobs(d14_reg), length(coef(d14_reg)) - 1), nobs(d14_reg))
+ans(sprintf("df = n - K - 1 = %d - %d - 1", nobs(d14_reg), length(coef(d14_reg)) - 1), d14_df)
+ans("SSR = sum(residuals^2)", d14_SSR)
+ans("sigma-hat = sqrt(SSR / df)  (= Residual standard error)", d14_sig)
+ans(sprintf("SST_j = total variation of %s", d14_xj), d14_SST)
+ans(sprintf("R_j^2 = R^2 of %s ~ %s", d14_xj, paste(d14_others, collapse = " + ")), d14_R2)
+ans("VIF = 1 / (1 - R_j^2)", 1 / (1 - d14_R2))
+ans(sprintf("se(b_%s) = sigma-hat / sqrt(SST_j x (1 - R_j^2))", d14_xj), d14_sig / sqrt(d14_SST * (1 - d14_R2)))
+ans(sprintf("check: summary(reg) Std. Error for %s", d14_xj), summary(d14_reg)$coefficients[d14_xj, "Std. Error"])
 
 ## ======================================================================
 ## [D13] REG(): EVERYTHING for one regression in one line ----
@@ -1469,6 +1515,14 @@ pick("[K16] one-sided >", "reject H0 if t > c;  two-sided: reject if |t| > c")
 pick("[K16] p-value", "reject H0 if p < alpha; small p = evidence AGAINST H0")
 pick("[K16] high corr (not perfect)", "allowed; just raises Var(bj) (multicollinearity)")
 
+## [K18] se OF A COEFFICIENT, the pieces (PS12 #1, #2, #3, #7, #14, #15) ----
+pick("[K18] x_j is", "the independent variable whose coefficient's se you want")
+pick("[K18] R_j^2 comes from", "regressing x_j on the OTHER x's, e.g. lm(exper ~ educ + tenure). y is NOT in it")
+pick("[K18] sigma-hat estimates", "sigma, the standard deviation of the error U (= 'Residual standard error' in summary)")
+pick("[K18] R_j^2 -> 1", "se grows without bound (multicollinearity)")
+pick("[K18] missing data (NA)", "compute every piece on the rows the regression used, or the hand se won't match summary()")
+pick("[K18] Var(X + b), population vs sample", "Var(X + b) = Var(X). mu_Y is a fixed number; Y-bar is a random variable")
+
 ## [K17] SCENARIO BANK: the exam re-tells the same idea with new stories. Match the PATTERN. ----
 ## OVB direction = sign(omitted affects y) x sign(omitted moves with x). Same -> UP, opposite -> DOWN.
 pick("[K17] ability, wage ~ educ", "ability raises wage (+), more able get more educ (+) -> UP")
@@ -1624,7 +1678,22 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "D1",
   "D8",
   "D6",
-  "D12"),
+  "D12",
+  "K18",
+  "K18",
+  "K18",
+  "S2",
+  "S2",
+  "S2",
+  "K18",
+  "D14",
+  "D14",
+  "D14",
+  "D14",
+  "D14",
+  "D14",
+  "K18",
+  "K18"),
 text = c(
   "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
   "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
@@ -1763,4 +1832,19 @@ text = c(
   "Data: wage1. Regress wage on educ and exper. What is the explained sum of squares, SSE?",
   "Data: ceosal2 (salary = CEO salary in $1000s; sales = firm sales; ceoten = years as CEO). Run lm(log(salary) ~ log(sales) + ceoten). By about what percent does predicted salary change with one more year as CEO, holding sales fixed?",
   "Data: hprice1. For the regression of price on sqrft and bdrms, what is σ̂ (the standard error of the regression)?",
-  "Same regression. What is the t-statistic on bdrms?"))
+  "Same regression. What is the t-statistic on bdrms?",
+  "In the formula \\(\\mathrm{se}(\\hat\\beta_j)=\\hat\\sigma/\\sqrt{\\mathrm{SST}_j\\,(1-R_j^2)}\\), what is \\(X_j\\)? The dependent variable \\(Y\\). The residuals from the regression. The independent variable whose coefficient \\(\\hat\\beta_j\\) we want the standard error of. Whichever independent variable has the largest coefficient.",
+  "In \\(\\mathrm{wage}=\\beta_0+\\beta_1\\,\\mathrm{educ}+\\beta_2\\,\\mathrm{exper}+\\beta_3\\,\\mathrm{tenure}+U\\), you want \\(\\mathrm{se}(\\hat\\beta_2)\\), the standard error of the exper coefficient. Which regression gives \\(R_j^2\\)? The regression of wage on exper alone: lm(wage ~ exper) The regression of exper on wage: lm(exper ~ wage) The regression of exper on educ and tenure: lm(exper ~ educ + tenure) The regression of wage on educ, exper and tenure (its own \\(R^2\\))",
+  "The standard error of the regression is \\(\\hat\\sigma=\\sqrt{\\mathrm{SSR}/(n-K-1)}\\). What does \\(\\hat\\sigma\\) estimate? The standard deviation of \\(\\hat\\beta_j\\) The \\(R^2\\) of the regression \\(\\sigma\\), the standard deviation of the error \\(U\\) The standard deviation of \\(Y\\)",
+  "A multiple regression with \\(K=2\\) independent variables, estimated on \\(n=42\\) observations, has \\(\\mathrm{SSR}=2,857\\). Find the standard error of the regression, \\(\\hat\\sigma\\). (round to the hundredths)",
+  "In a sample of \\(n=62\\) observations, the independent variable \\(X_j\\) has sample standard deviation \\(S_{X_j}=3.1\\). Find \\(\\mathrm{SST}_j\\). (round to the hundredths)",
+  "A multiple regression has \\(\\hat\\sigma=5.1\\). For the independent variable \\(X_j\\), \\(\\mathrm{SST}_j=363\\), and regressing \\(X_j\\) on the other independent variables gives \\(R_j^2=0.74\\). Find \\(\\mathrm{se}(\\hat\\beta_j)\\). (round to the hundredths)",
+  "Holding \\(\\hat\\sigma\\) and \\(\\mathrm{SST}_j\\) fixed, what happens to \\(\\mathrm{se}(\\hat\\beta_j)\\) as \\(R_j^2\\) gets close to 1 (that is, as \\(X_j\\) becomes nearly a linear function of the other independent variables)? It approaches \\(\\hat\\sigma\\). It shrinks toward 0. It does not change. It grows without bound (multicollinearity).",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Run reg <- lm(price ~ sqrft + bdrms + lotsize, data = hprice1). You will find the standard error of the bdrms coefficient by hand, so here \\(X_j\\) = bdrms. First, how many degrees of freedom does the regression have, \\(\\mathrm{df}=n-K-1\\)?",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Using the same regression reg, compute the standard error of the regression, \\(\\hat\\sigma=\\sqrt{\\mathrm{SSR}/\\mathrm{df}}\\). (round to the hundredths)",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Compute \\(\\mathrm{SST}_j\\) for \\(X_j\\) = bdrms, the total variation of bdrms around its mean. (round to the hundredths)",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Compute \\(R_j^2\\) for \\(X_j\\) = bdrms: the \\(R^2\\) from regressing bdrms on the other independent variables. (round to the hundredths)",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Put the pieces together: compute \\(\\mathrm{se}(\\hat\\beta_j)=\\hat\\sigma/\\sqrt{\\mathrm{SST}_j\\,(1-R_j^2)}\\) for the bdrms coefficient. (round to the hundredths)",
+  "Data: hprice1 (price = house price in thousands of dollars; sqrft = size of the house in square feet; bdrms = number of bedrooms; lotsize = size of the lot in square feet). Now the quick way. In summary(reg)$coefficients, the \"Std. Error\" column holds every standard error. What is the standard error of the bdrms coefficient there? (It should match problem 12.) (round to the hundredths)",
+  "Print summary(reg). Near the bottom is a line \"Residual standard error: ... on 84 degrees of freedom\". Which of your answers does it match? None of them Problem 9 (\\(\\hat\\sigma\\)), and its degrees of freedom match problem 8 Problem 12 (the standard error of the bdrms coefficient) Problem 10 (\\(\\mathrm{SST}_j\\))",
+  "A warning about missing data. Some datasets have missing values (NA). lm() silently drops every row with an NA in any variable of the regression. Suppose \\(Y\\) (or another independent variable) has missing values but \\(X_j\\) does not, and you compute \\(\\mathrm{SST}_j\\) by hand from all the rows of \\(X_j\\). What happens? Your hand-computed standard error can differ from summary(reg), because \\(\\mathrm{SST}_j\\) uses rows the regression dropped. Compute every piece on the same rows the regression used. Only \\(R^2\\) is affected, never the standard errors. R stops with an error, so you notice right away. Nothing: missing values never change any statistic."))
