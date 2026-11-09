@@ -4,14 +4,14 @@
 # It does 3 things and prints a checklist at the end:
 #   1. installs the packages exam2.R can use
 #   2. turns on RStudio settings that catch typing mistakes
-#   3. adds "Exam II" entries to RStudio's Addins menu (fill-in form, numbers, ASK)
+#   3. adds "Exam II" entries to RStudio's Addins menu (numbers, ASK)
 # Safe to run again. Nothing here changes exam2.R.
 # =======================================================================
 
 done <- c()
 
 # ---- 1. packages -------------------------------------------------------
-pk <- c("wooldridge", "rstudioapi", "datapasta", "clipr", "shiny", "miniUI")
+pk <- c("wooldridge", "rstudioapi", "datapasta", "clipr")
 need <- pk[!vapply(pk, requireNamespace, TRUE, quietly = TRUE)]
 if (length(need)) {
   cat("Installing:", paste(need, collapse = ", "), "\n")
@@ -40,9 +40,9 @@ if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable())
 # ---- 3. Addins menu entries ----------------------------------------------
 pkgdir <- file.path(tempdir(), "exam2tools"); unlink(pkgdir, recursive = TRUE)
 dir.create(file.path(pkgdir, "R"), recursive = TRUE); dir.create(file.path(pkgdir, "inst", "rstudio"), recursive = TRUE)
-writeLines(c("Package: exam2tools", "Title: Addins for exam2.R", "Version: 1.0", "Description: Opens FORM(), NUMS() and ASK() from exam2.R.",
+writeLines(c("Package: exam2tools", "Title: Addins for exam2.R", "Version: 1.0", "Description: Opens NUMS() and ASK() from exam2.R.",
              "License: MIT", "Encoding: UTF-8", "Imports: rstudioapi"), file.path(pkgdir, "DESCRIPTION"))
-writeLines("export(form_addin, nums_addin, ask_addin)", file.path(pkgdir, "NAMESPACE"))
+writeLines("export(nums_addin, ask_addin)", file.path(pkgdir, "NAMESPACE"))
 writeLines(c(
   "get_fun <- function(name) {",
   "  f <- get0(name, envir = globalenv(), mode = 'function')",
@@ -52,20 +52,18 @@ writeLines(c(
   "      sys.source(d, envir = globalenv()); f <- get0(name, envir = globalenv(), mode = 'function') } }",
   "  if (is.null(f)) stop('Open exam2.R and run it once (Cmd+Shift+Enter / Ctrl+Shift+Enter), then try again.', call. = FALSE)",
   "  f }",
-  "form_addin <- function() get_fun('FORM')()",
   "nums_addin <- function() get_fun('NUMS')()",
   "ask_addin  <- function() get_fun('ASK')()"), file.path(pkgdir, "R", "addins.R"))
 writeLines(c(
-  "Name: Exam II: fill-in form", "Description: Copy the question first. Opens FORM() with the boxes filled from the question.", "Binding: form_addin", "Interactive: true", "",
   "Name: Exam II: numbers in the question", "Description: Copy the question first. Prints every number in it (NUMS()).", "Binding: nums_addin", "Interactive: false", "",
   "Name: Exam II: which block? (ASK)", "Description: Copy the question first. Runs ASK().", "Binding: ask_addin", "Interactive: false"),
   file.path(pkgdir, "inst", "rstudio", "addins.dcf"))
 ok <- tryCatch({ suppressWarnings(install.packages(pkgdir, repos = NULL, type = "source", quiet = TRUE)); requireNamespace("exam2tools", quietly = TRUE) },
                error = function(e) FALSE)
-done <- c(done, sprintf("Addins menu entries        %s", if (ok) "added (restart RStudio to see them)" else "could not be added (FORM() still works from the Console)"))
+done <- c(done, sprintf("Addins menu entries        %s", if (ok) "added (restart RStudio to see them)" else "could not be added (NUMS() and ASK() still work from the Console)"))
 
 cat("\n==================== SETUP CHECKLIST ====================\n", paste0("  ", done, "\n"),
     "=========================================================\n",
     "Next: restart RStudio (Session > Restart R is not enough: quit and reopen).\n",
-    "Then open exam2.R, run it once, and try:  FORM()   NUMS()   Addins > Exam II\n",
+    "Then open exam2.R, run it once, and try:  NUMS()   ASK()   Addins > Exam II\n",
     "Optional keyboard shortcut: Tools > Modify Keyboard Shortcuts > search 'Exam II'.\n", sep = "")
