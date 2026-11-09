@@ -216,6 +216,7 @@ CATALOG <- list(
   c("S4",  "SOLVER logs: prints the answer for all 4 log models + percent vs points", "log log-log log-level level-log percent units elasticity percentage points rises falls about"),
   c("S5",  "SOLVER probability: E[X], Var, sd(aX+b), Var(aX+bY), tables, Cor", "e[x] e[x^2] expected var(x) var(y) cov(x,y) sd(ax+b) joint distribution probability table cor(x,y) takes values with probabilities"),
   c("S6",  "SOLVER small sample: type x and y, get slope, intercept, residuals, R^2, cor ...", "sample x= y= regress by hand slope intercept residual observation predict sum sample standard deviation covariance correlation"),
+  c("S8",  "SOLVER quick formulas: mean from sum/n, slope dy/dx, a GIVEN line's fitted/residual/SSR, cov/var slope, intercept from means, Cov from E[XY], E[aX+bY+c]", "sum numbers mean first element remaining slope rises line fitted residual actual given line cov var intercept means e[xy] linear expectation constant"),
   c("S7",  "SOLVER equation: prediction, change, ybar, % change, exp() for logged y", "yhat equation predicted value change rises falls sample mean ybar means intercept percent dollars"),
   c("D0",  "Data: n, mean, sd, correlation of columns", "data how many sample n rows mean average correlation cor sd standard deviation columns min max minimum maximum largest smallest median fraction share proportion women dummy covariance variance"),
   c("D1",  "Data, simple lm: slope, prediction, change, R^2, residual of row, SSE/SSR/SST", "data run lm regress ols slope predicted prediction change rises from to r-squared percentage variation explained residual row sse ssr sst explained sum of squares"),
@@ -232,6 +233,7 @@ CATALOG <- list(
   c("D12", "Data: t-statistic, one-sided/two-sided test", "data t statistic test reject h0 null positive significant critical"),
   c("D13", "Data: REG() prints everything for one regression", "data regression everything all report"),
   c("D14", "Data: se of a multiple-regression coefficient by hand (sigma-hat, SST_j, R_j^2)", "data standard error by hand coefficient sigma-hat sst_j r_j^2 r2_j degrees of freedom df residual standard error other independent variables multiple"),
+  c("K19", "MC before Exam I: data types, population/sample, ceteris paribus, correlation vs causation, E/Var/Cov rules, SLR parts, fitted/residual, R commands", "cross-section time series panel population sample ceteris paribus correlation causation confounding expected value variance covariance constant dependent variable fitted residual over under predicted r command summary hist percentage point n-1"),
   c("K18", "MC: pieces of se(b_j): x_j, R_j^2 regression, sigma-hat, multicollinearity, NA rows", "x_j r_j^2 which regression gives sigma-hat estimate standard deviation of the error residual standard error matches missing values na grows without bound"),
   c("U1",  "x multiplied/divided by c: new slope", "x divided multiplied 1000 100 new slope percent decimal units"),
   c("U2",  "y multiplied by c: new slope/intercept", "y multiplied 1000 dollars cents new slope intercept units"),
@@ -337,6 +339,7 @@ GO <- function(tag) {
   has <- function(p) grepl(p, s, perl = TRUE)
   if (has("which regression gives|r\\W{0,3}_\\W{0,2}j\\W{0,4}2? measures|what is \\W{0,3}x\\W{0,3}_\\W{0,2}j|residual standard error.*which of your answers|warning about missing data"))
     return(list(bonus = c(K18 = 2.5), gate = "concept"))
+  if (has("what does the \\$ do|\\$ do\\?|quick snapshot|which r command")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
   ds <- .dataset_in(s)
   if (!is.na(ds)) {                                          # ---------- PART III: real data ----------
     q <- if (ds != "?") .strip_desc(s, ds) else s
@@ -379,11 +382,13 @@ GO <- function(tag) {
   if (has("\\bx\\s*=\\s*[\\[(]|x takes the values|x values") && has("sigma|error (standard deviation|variance)|ssr")) add(c("S2"), 1.6)
   if (has("correlation") && has("covariance|cov\\s*\\(|s_?\\{?xy")) add("S5", 1.8)
   if (has("lies exactly on|all .* on the (ols )?line|perfect(ly)? fit")) add("S1", 1.6)
+  if (has("var\\}\\s*\\(\\s*[xy]\\s*\\)\\s*=\\s*-?[0-9]|cov\\}\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=|sd\\}\\s*\\(\\s*x") && !has("var\\}\\s*\\(\\s*x\\s*\\)\\s*\\\\?\\)?\\.?\\s*find the ols|ols slope")) add("S5", 1.4)
   if (has("e\\s*[(\\[]\\s*x|e\\s*[(\\[]\\s*y|var\\s*\\(\\s*[xy]\\b\\s*\\)\\s*=\\s*-?[0-9]|cov\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=\\s*-?[0-9]|probabilit|joint (distribution|probability)|takes (the )?values|sd\\s*\\(\\s*-?[0-9]*\\s*x\\b|deviation of -?[0-9]*x|var\\[")) add(c("S5"), 1.6)
   if (has("\\bvif\\b|inflation|r_?j\\b|r_?j\\^2|regressing x_?[0-9] on (all )?the other|on all other explanatory")) add("V7", 1.8)
   if (has("times (larger|as large)|doubl|quadrupl|tripl|sample size (doubles|is)|sample were")) add(c("V6"), 1.4)
   nnum <- length(gregexpr("=\\s*-?[0-9]*\\.?[0-9]+", s)[[1]]) * grepl("=\\s*-?[0-9]*\\.?[0-9]+", s)
-  if (nnum >= 2 && has("delta|tilde|3\\.23|short regression|long regression|omit|leaving out|left out|bias")) add(c("B1", "B2"), 1.6)
+  if (nnum >= 2 && has("delta ?(1|tilde)|tilde|3\\.23|short regression|long regression|omit|leaving out|left out|bias|delta(?! ?(y|x|hat))")) add(c("B1", "B2"), 1.6)
+  if (num && has("delta ?(y|hat ?y)\\s*=|predicted change|change in y|delta y")) add("S7", 1.6)
   if (has("confidence interval")) add("T3", 1.6)
   ttest <- has("t[ -]?stat|\\bt\\s*=|critical|degrees of freedom|\\bdf\\b|p-value|h0|null|reject|significan|one-sided|two-sided|one-tailed")
   if (num && ttest) add(c("T1", "T2"), 1.7)
@@ -424,6 +429,9 @@ GO <- function(tag) {
   if (has("no bias|cause no|not biased|biased or not|uncorrelated with every|no effect on y") && !has("you add|adding|add an?\\b|include an?\\b")) add("K15", 1.9)
   if (!num && has("\\bblue\\b|gauss-markov|normality|mlr\\.?\\s*6|classical linear|t statistic measures|distribution of|p-value (means|is)|small p-value|statistically significant|reject h|when do you reject")) add("K16", 1.4)
   if (has("minimi[sz]e|least squares estimates|candidate lines")) add("K1", 1.6)
+  if (!num || has("which statement|true or false|is best|is:|equals:|means:|always:|represents:|measures:|because:"))
+    if (has("cross-section|time series|panel|population|ceteris paribus|causation|confound|\\$ do|summary\\(|r command|dividing by|is best described|independent, then|correlation (between two variables )?(is )?always|always lies|fitted value .* is:|residual .*(equals|means)|r\\^2 (is:|close)|decomposes|residuals .* always|dependent variable is|error term \\\\?\\(?u\\\\?\\)? represents|slope .* measures|estimate .* because|can be written as|ice-cream|ice cream|intercept .* affects the change|e\\[c\\]|expected value .* equals|variance of a random variable|compared with the covariance|point .*bar") && !has("exogenous|key assumption|unbiased|t statistic|e\\s*\\(\\s*u"))
+      { add("K19", 2.2); num <- FALSE }
   if (has("can cause (the )?ols( estimators?)? (to be )?biased|which (of the following )?(can )?cause.* bias")) add("K12", 3)
   if (has("would you expect|expect the (simple|multiple)") && has("\\bse\\b|standard error|variance")) add("K7", 2.2)
   if (has("add up to (one|1|100)|sum to (one|1|100)|must (one of .* )?be omitted|why must one")) add("K11", 2.4)
@@ -1161,6 +1169,7 @@ s5_C <- sum(s5_x * s5_y * s5_p) - s5_EXt * s5_EYt
 ans("table E[X]", s5_EXt); ans("table E[Y]", s5_EYt); ans("table E[XY]", sum(s5_x * s5_y * s5_p))
 ans("table Var(X)", s5_Vx); ans("table Var(Y)", s5_Vy)
 ans("table Cov(X,Y) = E[XY] - E[X]E[Y]", s5_C); ans("table Cor(X,Y)", s5_C / sqrt(s5_Vx * s5_Vy))
+ans("table E[X^2]", sum(s5_x^2 * s5_p)); ans("population slope beta1 = Cov(X,Y) / Var(X)", s5_C / s5_Vx)
 # >> PART D: ONE variable Y with values and probabilities
 s5_v  <- c(6, 14, 34)        # <-- CHANGE  the values Y takes
 s5_pv <- c(0.5, 0.3, 0.2)    # <-- CHANGE  their probabilities
@@ -1168,23 +1177,32 @@ s5_A  <- 3                   # <-- CHANGE  A in E[AY + B]
 s5_B  <- 4                   # <-- CHANGE  B in E[AY + B]
 part(sprintf("PART D: Y takes %s with probabilities %s", paste(s5_v, collapse = ", "), paste(s5_pv, collapse = ", ")))
 s5_E <- sum(s5_v * s5_pv)
-ans("E[Y]", s5_E); ans("Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
+ans("E[Y]", s5_E); ans("E[Y^2]", sum(s5_v^2 * s5_pv)); ans("Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
 ans(sprintf("E[%s]", fx(s5_A, s5_B, "Y")), s5_A * s5_E + s5_B)
 
 ## ======================================================================
 ## [S6] SMALL-SAMPLE OLS SOLVER: type x and y, get EVERYTHING ----
 ## LOOKS LIKE: "For x = (...), y = (...): slope? intercept? residual of obs 3? predict at x = 5?
 ##   sum x*uhat? R^2? sample sd / cov / cor?"   (Exam I Q16-17, 22-23, 28; PS8 #6, #8)
+## ONLY x given ("sample sd of x = (5, 5, 2, 12)", "sum of x", "mean of x")? Put NA in s6_y.
 ## DEFAULT (Exam I Q23): residual of observation 3 = 1.80
 # >> YOUR NUMBERS: change these lines
 s6_x  <- c(4, 6, 7, 8, 10)   # <-- CHANGE  the x values
-s6_y  <- c(4, 6, 7, 1, 8)    # <-- CHANGE  the y values (same order)
+s6_y  <- c(4, 6, 7, 1, 8)    # <-- CHANGE  the y values (same order), or NA if only x is given
 s6_i  <- 3                   # <-- CHANGE  which observation (for its fitted value / residual)
 s6_x0 <- 7                   # <-- CHANGE  x to predict at
 # >> ANSWERS: nothing to change below
+s6_hasy <- length(s6_y) == length(s6_x) && !anyNA(s6_y)
+if (!s6_hasy) {
+  if (!all(is.na(s6_y))) cat(sprintf("!! s6_y has %d numbers but s6_x has %d: showing x only. Comma instead of a decimal point?\n", length(s6_y), length(s6_x)))
+  blk("S6", sprintf("x only: x = (%s)", paste(s6_x, collapse = ", ")))
+  ans("n (how many x's)", length(s6_x)); ans("sum of x", sum(s6_x)); ans("mean of x", mean(s6_x))
+  ans("sample variance of x (divide by n - 1)", var(s6_x)); ans("sample sd of x", sd(s6_x))
+} else {
 s6_reg <- lm(s6_y ~ s6_x); s6_b <- coef(s6_reg)
 blk("S6", sprintf("x = (%s), y = (%s)", paste(s6_x, collapse = ", "), paste(s6_y, collapse = ", ")))
 part("the sample")
+ans("sum of x", sum(s6_x)); ans("sum of y", sum(s6_y))
 ans("mean of x", mean(s6_x)); ans("mean of y", mean(s6_y))
 ans("sd of x", sd(s6_x)); ans("sd of y", sd(s6_y)); ans("variance of x", var(s6_x)); ans("variance of y", var(s6_y))
 ans("covariance of x and y", cov(s6_x, s6_y)); ans("correlation of x and y", cor(s6_x, s6_y))
@@ -1199,6 +1217,7 @@ part("always-true properties and sums of squares")
 ans("sum of residuals (always 0)", sum(resid(s6_reg))); ans("sum of x * residual (always 0)", sum(s6_x * resid(s6_reg)))
 ans("SST (total)", sum((s6_y - mean(s6_y))^2)); ans("SSE (explained)", sum((fitted(s6_reg) - mean(s6_y))^2))
 ans("SSR (residual)", sum(resid(s6_reg)^2)); ans("R^2", summary(s6_reg)$r.squared)
+}
 
 ## ======================================================================
 ## [S7] EQUATION SOLVER: prediction, change, y-bar, and the log(y) versions ----
@@ -1239,6 +1258,60 @@ ans("% change in y = 100 x CHANGE", 100 * s7_chg)
 ans("predicted y in levels/$ = exp(PREDICTION)", exp(s7_pred))
 
 ## ======================================================================
+## ======================================================================
+## [S8] QUICK FORMULAS FROM BEFORE EXAM I: means, slopes, a GIVEN line, Cov/Cor, E[ ] rules ----
+## LOOKS LIKE: "31 numbers sum to 100: mean?" / "19 numbers: first is 49, the rest are 5: mean?"
+##   / "x rises by 3, y rises by 27: slope?" / "y-hat = 1 + 0.8x, x = 12, actual y = 19: residual?"
+##   / "cov(x,y) = 4, var(x) = 7: OLS slope?" / "y-bar = 10, x-bar = 8, slope 0.7: intercept?"
+##   / "E[XY] = 17, E[X] = 1, E[Y] = 3: Cov?" / "Cov = -1: Cov(3X + 2, 5Y - 1)?" / "E[aX + bY - c]?"
+##   (PS2-PS6, Quizzes 2-6, Exam I Q13)   Type what's GIVEN, leave the rest NA. Only lines it can compute print.
+## Lists of x and y -> [S6]. E[X], Var, probability tables -> [S5]. % change, percentage points -> [S4].
+# >> YOUR NUMBERS: type what's GIVEN, leave the rest NA
+s8_sum    <- 100       # <-- CHANGE  MEAN: the sum of the numbers ...
+s8_n      <- 31        # <-- CHANGE  ... and how many there are
+s8_vals   <- c(49, 5)  # <-- CHANGE  MEAN with repeats: the distinct values ...
+s8_counts <- c(1, 18)  # <-- CHANGE  ... and how many times each appears (same order)
+s8_dy     <- 27        # <-- CHANGE  SLOPE of a line: change in y ...
+s8_dx     <- 3         # <-- CHANGE  ... for this change in x
+s8_b0     <- 1         # <-- CHANGE  a GIVEN line y-hat = b0 + b1 x: intercept
+s8_b1     <- 0.8       # <-- CHANGE  ... slope
+s8_x      <- 12        # <-- CHANGE  ... x value(s), e.g. c(3, 5, 9)
+s8_y      <- 19        # <-- CHANGE  ... actual y value(s) (for residuals / SSR), or NA
+s8_cxy    <- NA        # <-- CHANGE  OLS slope / correlation: cov(x, y) ...
+s8_vx     <- NA        # <-- CHANGE  ... var(x)   (slope = cov / var)
+s8_sx     <- NA        # <-- CHANGE  ... OR sd(x) and
+s8_sy     <- NA        # <-- CHANGE  ... sd(y)    (correlation = cov / (sd x * sd y))
+s8_ybar   <- NA        # <-- CHANGE  OLS intercept = y-bar - slope x x-bar: y-bar ...
+s8_xbar   <- NA        # <-- CHANGE  ... x-bar (slope: s8_b1, or computed from cov / var)
+s8_EXY    <- NA        # <-- CHANGE  Cov = E[XY] - E[X]E[Y]: E[XY] ...
+s8_EX     <- NA        # <-- CHANGE  ... E[X]
+s8_EY     <- NA        # <-- CHANGE  ... E[Y]
+s8_a      <- NA        # <-- CHANGE  E[aX + bY + c] and Cov(aX + .., bY + ..): a (number in front of X)
+s8_b      <- NA        # <-- CHANGE  ... b (number in front of Y; a minus goes INTO it)
+s8_c      <- NA        # <-- CHANGE  ... c (the constant; "- 7" -> -7; 0 if none)
+# >> ANSWERS: nothing to change below
+blk("S8", "quick formulas (only what you typed prints)")
+s8_ok <- function(...) all(!is.na(c(...)))
+if (s8_ok(s8_sum, s8_n)) ans(sprintf("mean = sum / n = %g / %g", s8_sum, s8_n), s8_sum / s8_n)
+if (s8_ok(s8_vals, s8_counts) && length(s8_vals) == length(s8_counts))
+  ans(sprintf("mean of %s (counts %s)", paste(s8_vals, collapse = ", "), paste(s8_counts, collapse = ", ")), sum(s8_vals * s8_counts) / sum(s8_counts))
+if (s8_ok(s8_dy, s8_dx)) ans(sprintf("slope = change in y / change in x = %g / %g", s8_dy, s8_dx), s8_dy / s8_dx)
+s8_slope <- if (s8_ok(s8_cxy, s8_vx)) s8_cxy / s8_vx else s8_b1
+if (s8_ok(s8_cxy, s8_vx)) ans(sprintf("OLS slope = cov / var(x) = %g / %g", s8_cxy, s8_vx), s8_slope)
+if (s8_ok(s8_cxy, s8_sx, s8_sy)) ans("correlation = cov / (sd(x) sd(y))", s8_cxy / (s8_sx * s8_sy))
+if (s8_ok(s8_ybar, s8_xbar, s8_slope)) ans(sprintf("OLS intercept = %g - %g x %g", s8_ybar, s8_slope, s8_xbar), s8_ybar - s8_slope * s8_xbar)
+if (s8_ok(s8_b0, s8_b1, s8_x)) {
+  s8_fit <- s8_b0 + s8_b1 * s8_x
+  for (k in seq_along(s8_x)) ans(sprintf("fitted y-hat at x = %g", s8_x[k]), s8_fit[k])
+  if (s8_ok(s8_y) && length(s8_y) == length(s8_x)) {
+    for (k in seq_along(s8_x)) ans(sprintf("residual at x = %g: y - y-hat = %g - %g", s8_x[k], s8_y[k], s8_fit[k]), s8_y[k] - s8_fit[k])
+    if (length(s8_x) > 1) ans("SSR for this line = sum of squared residuals", sum((s8_y - s8_fit)^2)) } }
+if (s8_ok(s8_b1, s8_dx)) ans(sprintf("change in y-hat = b1 x change in x = %g x %g (no b0)", s8_b1, s8_dx), s8_b1 * s8_dx)
+if (s8_ok(s8_EXY, s8_EX, s8_EY)) ans(sprintf("Cov = E[XY] - E[X]E[Y] = %g - %g x %g", s8_EXY, s8_EX, s8_EY), s8_EXY - s8_EX * s8_EY)
+if (s8_ok(s8_a, s8_EX)) ans(sprintf("E[aX + bY + c] = %g E[X] + %g E[Y] + %g", s8_a, if (is.na(s8_b)) 0 else s8_b, if (is.na(s8_c)) 0 else s8_c),
+                            s8_a * s8_EX + (if (s8_ok(s8_b, s8_EY)) s8_b * s8_EY else 0) + (if (is.na(s8_c)) 0 else s8_c))
+if (s8_ok(s8_a, s8_b, s8_cxy)) ans(sprintf("Cov(%gX + .., %gY + ..) = %g x %g x Cov  (added constants drop out)", s8_a, s8_b, s8_a, s8_b), s8_a * s8_b * s8_cxy)
+
 ## SPECIALIZED BLOCKS: one formula each. The solvers above do all of these too.
 
 ## ======================================================================
@@ -1641,6 +1714,35 @@ pick("[K18] R_j^2 -> 1", "se grows without bound (multicollinearity)")
 pick("[K18] missing data (NA)", "compute every piece on the rows the regression used, or the hand se won't match summary()")
 pick("[K18] Var(X + b), population vs sample", "Var(X + b) = Var(X). mu_Y is a fixed number; Y-bar is a random variable")
 
+## [K19] BEFORE EXAM I: definitions, rules, R commands (PS1-PS6, Quizzes 1-6) ----
+pick("[K19] econometrics combines", "data + economics + STATISTICS")
+pick("[K19] ceteris paribus", "holding all other factors fixed")
+pick("[K19] correlation vs causation", "correlation = move together; causation = changing one CHANGES the other. Correlation never proves causation (False)")
+pick("[K19] ice cream & drownings / police & crime", "a confounding third variable (summer / city size) drives both")
+pick("[K19] data types", "one time, many units = CROSS-SECTION; one unit, many times = TIME SERIES; many units x many times = PANEL")
+pick("[K19] population / sample", "POPULATION = whole group we care about; SAMPLE = the part we observe. We use the sample to learn about the population (True)")
+pick("[K19] parameter vs statistic", "mu_Y, beta_1 = fixed population numbers (unknown, so we ESTIMATE them); Y-bar, b1-hat = random sample statistics")
+pick("[K19] percent vs percentage point", "4% -> 6%: +2 percentage POINTS, which is a 50% increase")
+pick("[K19] sample variance divides by", "n - 1  (R: var(x); sd(x) = sqrt, also n - 1: True)")
+pick("[K19] covariance sign", "rise and fall together -> POSITIVE; opposite -> negative")
+pick("[K19] correlation", "always between -1 and 1; unitless; cor(x, y) in R; Cor = Cov / (sd x sd y)")
+pick("[K19] E[X] (discrete)", "sum of each value x its probability; E[X^2] = sum of each SQUARED value x its probability")
+pick("[K19] E[c], E[aX + b]", "E[c] = c; E[aX + b] = a E[X] + b; E[aX + bY] = a E[X] + b E[Y]")
+pick("[K19] Var(X)", "E[X^2] - (E[X])^2;  Var(aX + b) = a^2 Var(X);  Var(X + b) = Var(X);  sd = sqrt(Var)")
+pick("[K19] independent X, Y", "Cov(X,Y) = 0 and Var(X + Y) = Var(X) + Var(Y)")
+pick("[K19] E[Y | X = x]", "the average of Y among observations with X = x")
+pick("[K19] Y = b0 + b1 X + U", "Y = DEPENDENT; X = independent; U = factors OTHER than X; b1 = ceteris paribus effect of X on Y; b0 + b1X = part of Y explained by X (E[Y|X])")
+pick("[K19] zero conditional mean E[U|X] = 0", "the average of U does not depend on X  -> E[Y|X=x] = b0 + b1 x")
+pick("[K19] why ESTIMATE b0, b1", "they are population quantities; we only observe a sample")
+pick("[K19] OLS slope / intercept", "b1-hat = cov(x,y) / var(x);  b0-hat = y-bar - b1-hat x-bar")
+pick("[K19] fitted / residual", "y-hat = PREDICTION at X_i;  residual = y - y-hat (actual - fitted). Positive residual = UNDER-predicted; negative = OVER-predicted")
+pick("[K19] OLS facts", "residuals sum to 0; (x-bar, y-bar) is ON the line; SST = SSE + SSR; R^2 = share of variation explained")
+pick("[K19] R^2 near 0", "the line explains little of the variation in y: common, and the regression is still valid")
+pick("[K19] intercept and a change", "b0 does NOT affect the change in y (False): change in y = b1 x change in x")
+pick("[K19] beta1 in y = b0 + b1 X1 + b2 X2", "the effect of X1 on y, holding X2 fixed")
+pick("[K19] R commands", "wage1$wage = the column wage from wage1; summary() = snapshot of every variable; mean(x) = sum(x)/length(x) (True); center, spread, shape = mean(), sd(), hist()")
+pick("[K19] AI rule", "AI writes, you VERIFY")
+
 ## [K17] SCENARIO BANK: the exam re-tells the same idea with new stories. Match the PATTERN. ----
 ## OVB direction = sign(omitted affects y) x sign(omitted moves with x). Same -> UP, opposite -> DOWN.
 pick("[K17] ability, wage ~ educ", "ability raises wage (+), more able get more educ (+) -> UP")
@@ -1906,7 +2008,195 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "D7",
   "D7",
   "B3",
-  "B3"),
+  "B3",
+  # Before Exam I: PS1-PS7, Quizzes 1-6, rest of Exam I
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S5",
+  "S8",
+  "D0",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S6",
+  "S6",
+  "S8",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S4",
+  "K19",
+  "K19",
+  "K19",
+  "S6",
+  "S6",
+  "S8",
+  "S7",
+  "S7",
+  "S7",
+  "S7",
+  "S8",
+  "S4",
+  "S4",
+  "S6",
+  "S6",
+  "S6",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S6",
+  "S6",
+  "S6",
+  "S6",
+  "S5",
+  "S6",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S5",
+  "S8",
+  "S8",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S8",
+  "S5",
+  "S8",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "K19",
+  "K19",
+  "K19",
+  "K2",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S8",
+  "S8",
+  "S6",
+  "S6",
+  "S7",
+  "S6",
+  "S5",
+  "S7",
+  "S5",
+  "S5",
+  "S5",
+  "S6",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "K19",
+  "S6",
+  "S6",
+  "S6",
+  "S7",
+  "S8",
+  "S7",
+  "S8",
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "S1",
+  "D0",
+  "D0",
+  "D0",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D1",
+  "D0",
+  "S6",
+  "S6",
+  "S8",
+  "S6",
+  "S7",
+  "S7",
+  "S7",
+  "S4",
+  "S6",
+  "S6",
+  "S6",
+  "K19",
+  "S6",
+  "S6",
+  "S6",
+  "S6",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S8",
+  "S5",
+  "S5",
+  "S8",
+  "S5",
+  "S5",
+  "S5",
+  "S5",
+  "S8",
+  "S8",
+  "S6",
+  "S6",
+  "S5",
+  "S7",
+  "S5",
+  "S5",
+  "K19",
+  "S6",
+  "S6",
+  "S6",
+  "S7",
+  "S8",
+  "S7",
+  "S8",
+  "S1"),
 text = c(
   "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
   "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
@@ -2155,4 +2445,192 @@ text = c(
   "Data: crime1. What percentage of the variation in narr86 is explained by pcnv, ptime86 and qemp86?",
   "Data: crime1. Add avgsen (average sentence length from prior convictions): run lm(narr86 ~ pcnv + avgsen + ptime86 + qemp86, data = crime1). What is the coefficient on avgsen?",
   "log(wage) = b0 + b1 educ + b2 abil + u, but ability is not in the data, so we estimate the simple regression of log(wage) on educ. Ability raises wages and is positively correlated with education. Is the simple-regression slope on educ likely too high or too low?",
-  "avgscore = b0 + b1 expend + b2 povrate + u. The poverty rate is not observed, so we regress avgscore on expend alone. Poverty lowers scores, and expend is negatively correlated with povrate. What is the likely direction of the bias in the simple-regression slope on expend?"))
+  "avgscore = b0 + b1 expend + b2 povrate + u. The poverty rate is not observed, so we regress avgscore on expend alone. Poverty lowers scores, and expend is negatively correlated with povrate. What is the likely direction of the bias in the simple-regression slope on expend?",
+  # Before Exam I: PS1-PS7, Quizzes 1-6, rest of Exam I
+  "The closing price of one company's stock, recorded every trading day from 2015 to 2024, is an example of:",
+  "Across U.S. cities, the number of police officers is positively correlated with the number of crimes. Which statement is best?",
+  "Match each part of the simple linear regression model \\(Y=\\beta_0+\\beta_1X+U\\) to its name. (One name is not used.)",
+  "In an OLS regression, observation \\(i\\) has fitted value \\(\\hat Y_i=12\\) and residual \\(\\hat U_i=-3\\). Which statement is correct?",
+  "Consider the population of new cars sold in the U.S. Which is larger: \\(E[\\text{price}\\mid\\text{make}=\\text{Toyota}]\\) or \\(E[\\text{price}\\mid\\text{make}=\\text{Rolls-Royce}]\\)?",
+  "Consider the population of U.S. residents. Which is larger: \\(\\mathrm{Var}(\\text{annual income}\\mid\\text{age}=10)\\) or \\(\\mathrm{Var}(\\text{annual income}\\mid\\text{age}=40)\\)?",
+  "A regression of house price on square footage has \\(R^2=0.62\\). Which statement is correct?",
+  "The sample covariance between annual income (in dollars) and years of education is 3,200, and their sample correlation is 0.45. If income is measured in thousands of dollars instead, what is the sample correlation between income and education? (round to the hundredths) Hint: properties of correlation.",
+  "A vector of 19 numbers has first element 49, and each of the remaining elements equals 5. Find the sample mean. (round to the hundredths)",
+  "Data: ceosal1 ( salary = a CEO's 1990 salary in thousands of dollars; roe = the firm's return on equity, in percent). How many CEOs are in the sample?",
+  "Econometrics combines data, economics, and which of the following?",
+  "Ice-cream sales and drownings both rise in the summer, so they are positively correlated. What is the best explanation?",
+  "In economics, \"ceteris paribus\" means:",
+  "True or False: a strong correlation between education and wages proves that more education causes higher wages.",
+  "What type of data is this: the U.S. unemployment rate recorded each year from 2000 to 2024?",
+  "What type of data is this: wages and years of education for 526 workers, all measured in 1976?",
+  "What type of data is this: GDP for all 50 states, recorded every year from 2015 to 2020?",
+  "The whole group we care about, but usually cannot fully observe, is called the ______. (one word)",
+  "The part of that group we actually collect data on is called the ______. (one word)",
+  "True or False: we use the sample we have in order to learn about the larger population we care about.",
+  "The three numbers 3, 7, and 5 add up to what total?",
+  "What is the mean (average) of these four numbers: 2, 5, 7, and 10?",
+  "A set of 5 numbers adds up to 90. What is their mean (average)?",
+  "True or False: in R, mean(x) gives the same result as sum(x)/length(x).",
+  "In the R expression wage1$wage, what does the $ do?",
+  "Which R command gives a quick snapshot (minimum, mean, maximum, and so on) of every variable in a dataset?",
+  "Complete the course's rule for using AI: \"AI writes, you ______.\" (one word)",
+  "Which of the following compute the mean of a numeric vector x in R? (Select all that apply.)",
+  "Which statement is correct?",
+  "In R, which set of commands describes a variable's center, spread, and shape (in that order)?",
+  "In economics, ceteris paribus means:",
+  "For \\(y=\\beta_0+\\beta_1 X_1+\\beta_2 X_2\\), the coefficient \\(\\beta_1\\) is:",
+  "An interest rate rises from 4% to 6%. Which statement is correct?",
+  "When we compute the SAMPLE variance, we divide the sum of squared deviations from the mean by:",
+  "If two variables tend to rise and fall together, their sample covariance \\(S_{xy}\\) is:",
+  "True or False: in \\(y=\\beta_0+\\beta_1 x\\), the intercept \\(\\beta_0\\) affects the change \\(\\Delta y\\) when \\(x\\) changes.",
+  "Find \\(\\sum_{i=1}^{3} x_i\\) for \\(x=(5, 1, 4)\\).",
+  "The sample mean is \\(\\bar{x}=\\frac{1}{n}\\sum_{i=1}^{n}x_i\\). Find \\(\\bar{x}\\) for \\(x=(7, 11, 4)\\).",
+  "A set of \\(31\\) numbers sums to \\(100\\). Using \\(\\bar{x}=\\frac{1}{n}\\sum x_i\\), find the mean.",
+  "For \\(y=\\beta_0+\\beta_1 x\\), a change gives \\(\\Delta y=\\beta_1\\,\\Delta x\\). With \\(\\beta_0=7\\), \\(\\beta_1=8\\), and \\(\\Delta x=4\\), find \\(\\Delta y\\).",
+  "For \\(y=\\beta_0+\\beta_1 x\\) with \\(\\beta_0=1\\) and \\(\\beta_1=7\\), predict \\(y\\) at \\(x=1\\).",
+  "For \\(y=\\beta_0+\\beta_1 X_1+\\beta_2 X_2\\), \\(\\Delta y=\\beta_1\\Delta X_1+\\beta_2\\Delta X_2\\). With \\(\\beta_0=9\\), \\(\\beta_1=8\\), \\(\\beta_2=8\\), \\(\\Delta X_1=4\\), \\(\\Delta X_2=-1\\), find \\(\\Delta y\\).",
+  "For \\(y=\\beta_0+\\beta_1 X_1+\\beta_2 X_2+\\beta_3 X_3\\), \\(\\Delta y=\\beta_1\\Delta X_1+\\beta_2\\Delta X_2+\\beta_3\\Delta X_3\\). With \\(\\beta_1=6\\), \\(\\beta_2=3\\), \\(\\beta_3=4\\), \\(\\Delta X_1=-1\\), \\(\\Delta X_2=-3\\), \\(\\Delta X_3=-1\\), find \\(\\Delta y\\).",
+  "On a line, when \\(x\\) increases by \\(3\\), \\(y\\) increases by \\(27\\). Find the slope \\(\\beta_1=\\dfrac{\\Delta y}{\\Delta x}\\). (round to the hundredths)",
+  "Percent change is \\(\\%\\Delta x=100\\cdot\\dfrac{x_{\\text{new}}-x_{\\text{old}}}{x_{\\text{old}}}\\). Find it when \\(x\\) goes from \\(53\\) to \\(79\\). (round to the hundredths)",
+  "A rate goes from \\(3\\)% to \\(15\\)%. What is the change in percentage POINTS?",
+  "Sample variance is \\(S_x^2=\\frac{1}{n-1}\\sum(x_i-\\bar{x})^2\\). Compute it for \\(x=(3, 4, 5)\\). (round to the hundredths)",
+  "Sample sd is \\(S_x=\\sqrt{S_x^2}\\). Compute it for \\(x=(9, 2, 2)\\). (round to the hundredths)",
+  "Sample covariance is \\(S_{xy}=\\frac{1}{n-1}\\sum(x_i-\\bar{x})(y_i-\\bar{y})\\). Compute it for \\(x=(2, 2, 0)\\) and \\(y=(4, 4, 2)\\). (round to the hundredths)",
+  "The SAMPLE variance divides the sum of squared deviations from the mean by:",
+  "Which R command computes the SAMPLE variance of a numeric vector x?",
+  "Which R command computes the correlation between numeric vectors x and y?",
+  "The correlation between two variables is always:",
+  "For a discrete random variable \\(X\\), the expected value \\(E[X]\\) equals:",
+  "For a discrete random variable \\(X\\), \\(E[X^2]\\) equals:",
+  "True or False: in R, sd(x) gives the SAMPLE standard deviation (dividing by \\(n-1\\)).",
+  "The sample mean is \\(\\bar{x}=\\frac{1}{n}\\sum x_i\\). Find \\(\\bar{x}\\) for \\(x=(7, 8, 6)\\). (round to the hundredths)",
+  "The sample variance is \\(S_x^2=\\frac{1}{n-1}\\sum(x_i-\\bar{x})^2\\). Compute it for \\(x=(8, 6, 7)\\). (round to the hundredths)",
+  "The sample standard deviation is \\(S_x=\\sqrt{S_x^2}\\). Compute it for \\(x=(5, 6, 6)\\). (round to the hundredths)",
+  "The sample covariance is \\(S_{xy}=\\frac{1}{n-1}\\sum(x_i-\\bar{x})(y_i-\\bar{y})\\). Compute it for \\(x=(2, 4, 1)\\), \\(y=(6, 6, 3)\\). (round to the hundredths)",
+  "Sample correlation is \\(\\rho=\\dfrac{S_{xy}}{S_x\\,S_y}\\). With \\(S_{xy}=4\\), \\(S_x=3\\), \\(S_y=2\\), find \\(\\rho\\). (round to the hundredths)",
+  "Compute the sample correlation \\(\\rho=\\dfrac{S_{xy}}{S_x S_y}\\) directly from the data \\(x=(3, 4, 7)\\), \\(y=(3, 6, 7)\\). (In R: cor(x, y). Round to the hundredths)",
+  "A fair coin gives value \\(9\\) on heads and \\(10\\) on tails (each with probability \\(\\tfrac12\\)). Find \\(E[X]\\). (round to the hundredths)",
+  "For the fair coin with values \\(8\\) (heads) and \\(2\\) (tails), find \\(E[X^2]\\). (round to the hundredths)",
+  "A random variable \\(X\\) takes the values \\(2\\), \\(1\\), \\(1\\), each with probability \\(\\tfrac13\\). Find \\(E[X]\\). (round to the hundredths)",
+  "For \\(X\\) taking values \\(6\\), \\(2\\), \\(5\\), each with probability \\(\\tfrac13\\), find \\(E[X^2]\\). (round to the hundredths)",
+  "A random variable \\(X\\) equals \\(2\\) with probability \\(\\frac{5}{10}\\), and equals \\(3\\) with probability \\(\\frac{10-5}{10}\\). Find \\(E[X]\\). (round to the hundredths)",
+  "For the same \\(X\\) -- value \\(0\\) with probability \\(\\frac{5}{10}\\), value \\(4\\) with probability \\(\\frac{10-5}{10}\\) -- find \\(E[X^2]\\). (round to the hundredths)",
+  "A random variable \\(X\\) takes values \\(6\\), \\(7\\), \\(6\\) with probabilities \\(0.2,\\,0.5,\\,0.3\\). Find \\(E[X]\\). (round to the hundredths)",
+  "For \\(X\\) taking values \\(2\\), \\(2\\), \\(7\\) with probabilities \\(0.2,\\,0.5,\\,0.3\\), find \\(E[X^2]\\). (round to the hundredths)",
+  "For any constant \\(c\\), the expected value \\(E[c]\\) equals:",
+  "If \\(X\\) and \\(Y\\) are independent, then \\(\\mathrm{Cov}(X,Y)\\) equals:",
+  "The correlation \\(\\mathrm{Cor}(X,Y)\\) always lies:",
+  "The variance of a random variable \\(X\\) equals:",
+  "Compared with the covariance, the correlation is:",
+  "\\(E[Y \\mid X = x]\\) is best described as:",
+  "If \\(X\\) and \\(Y\\) are independent, then \\(\\mathrm{Var}(X+Y)\\) equals:",
+  "Expectation is linear: \\(E[aX+b]=a\\,E[X]+b\\). Given \\(E[X]=5\\), \\(a=5\\), and \\(b=4\\), find \\(E[aX+b]\\). (round to the hundredths)",
+  "Given \\(E[X]=8\\), \\(E[Y]=3\\), \\(a=2\\), and \\(b=2\\), find \\(E[aX+bY]=a\\,E[X]+b\\,E[Y]\\). (round to the hundredths)",
+  "Given \\(E[X]=3\\), \\(E[Y]=4\\), find \\(E[aX+bY-c]=a\\,E[X]+b\\,E[Y]-c\\) with \\(a=4\\), \\(b=5\\), \\(c=7\\). (round to the hundredths)",
+  "Given \\(E[X]=4\\) and \\(E[X^2]=83\\), find \\(\\mathrm{Var}(X)=E[X^2]-(E[X])^2\\). (round to the hundredths)",
+  "A variance property: \\(\\mathrm{Var}(aX+b)=a^2\\,\\mathrm{Var}(X)\\). Given \\(\\mathrm{Var}(X)=4\\) and \\(a=2\\), find \\(\\mathrm{Var}(aX+b)\\). (round to the hundredths)",
+  "The standard deviation is \\(\\mathrm{sd}(X)=\\sqrt{\\mathrm{Var}(X)}\\). Given \\(\\mathrm{Var}(X)=10\\), find \\(\\mathrm{sd}(X)\\). (round to the hundredths)",
+  "If \\(X\\) and \\(Y\\) are independent, \\(\\mathrm{Var}(X+Y)=\\mathrm{Var}(X)+\\mathrm{Var}(Y)\\). Given \\(\\mathrm{Var}(X)=6\\) and \\(\\mathrm{Var}(Y)=6\\), find \\(\\mathrm{Var}(X+Y)\\). (round to the hundredths)",
+  "Covariance is \\(\\mathrm{Cov}(X,Y)=E[XY]-E[X]\\,E[Y]\\). Given \\(E[XY]=17\\), \\(E[X]=1\\), \\(E[Y]=3\\), find \\(\\mathrm{Cov}(X,Y)\\). (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) take the paired values \\((1,2), (0,2), (0,1)\\), each pair equally likely (probability \\(\\tfrac13\\)). Find \\(\\mathrm{Cov}(X,Y)=E[XY]-E[X]\\,E[Y]\\). (round to the hundredths)",
+  "A covariance property: \\(\\mathrm{Cov}(a_1 X+b_1,\\; a_2 Y+b_2)=a_1 a_2\\,\\mathrm{Cov}(X,Y)\\). Given \\(\\mathrm{Cov}(X,Y)=-1\\), \\(a_1=3\\), \\(a_2=5\\) (and any constants \\(b_1,b_2\\)), find \\(\\mathrm{Cov}(a_1 X+b_1,\\,a_2 Y+b_2)\\). (round to the hundredths)",
+  "Correlation is \\(\\mathrm{Cor}(X,Y)=\\dfrac{\\mathrm{Cov}(X,Y)}{\\mathrm{sd}(X)\\,\\mathrm{sd}(Y)}\\). Given \\(\\mathrm{Cov}(X,Y)=3\\), \\(\\mathrm{sd}(X)=3\\), \\(\\mathrm{sd}(Y)=3\\), find \\(\\mathrm{Cor}(X,Y)\\). (round to the hundredths)",
+  "Variance and covariance combine as \\(\\mathrm{Var}(aX+bY)=a^2\\mathrm{Var}(X)+b^2\\mathrm{Var}(Y)+2ab\\,\\mathrm{Cov}(X,Y)\\). Given \\(\\mathrm{Var}(X)=6\\), \\(\\mathrm{Var}(Y)=5\\), \\(\\mathrm{Cov}(X,Y)=0\\), \\(a=3\\), \\(b=3\\), find \\(\\mathrm{Var}(aX+bY)\\). (round to the hundredths)",
+  "Among the observations with \\(X=x\\), the \\(Y\\) values are \\(1, 3, 5, 10\\). Find \\(E[Y\\mid X=x]\\) (the subgroup average). (round to the hundredths)",
+  "Given \\(X=x\\), \\(Y\\) takes values \\(9, 9, 9\\) with probabilities \\(0.2,\\,0.3,\\,0.5\\). Find \\(E[Y\\mid X=x]\\). (round to the hundredths)",
+  "Conditional expectation is also linear: \\(E[aY+b\\mid X=x]=a\\,E[Y\\mid X=x]+b\\). Given \\(E[Y\\mid X=x]=2\\), \\(a=3\\), \\(b=9\\), find \\(E[aY+b\\mid X=x]\\). (round to the hundredths)",
+  "In the simple linear regression model \\(Y=\\beta_0+\\beta_1 X+U\\), the DEPENDENT variable is:",
+  "In \\(Y=\\beta_0+\\beta_1 X+U\\), the error term \\(U\\) represents:",
+  "In \\(Y=\\beta_0+\\beta_1 X+U\\), the slope \\(\\beta_1\\) measures:",
+  "The zero conditional mean assumption \\(E[U\\mid X]=0\\) says:",
+  "Under the SLR model with \\(E[U\\mid X]=0\\), the conditional mean \\(E[Y\\mid X=x]\\) equals:",
+  "The OLS slope estimate \\(\\hat\\beta_1\\) can be written as:",
+  "We must ESTIMATE \\(\\beta_0,\\beta_1\\) (rather than compute them exactly) because:",
+  "In \\(Y=(\\beta_0+\\beta_1 X)+U\\), the term \\(\\beta_0+\\beta_1 X\\) is:",
+  "The OLS slope is \\(\\hat\\beta_1=\\dfrac{\\mathrm{cov}(x,y)}{\\mathrm{var}(x)}\\). Given \\(\\mathrm{cov}(x,y)=4\\) and \\(\\mathrm{var}(x)=7\\), find \\(\\hat\\beta_1\\). (round to the hundredths)",
+  "The OLS intercept is \\(\\hat\\beta_0=\\bar y-\\hat\\beta_1\\bar x\\). Given \\(\\bar y=10\\), \\(\\bar x=8\\), and slope \\(\\hat\\beta_1=7/10\\), find \\(\\hat\\beta_0\\). (round to the hundredths)",
+  "For the sample \\(x=(5,7,2)\\), \\(y=(12,7,12)\\), find the OLS slope \\(\\hat\\beta_1=\\dfrac{\\sum(x_i-\\bar x)(y_i-\\bar y)}{\\sum(x_i-\\bar x)^2}\\). (round to the hundredths)",
+  "For that same sample \\(x=(4,6,6)\\), \\(y=(5,8,2)\\), find the OLS intercept \\(\\hat\\beta_0=\\bar y-\\hat\\beta_1\\bar x\\). (round to the hundredths)",
+  "A fitted regression line is \\(\\hat y=\\hat\\beta_0+\\hat\\beta_1 x\\). With \\(\\hat\\beta_0=3\\) and \\(\\hat\\beta_1=4/10\\), find the predicted \\(\\hat y\\) at \\(x=12\\). (round to the hundredths)",
+  "For the sample \\(x=(6,8,6)\\), \\(y=(2,0,5)\\), fit the OLS line and predict \\(\\hat y\\) at \\(x=7\\). (round to the hundredths)",
+  "The notes' example is \\(E[\\text{colGPA}\\mid\\text{hsGPA}]=\\dfrac{15}{10}+\\dfrac{3}{10}\\cdot\\text{hsGPA}\\). Find the expected colGPA at \\(\\text{hsGPA}=36/10\\). (round to the hundredths)",
+  "In \\(\\text{wage}=\\beta_0+\\beta_1\\text{educ}+U\\) the estimated slope is \\(\\hat\\beta_1=6/10\\). Ceteris paribus, if educ rises by \\(2\\) year(s), by how much does predicted wage change? (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) have the joint probability distribution below. x y P(X=x, Y=y) 1 6 0.2 5 4 0.3 1 3 0.5 Find \\(E[X]\\). (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) have the joint probability distribution below. x y P(X=x, Y=y) 5 5 0.2 6 6 0.3 5 2 0.5 Find \\(\\mathrm{Cov}(X,Y)=E[XY]-E[X]E[Y]\\). (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) have the joint probability distribution below. x y P(X=x, Y=y) 3 7 0.2 1 0 0.3 6 0 0.5 The population regression slope is \\(\\beta_1=\\dfrac{\\mathrm{Cov}(X,Y)}{\\mathrm{Var}(X)}\\). Find \\(\\beta_1\\). (round to the hundredths)",
+  "Review (sample). For \\(x=(6,2,0)\\), \\(y=(5,6,2)\\), find the SAMPLE covariance \\(S_{xy}=\\frac{1}{n-1}\\sum(x_i-\\bar x)(y_i-\\bar y)\\). (round to the hundredths)",
+  "In OLS, the fitted value \\(\\hat Y_i = \\hat\\beta_0 + \\hat\\beta_1 X_i\\) is:",
+  "The OLS residual \\(\\hat U_i\\) equals:",
+  "A POSITIVE residual \\((\\hat U_i>0)\\) means OLS:",
+  "\\(R^2\\) is:",
+  "The total sum of squares decomposes as \\(\\mathrm{SST}=\\)",
+  "The sum of the OLS residuals \\(\\sum_i\\hat U_i\\) is always:",
+  "An \\(R^2\\) close to 0 means:",
+  "The point \\((\\bar X, \\bar Y)\\):",
+  "For the sample \\(x=(2,2,3)\\), \\(y=(2,2,4)\\), find the OLS slope \\(\\hat\\beta_1=\\dfrac{\\sum(X_i-\\bar X)(Y_i-\\bar Y)}{\\sum(X_i-\\bar X)^2}\\). (round to the hundredths)",
+  "For that same sample \\(x=(3,2,3)\\), \\(y=(7,0,10)\\), find the OLS intercept \\(\\hat\\beta_0=\\bar Y-\\hat\\beta_1\\bar X\\). (round to the hundredths)",
+  "For the sample \\(x=(5,6,8)\\), \\(y=(0,6,8)\\), fit the OLS line \\(\\hat y=\\hat\\beta_0+\\hat\\beta_1 x\\) and predict \\(\\hat y\\) at \\(x=3\\). (round to the hundredths)",
+  "A fitted line is \\(\\hat y=-3+\\dfrac{2}{10}\\,x\\). Find the fitted value \\(\\hat y\\) at \\(x=12\\). (round to the hundredths)",
+  "A fitted line is \\(\\hat y=1+\\dfrac{8}{10}\\,x\\). A person has \\(x=12\\) and actual \\(y=19\\). Find the residual \\(\\hat u=y-\\hat y\\). (round to the hundredths)",
+  "A fitted slope is \\(\\hat\\beta_1=\\dfrac{7}{10}\\). Using \\(\\Delta\\hat y=\\hat\\beta_1\\,\\Delta x\\), find the predicted change in \\(y\\) when \\(x\\) rises by \\(1\\). (round to the hundredths)",
+  "For the fitted line \\(\\hat y=2+\\dfrac{4}{10}\\,x\\) and the three points \\((3,10),(5,14),(9,11)\\), find \\(\\mathrm{SSR}=\\sum(Y_i-\\hat Y_i)^2\\). (round to the hundredths)",
+  "A regression has \\(\\mathrm{SST}=241\\) and \\(\\mathrm{SSR}=113\\). Find the explained sum of squares \\(\\mathrm{SSE}\\). (round to the hundredths)",
+  "A regression has \\(\\mathrm{SST}=206\\) and \\(\\mathrm{SSR}=70\\). Find \\(R^2\\). (round to the hundredths)",
+  "A regression has \\(\\mathrm{SSE}=60\\) and \\(\\mathrm{SST}=315\\). Find \\(R^2\\). (round to the hundredths)",
+  "A regression has \\(\\mathrm{SST}=357\\) and \\(\\mathrm{SSR}=176\\). What fraction of the variation in \\(Y\\) is UNEXPLAINED? (round to the hundredths)",
+  "A regression has \\(\\mathrm{SST}=358\\) and \\(R^2=\\dfrac{50}{100}\\). Find \\(\\mathrm{SSR}\\). (round to the hundredths)",
+  "How many workers are in the wage1 sample? (Hint: nrow(wage1) )",
+  "What is the sample mean of hourly wage, wage1$wage ? (Hint: mean() ) (round to the hundredths)",
+  "What is the sample standard deviation of years of education, wage1$educ ? (Hint: sd() ) (round to the hundredths)",
+  "Run the OLS regression of wage on educ: reg <- lm(wage ~ educ, data = wage1) . Save the slope as b1 <- reg$coefficients[2] . What is the OLS slope \\(\\hat\\beta_1\\)? (R prints the label educ above the number. The label carries over to calculations that use b1 and can be ignored.) (round to the hundredths)",
+  "Save the intercept of the regression from Question 4 as b0 <- reg$coefficients[1] . What is the OLS intercept \\(\\hat\\beta_0\\)? (It can be negative.) (round to the hundredths)",
+  "Using your saved b0 and b1 from Questions 4 and 5, what is the predicted hourly wage \\(\\widehat{\\text{wage}}=\\hat\\beta_0+\\hat\\beta_1\\cdot\\text{educ}\\) for a worker with \\(\\text{educ}=14\\) years of education? (round to the hundredths)",
+  "Using your saved b1 from Question 4, by how much does the predicted hourly wage change when education rises by 2 years? Use \\(\\Delta\\widehat{\\text{wage}}=\\hat\\beta_1\\cdot\\Delta\\text{educ}\\). (round to the hundredths)",
+  "What is the sum of squared residuals \\(\\mathrm{SSR}=\\sum_i\\hat u_i^{\\,2}\\) for the regression of wage on educ from Question 4? Save it with SSR <- sum(reg$residuals^2) , then type SSR to see it. (round to the hundredths)",
+  "What is \\(R^2\\) for the regression of wage on educ from Question 4? Use \\(R^2=1-\\mathrm{SSR}/\\mathrm{SST}\\), with SSR from Question 8 and SST <- sum((wage1$wage - mean(wage1$wage))^2) . Check your answer with summary(reg)$r.squared . Give it as a decimal, not a percent. (round to the hundredths)",
+  "Now use bwght : bwght is a baby's birth weight in ounces, and cigs is the number of cigarettes the mother smoked per day during pregnancy. Run reg2 <- lm(bwght ~ cigs, data = bwght) (a new name, so reg is not overwritten). By how many ounces does predicted birth weight change when the mother smokes 5 more cigarettes per day? (It can be negative.) (round to the hundredths)",
+  "The three numbers 2, 4, and 8 add up to what total?",
+  "What is the mean (average) of these four numbers: 3, 7, 5, and 9?",
+  "A set of 6 numbers adds up to 150. What is their mean (average)?",
+  "The sample mean is \\(\\bar{x}=\\frac{1}{n}\\sum_{i=1}^{n}x_i\\). Find \\(\\bar{x}\\) for \\(x=(1, 6, 5)\\).",
+  "For \\(y=\\beta_0+\\beta_1 x\\), a change gives \\(\\Delta y=\\beta_1\\,\\Delta x\\). With \\(\\beta_0=14\\), \\(\\beta_1=3\\), and \\(\\Delta x=4\\), find \\(\\Delta y\\).",
+  "For \\(y=\\beta_0+\\beta_1 x\\) with \\(\\beta_0=15\\) and \\(\\beta_1=3\\), predict \\(y\\) at \\(x=4\\).",
+  "For \\(y=\\beta_0+\\beta_1 X_1+\\beta_2 X_2\\), \\(\\Delta y=\\beta_1\\Delta X_1+\\beta_2\\Delta X_2\\). With \\(\\beta_0=19\\), \\(\\beta_1=3\\), \\(\\beta_2=9\\), \\(\\Delta X_1=1\\), \\(\\Delta X_2=3\\), find \\(\\Delta y\\).",
+  "Percent change is \\(\\%\\Delta x=100\\cdot\\dfrac{x_{\\text{new}}-x_{\\text{old}}}{x_{\\text{old}}}\\). Find it when \\(x\\) goes from \\(52\\) to \\(78\\). (round to the hundredths)",
+  "Sample variance is \\(S_x^2=\\frac{1}{n-1}\\sum(x_i-\\bar{x})^2\\). Compute it for \\(x=(2, 0, 4)\\). (round to the hundredths)",
+  "Sample sd is \\(S_x=\\sqrt{S_x^2}\\). Compute it for \\(x=(7, 2, 1)\\). (round to the hundredths)",
+  "Sample covariance is \\(S_{xy}=\\frac{1}{n-1}\\sum(x_i-\\bar{x})(y_i-\\bar{y})\\). Compute it for \\(x=(4, 4, 0)\\) and \\(y=(1, 1, 6)\\). (round to the hundredths)",
+  "The sample variance divides the sum of squared deviations from the mean by:",
+  "Find the sample variance of \\(x=(7, 7, 6)\\). (round to the hundredths)",
+  "Find the sample standard deviation of \\(x=(1, 1, 0)\\). (round to the hundredths)",
+  "Find the sample covariance of \\(x=(4, 4, 4)\\) and \\(y=(2, 3, 0)\\). (round to the hundredths)",
+  "Find the sample correlation between \\(x=(2, 7, 7)\\) and \\(y=(5, 2, 3)\\). (round to the hundredths)",
+  "A fair coin gives value \\(8\\) on heads and \\(7\\) on tails (each with probability \\(\\tfrac12\\)). Find \\(E[X]\\). (round to the hundredths)",
+  "A fair coin gives value \\(7\\) (heads) and \\(7\\) (tails), each with probability \\(\\tfrac12\\). Find \\(E[X^2]\\). (round to the hundredths)",
+  "\\(X\\) equals \\(4\\) with probability \\(\\frac{9}{10}\\) and \\(3\\) with probability \\(\\frac{10-9}{10}\\). Find \\(E[X]\\). (round to the hundredths)",
+  "\\(X\\) takes values \\(8\\), \\(8\\), \\(5\\) with probabilities \\(0.2,\\,0.5,\\,0.3\\). Find \\(E[X^2]\\). (round to the hundredths)",
+  "Given \\(E[X]=8\\), \\(E[Y]=1\\), \\(a=5\\), and \\(b=3\\), find \\(E[aX+bY]\\). (round to the hundredths)",
+  "Given \\(E[X]=6\\) and \\(E[X^2]=48\\), find \\(\\mathrm{Var}(X)\\). (round to the hundredths)",
+  "Given \\(\\mathrm{Var}(X)=2\\) and \\(a=2\\), find \\(\\mathrm{Var}(aX+b)\\) (for any constant \\(b\\)). (round to the hundredths)",
+  "Given \\(E[XY]=5\\), \\(E[X]=4\\), and \\(E[Y]=3\\), find \\(\\mathrm{Cov}(X,Y)\\). (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) take the paired values \\((1,2), (2,5), (5,5)\\), each pair equally likely (probability \\(\\tfrac13\\)). Find \\(\\mathrm{Cov}(X,Y)\\). (round to the hundredths)",
+  "Given \\(\\mathrm{Cov}(X,Y)=4\\), \\(\\mathrm{sd}(X)=5\\), and \\(\\mathrm{sd}(Y)=2\\), find \\(\\mathrm{Cor}(X,Y)\\). (round to the hundredths)",
+  "Given \\(\\mathrm{Var}(X)=2\\), \\(\\mathrm{Var}(Y)=4\\), \\(\\mathrm{Cov}(X,Y)=1\\), \\(a=2\\), and \\(b=1\\), find \\(\\mathrm{Var}(aX+bY)\\). (round to the hundredths)",
+  "Given \\(X=x\\), \\(Y\\) takes values \\(2, 4, 3\\) with probabilities \\(0.2,\\,0.3,\\,0.5\\). Find \\(E[Y\\mid X=x]\\). (round to the hundredths)",
+  "Given \\(\\mathrm{cov}(x,y)=7\\) and \\(\\mathrm{var}(x)=1\\), find the OLS slope \\(\\hat\\beta_1\\). (round to the hundredths)",
+  "Given \\(\\bar y=12\\), \\(\\bar x=8\\), and slope \\(\\hat\\beta_1=9/10\\), find the OLS intercept \\(\\hat\\beta_0\\). (round to the hundredths)",
+  "For the sample \\(x=(8,7,7)\\), \\(y=(7,10,4)\\), find the OLS slope \\(\\hat\\beta_1\\). (round to the hundredths)",
+  "For the sample \\(x=(7,2,6)\\), \\(y=(0,6,2)\\), fit the OLS line and predict \\(\\hat y\\) at \\(x=7\\). (round to the hundredths)",
+  "A fitted line is \\(E[\\text{colGPA}\\mid\\text{hsGPA}]=\\dfrac{12}{10}+\\dfrac{5}{10}\\cdot\\text{hsGPA}\\). Find the expected colGPA at \\(\\text{hsGPA}=39/10\\). (round to the hundredths)",
+  "In \\(\\text{wage}=\\beta_0+\\beta_1\\text{educ}+U\\) the estimated slope is \\(\\hat\\beta_1=5/10\\). Ceteris paribus, if educ rises by \\(7\\) year(s), by how much does predicted wage change? (round to the hundredths) Note: using our OLS estimates, predicted wage is \\(\\hat{\\text{wage}} = \\hat \\beta_0 + \\hat\\beta_1 \\text{educ}\\). Use your knowledge of linear functions to answer this function.",
+  "\\(X\\) and \\(Y\\) have the joint probability distribution below. x y P(X=x, Y=y) 5 8 0.2 0 8 0.3 4 6 0.5 Find \\(E[X]\\). (round to the hundredths)",
+  "\\(X\\) and \\(Y\\) have the joint probability distribution below. x y P(X=x, Y=y) 0 4 0.2 0 6 0.3 4 0 0.5 Find \\(\\mathrm{Cov}(X,Y)\\). (round to the hundredths)",
+  "A NEGATIVE residual \\((\\hat U_i<0)\\) means OLS:",
+  "For the sample \\(x=(6,2,7)\\), \\(y=(0,3,0)\\), find the OLS slope \\(\\hat\\beta_1\\). (round to the hundredths)",
+  "For the sample \\(x=(4,3,4)\\), \\(y=(2,1,1)\\), find the OLS intercept \\(\\hat\\beta_0\\). (round to the hundredths)",
+  "For the sample \\(x=(2,7,8)\\), \\(y=(11,10,1)\\), fit the OLS line and predict \\(\\hat y\\) at \\(x=4\\). (round to the hundredths)",
+  "A fitted line is \\(\\hat y=-1+\\dfrac{4}{10}\\,x\\). Find the fitted value \\(\\hat y\\) at \\(x=9\\). (round to the hundredths)",
+  "A fitted line is \\(\\hat y=1+\\dfrac{6}{10}\\,x\\). A person has \\(x=8\\) and actual \\(y=19\\). Find the OLS residual \\(\\hat u\\) for this person. (round to the hundredths)",
+  "A fitted slope is \\(\\hat\\beta_1=\\dfrac{6}{10}\\). Find the predicted change in \\(y\\) when \\(x\\) rises by \\(8\\). (round to the hundredths)",
+  "For the fitted line \\(\\hat y=-2+\\dfrac{6}{10}\\,x\\) and the three points \\((X_i, Y_i)\\): \\((3,15),(5,9),(10,1)\\), find \\(\\mathrm{SSR}\\). (round to the hundredths)",
+  "A regression has \\(\\mathrm{SST}=353\\) and \\(\\mathrm{SSR}=176\\). Find the explained sum of squares \\(\\mathrm{SSE}\\). (round to the hundredths)"))
