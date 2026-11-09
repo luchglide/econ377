@@ -15,10 +15,9 @@
 #  0. Get the files: github.com/luchglide/econ377 -> green Code button ->
 #     Download ZIP -> unzip -> open exam2.R from that folder.
 #
-#  3. Point R at this folder: Session -> Set Working Directory ->
-#     To Source File Location. Then run the whole file: Cmd+Shift+Enter
-#     (Windows: Ctrl+Shift+Enter). The SETUP CHECK box it prints should say
-#     OK / OK / found.
+#  3. Run the whole file: Cmd+Shift+Enter (Windows: Ctrl+Shift+Enter) or the
+#     Source button. It finds its own folder, installs anything missing, and
+#     prints a SETUP CHECK box: every line should say OK.
 #
 #  What the 2 packages do:
 #    wooldridge = the course datasets (wage1, ceosal1, ...). If it won't
@@ -132,31 +131,52 @@
 rm(list = ls())
 
 # STEP 0: SETUP CHECK (installs what's missing, then reports) ##################
-# What this script needs:
-#   1. wooldridge  - the course datasets. If it can't install, the CSV copies in
-#                    data/ are used instead, so the script still works.
-#   2. rstudioapi  - lets FIND() / GO() move your cursor to a block. Optional:
-#                    without it, they print the line number instead.
-#   3. The data/ folder next to this script (comes with the econ377 repo).
-# HOW: run this file once WHILE YOU HAVE INTERNET (at home the night before, AND
-#   on the lab PC before the exam starts). Missing packages install automatically.
-#   With no internet it just skips the install and uses data/.
-# If wooldridge won't install (older R), run this once in the Console:
-#   install.packages("https://cloud.r-project.org/src/contrib/Archive/wooldridge/wooldridge_1.4-3.tar.gz", repos = NULL, type = "source")
-# If data/ isn't found: Session -> Set Working Directory -> To Source File Location.
-for (pkg in c("wooldridge", "rstudioapi")) {
-  if (!requireNamespace(pkg, quietly = TRUE))
-    suppressWarnings(try(install.packages(pkg, repos = "https://cloud.r-project.org", quiet = TRUE), silent = TRUE))
-}
+# Press Source (Cmd+Shift+S / Ctrl+Shift+S) or Cmd/Ctrl+Shift+Enter. This part:
+#   1. points R at this script's folder (so data/ is found), no menu clicks needed
+#   2. installs any missing package into a folder you can write to (lab PCs often
+#      block the shared one), without asking you any questions
+#   3. turns on RStudio's typo checks (yellow mark on a misspelled name)
+#   4. prints a SETUP CHECK box. Every line should say OK / found.
+# Packages: wooldridge (datasets; data/ CSV copies are used if it can't install),
+#   rstudioapi (FIND()/GO() jump to blocks), datapasta (Addins > Paste as vector).
+# No internet? It skips the installs and uses data/. Run it once at home AND once
+#   on the lab PC before the exam starts, while you still have internet.
+.setup <- local({
+  here <- tryCatch(dirname(normalizePath(sys.frame(1)$ofile)), error = function(e) "")      # folder of this file
+  if (!nzchar(here) && exists(".rs.api.getSourceEditorContext"))
+    here <- tryCatch(dirname(get(".rs.api.getSourceEditorContext")()$path), error = function(e) "")
+  if (nzchar(here) && dir.exists(here)) setwd(here)
+  lib <- path.expand(Sys.getenv("R_LIBS_USER"))                                             # a library we can write to
+  if (nzchar(lib)) dir.create(lib, recursive = TRUE, showWarnings = FALSE)
+  if (!nzchar(lib) || file.access(lib, 2) != 0) { lib <- file.path(getwd(), "Rlib"); dir.create(lib, showWarnings = FALSE) }
+  .libPaths(unique(c(lib, .libPaths())))
+  options(repos = c(CRAN = "https://cloud.r-project.org"), install.packages.compile.from.source = "never", timeout = max(60, getOption("timeout")))
+  pk <- c("wooldridge", "rstudioapi", "datapasta"); need <- pk[!vapply(pk, requireNamespace, TRUE, quietly = TRUE)]
+  online <- length(need) && !inherits(try(suppressWarnings(readLines(url("https://cloud.r-project.org/"), n = 1)), silent = TRUE), "try-error")
+  if (online) {
+    cat("Installing:", paste(need, collapse = ", "), "(one time, about a minute) ...\n")
+    suppressWarnings(try(install.packages(need, lib = lib, quiet = TRUE,
+                                          type = if (.Platform$pkgType != "source") "binary" else "source"), silent = TRUE))
+    if (!requireNamespace("wooldridge", quietly = TRUE))                                      # older R: the archived version
+      suppressWarnings(try(install.packages("https://cloud.r-project.org/src/contrib/Archive/wooldridge/wooldridge_1.4-3.tar.gz",
+                                            lib = lib, repos = NULL, type = "source", quiet = TRUE), silent = TRUE)) }
+  prefs <- c("show_diagnostics_r", "background_diagnostics", "warn_if_no_such_variable_in_scope",
+             "check_arguments_to_r_function_calls", "rainbow_parentheses", "highlight_selected_word")
+  rs <- requireNamespace("rstudioapi", quietly = TRUE) && isTRUE(tryCatch(rstudioapi::isAvailable(), error = function(e) FALSE))
+  if (rs) for (n in prefs) try(rstudioapi::writeRStudioPreference(n, TRUE), silent = TRUE)
+  list(here = here, lib = lib, need = need, online = online, rs = rs)
+})
+.pk_ok <- function(p) requireNamespace(p, quietly = TRUE)
 cat("\n---- SETUP CHECK ----\n")
-cat(sprintf("  wooldridge package : %s\n", if (requireNamespace("wooldridge", quietly = TRUE)) "OK" else "not installed -> using data/ CSV copies"))
-cat(sprintf("  rstudioapi package : %s\n", if (requireNamespace("rstudioapi", quietly = TRUE)) "OK (FIND jumps to blocks)" else "not installed -> FIND prints line numbers"))
-cat(sprintf("  data/ folder       : %s\n", if (dir.exists("data")) "found" else
-  if (requireNamespace("wooldridge", quietly = TRUE)) "not found, but not needed (wooldridge is OK)" else
-  "NOT FOUND -> Session > Set Working Directory > To Source File Location, then rerun"))
+cat(sprintf("  working folder     : %s\n", if (dir.exists("data")) paste("OK", getwd()) else paste("data/ not here:", getwd())))
+cat(sprintf("  wooldridge package : %s\n", if (.pk_ok("wooldridge")) "OK" else if (dir.exists("data")) "not installed -> using data/ CSV copies (fine)" else "NOT installed"))
+cat(sprintf("  rstudioapi package : %s\n", if (.pk_ok("rstudioapi")) "OK (FIND jumps to blocks)" else "not installed -> FIND prints line numbers (fine)"))
+cat(sprintf("  datapasta package  : %s\n", if (.pk_ok("datapasta")) "OK (Addins > Paste as vector; restart RStudio once to see it)" else "not installed (optional)"))
+cat(sprintf("  typo checks        : %s\n", if (.setup$rs) "ON" else "only inside RStudio"))
+if (length(.setup$need) && !.setup$online) cat("  (no internet: nothing was installed. That's fine if the lines above say OK or data/.)\n")
+if (!.pk_ok("wooldridge") && !dir.exists("data"))
+  cat("  !! No datasets: Session > Set Working Directory > To Source File Location, then run again.\n")
 cat("  RUN THE WHOLE FILE (Ctrl+Shift+Enter or the Source button), never pieces of it.\n")
-if (!requireNamespace("wooldridge", quietly = TRUE) && !dir.exists("data"))
-  cat("  !! No datasets available: fix the working directory (above) or install wooldridge.\n")
 cat("---------------------\n")
 ans  <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 2), nsmall = 2)))
 ans4 <- function(label, x) cat(sprintf(">>> ANSWER %-50s -> %s\n", label, format(round(unname(x), 4), nsmall = 4)))
