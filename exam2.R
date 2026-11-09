@@ -1,9 +1,12 @@
 # =======================================================================
 # BEFORE YOU START: DO THESE 3 THINGS ONCE (with internet)
 # =======================================================================
-#  1. Install the 2 packages. Paste this in the Console, press Enter:
-#        install.packages(c("wooldridge", "rstudioapi"))
+#  1. Open setup_rstudio.R (same folder) and press Source. It installs the
+#     packages, turns on RStudio's typo checks + rainbow parentheses, and adds
+#     "Exam II" to the Addins menu. Then quit and reopen RStudio.
 #     (asked "install from sources?" -> type no.  "personal library?" -> yes)
+#     No setup_rstudio.R? Paste this in the Console instead:
+#        install.packages(c("wooldridge", "rstudioapi", "shiny", "miniUI", "datapasta"))
 #
 #  2. Check it worked. Paste this in the Console:
 #        library(wooldridge); nrow(wage1)
@@ -22,6 +25,15 @@
 #                 install, the script uses the copies in data/ instead.
 #    rstudioapi = lets FIND() jump your cursor to the right block.
 #                 Optional: without it FIND() just prints the line number.
+#    shiny + miniUI = FORM(): fill-in boxes instead of editing code (below).
+#    datapasta  = Addins > "Paste as vector": a copied list becomes c(...).
+#
+#  THREE WAYS TO ANSWER A QUESTION (copy the question first: Cmd+C / Ctrl+C)
+#    ASK()   -> jumps to the right block; you edit the lines marked CHANGE.
+#    FORM()  -> same block as boxes. Yellow = filled from the question (CHECK).
+#               Red = example or blank: change it. Each box says how it reads
+#               your number ("= 0.18") or why it can't. Press Calculate.
+#    NUMS()  -> lists every number in the question, labelled, lists as c(...).
 #  Do steps 1-3 at home AND on the lab PC before the exam starts.
 # =======================================================================
 
@@ -482,6 +494,310 @@ ASK <- function(question = NULL) {
   cat("Question:", substr(clean, 1, 110), "...\n")
   FIND(txt)
 }
+
+## ---- NUMS() and FORM(): pull the numbers out of the question / fill-in boxes ----
+## NUMS()  copy the question (Cmd+C / Ctrl+C), type NUMS() -> every number in it, labelled,
+##         lists already written as c(...). Copy from there instead of retyping.
+## FORM()  copy the question, type FORM() -> a fill-in form opens for the block ASK() picks.
+##         Boxes the question answers are pre-filled (yellow: CHECK them). Each box says what it
+##         read ("= 0.18") or why it can't (red). Press Calculate. Needs shiny + miniUI.
+##         FORM("S1") opens a block directly.   FORM(window = TRUE) opens it as a window.
+.clip_text <- function() tryCatch({
+  if (.Platform$OS.type == "windows") paste(utils::readClipboard(), collapse = " ")
+  else if (Sys.info()[["sysname"]] == "Darwin") paste(suppressWarnings(system2("pbpaste", stdout = TRUE, stderr = FALSE)), collapse = " ")
+  else paste(readLines(pipe("xclip -o -selection clipboard"), warn = FALSE), collapse = " ")
+}, error = function(e) "")
+.NUM_RE <- "-?(?:\\d+(?:\\.\\d+)?|\\.\\d+)"
+.lab_key <- function(l) {                                   # "\(\hat\sigma\)" / "R^2" / "SST_x" -> sigma / r2 / sstx
+  l <- tolower(l); l <- gsub("\\\\(mathrm|text|operatorname)", "", l, perl = TRUE)
+  l <- gsub("[\\\\{}()\\[\\] ]", "", l, perl = TRUE); l <- gsub("-squared|squared", "^2", l)
+  hat <- grepl("hat", l); til <- grepl("tilde", l); l <- gsub("hat|tilde", "", l)
+  l <- gsub("[_^]", "", l)
+  l <- sub("^sigma2$", "sigma2", l); l <- sub("^(var|variance)\\(?u\\)?$", "sigma2", l)
+  if (grepl("^beta[0-9]$", l)) l <- paste0("b", substring(l, 5), if (til) "tilde" else if (hat) "hat" else "")
+  if (grepl("^delta[0-9]?$", l)) l <- "delta1"
+  sub("^s?st([xj0-9])$", "sst\\1", l)
+}
+.lab_show <- function(l) .lab_show0(gsub("\\\\(hat|tilde)\\s*\\\\?([a-z]+)", "\\2-\\1", l, perl = TRUE))
+.lab_show0 <- function(l) gsub("[\\\\{}]", "", gsub("\\\\(mathrm|text|operatorname)\\{([^}]*)\\}", "\\2", l, perl = TRUE), perl = TRUE)
+.asciify <- function(s) {                                   # Canvas symbols -> LaTeX-style ASCII (any locale)
+  s <- paste(s, collapse = " ")
+  rp <- list(c("\u03c3\u0302", "\\hat\\sigma"), c("\u03b2\u0302", "\\hat\\beta"), c("\u03b2\u0303", "\\tilde\\beta"),
+             c("\u03b4\u0303", "\\tilde\\delta"), c("\u03c3", "\\sigma"), c("\u03b2", "\\beta"), c("\u03b4", "\\delta"),
+             c("\u00b2", "^2"), c("\u2080", "_0"), c("\u2081", "_1"), c("\u2082", "_2"), c("\u2083", "_3"), c("\u2c7c", "_j"),
+             c("\u2212", "-"), c("\u0177", "yhat"), c("\u00fb", "uhat"), c("\u00b7", "*"), c("\u0302", ""), c("\u0303", ""))
+  for (p in rp) s <- gsub(p[1], p[2], s, fixed = TRUE, useBytes = TRUE)
+  gsub("[^ -~]", " ", s, useBytes = TRUE)
+}
+.qnums <- function(txt) {                                   # numbers in a question, labelled where possible
+  s <- gsub("\\s+", " ", .asciify(txt))
+  lists <- list(); lab <- data.frame(label = character(), key = character(), value = character(), stringsAsFactors = FALSE)
+  lre <- paste0("([A-Za-z\\\\_^{}]+)\\s*\\)?\\s*=\\s*\\\\?\\(?\\s*\\\\?[\\[(]\\s*(", .NUM_RE, "(?:\\s*,\\s*", .NUM_RE, "){2,})\\s*\\\\?[\\])]")
+  m <- gregexpr(lre, s, perl = TRUE)[[1]]
+  if (m[1] > 0) { for (i in seq_along(m)) { hit <- substr(s, m[i], m[i] + attr(m, "match.length")[i] - 1)
+      g <- regmatches(hit, regexec(lre, hit, perl = TRUE))[[1]]
+      lists[[length(lists) + 1]] <- list(label = .lab_show(g[2]), key = .lab_key(g[2]), values = gsub("\\s*,\\s*", ", ", g[3])) }
+    s <- gsub(lre, " [list] ", s, perl = TRUE) }
+  s <- gsub("(\\d{1,3}),(\\d{3})(?![\\d,])", "\\1\\2", s, perl = TRUE)   # 1,050 -> 1050 (outside lists)
+  sre <- paste0("([A-Za-z\\\\][A-Za-z0-9\\\\_^{}]*(?:\\s*[_^]\\s*\\{?\\w+\\}?)?)\\s*\\\\?\\)?\\s*(?:=|\\bis\\b|\\bequals\\b)\\s*\\\\?\\(?\\s*(", .NUM_RE, ")(%?)")
+  m <- gregexpr(sre, s, perl = TRUE)[[1]]
+  if (m[1] > 0) for (i in seq_along(m)) { hit <- substr(s, m[i], m[i] + attr(m, "match.length")[i] - 1)
+    g <- regmatches(hit, regexec(sre, hit, perl = TRUE))[[1]]
+    if (tolower(g[2]) %in% c("and", "of", "the", "that", "it", "which", "this", "slope", "value", "hat", "yhat", "y-hat")) next
+    lab[nrow(lab) + 1, ] <- c(.lab_show(g[2]), .lab_key(g[2]), paste0(g[3], g[4])) }
+  g <- regmatches(s, regexec(paste0("\\bfrom\\s+\\$?(", .NUM_RE, "%?)\\s+to\\s+\\$?(", .NUM_RE, "%?)"), s, perl = TRUE))[[1]]
+  if (length(g)) { lab[nrow(lab) + 1, ] <- c("from", "from", g[2]); lab[nrow(lab) + 1, ] <- c("to", "to", g[3]) }
+  for (p in list(c("(\\d+) observations", "n"), c("sample of (\\d+)", "n"), c("\\bn\\s*=\\s*(\\d+)", "n"))) {
+    g <- regmatches(s, regexec(p[1], s, perl = TRUE))[[1]]
+    if (length(g) && !(p[2] %in% lab$key)) lab[nrow(lab) + 1, ] <- c("n", p[2], g[2]) }
+  eq <- NULL                                                # "y-hat = 4 + 2.9 x1 - 0.6 x2" -> b0 and slopes
+  ere <- paste0("=\\s*(", .NUM_RE, ")((?:\\s*[-+]\\s*", "(?:\\d+(?:\\.\\d+)?|\\.\\d+)", "\\s*\\\\?,?\\s*\\*?\\s*(?:log\\s*\\(?\\s*)?[A-Za-z][\\w]*\\)?)+)")
+  g <- regmatches(s, regexec(ere, s, perl = TRUE))[[1]]
+  if (length(g)) { tm <- regmatches(g[3], gregexpr("[-+]\\s*(?:\\d+(?:\\.\\d+)?|\\.\\d+)", g[3], perl = TRUE))[[1]]
+    eq <- list(b0 = g[2], b = paste(gsub("\\s|\\+", "", tm), collapse = ", ")) }
+  allnum <- regmatches(s, gregexpr(paste0("(?<![\\w.^_])", .NUM_RE, "%?"), s, perl = TRUE))[[1]]
+  list(lab = lab, lists = lists, eq = eq, all = allnum)
+}
+NUMS <- function(question = NULL) {
+  q <- if (is.null(question)) .clip_text() else paste(question, collapse = " ")
+  if (nchar(trimws(q)) < 5) { cat("Nothing on the clipboard. Copy the question first, or NUMS(\"...\").\n"); return(invisible()) }
+  r <- .qnums(q)
+  cat("Numbers in the question (copy these, don't retype):\n")
+  for (i in seq_len(nrow(r$lab))) cat(sprintf("  %-12s = %s%s\n", r$lab$label[i], r$lab$value[i],
+      if (grepl("%", r$lab$value[i])) "   <- a percent: check if the box wants 0.xx or xx" else ""))
+  for (l in r$lists) cat(sprintf("  %-12s = c(%s)\n", l$label, l$values))
+  if (!is.null(r$eq)) cat(sprintf("  equation:    intercept = %s   slopes = c(%s)\n", r$eq$b0, r$eq$b))
+  if (length(r$all)) cat("  every number:", paste(r$all, collapse = "  "), "\n")
+  if (!nrow(r$lab) && !length(r$lists) && !length(r$all)) cat("  (none)\n")
+  invisible(r)
+}
+.ex2_lines <- function() {                                  # the text of exam2.R (the open tab, if it is exam2.R)
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    ctx <- tryCatch(rstudioapi::getSourceEditorContext(), error = function(e) NULL)
+    if (!is.null(ctx) && any(grepl("^## \\[S1\\]", ctx$contents))) return(ctx$contents) }
+  for (f in c(get0(".EX2_FILE", envir = globalenv(), ifnotfound = ""), "exam2.R", file.path("econ377", "exam2.R")))
+    if (nzchar(f) && file.exists(f)) return(readLines(f, warn = FALSE))
+  cat("Pick exam2.R in the window that opens.\n"); f <- file.choose()
+  assign(".EX2_FILE", f, envir = globalenv()); readLines(f, warn = FALSE)
+}
+.ex2_blocks <- function(L) {
+  h <- grep("^## \\[[A-Z][0-9]+\\]", L); stops <- grep("^## =====|^## \\[[A-Z][0-9]+\\]|^# PART|^## SPECIALIZED|^## ####", L)
+  out <- list()
+  for (a in h) {
+    tag <- sub("^## \\[([A-Z][0-9]+)\\].*", "\\1", L[a]); b <- c(stops[stops > a], length(L) + 1)[1] - 1
+    lines <- L[a:b]; title <- trimws(sub("-{3,}\\s*$", "", sub("^## \\[[A-Z][0-9]+\\]\\s*", "", L[a])))
+    help <- c(); for (x in lines[-1]) { if (!grepl("^##", x)) break; help <- c(help, sub("^##\\s?", "", x)) }
+    inp <- list(); last <- 0
+    for (j in seq_along(lines)) {
+      g <- regmatches(lines[j], regexec("^(\\w+)\\s*<-\\s*(.*?)\\s*#\\s*<-- CHANGE\\s*(.*)$", lines[j]))[[1]]
+      if (length(g)) { inp[[length(inp) + 1]] <- list(name = g[2], def = g[3], desc = g[4], line = j); last <- j; next }
+      if (last == j - 1 && last > 0 && grepl("^\\s{8,}#\\s", lines[j])) {
+        k <- length(inp); inp[[k]]$desc <- paste(inp[[k]]$desc, sub("^\\s+#\\s*", "", lines[j])); last <- j }
+    }
+    out[[tag]] <- list(tag = tag, title = title, help = help, inputs = inp, lines = lines)
+  }
+  out
+}
+.fld_type <- function(name, def) {
+  d <- trimws(def)
+  if (grepl('^".*"$', d)) "text" else if (grepl("~", d)) "formula" else if (d %in% c("TRUE", "FALSE")) "logical" else "number"
+}
+.fld_show <- function(def, type) {
+  d <- trimws(def)
+  if (type == "text") return(gsub('^"|"$', "", d))
+  if (type != "number") return(d)
+  if (d %in% c("NA", "NULL")) return("")
+  sub("^c\\((.*)\\)$", "\\1", d)
+}
+.fld_parse <- function(x, type, def, desc) {               # -> list(ok, code, note)
+  x <- trimws(gsub("[^ -~]", " ", gsub("\u201d", '"', gsub("\u201c", '"', x, fixed = TRUE, useBytes = TRUE), fixed = TRUE, useBytes = TRUE), useBytes = TRUE)); bad <- function(m) list(ok = FALSE, code = NA, note = m)
+  if (type == "text") {
+    x <- gsub("^[\"']|[\"']$", "", x); if (!nzchar(x)) return(bad("empty: type a name"))
+    if (grepl("dataset", desc) && !(exists(x, envir = globalenv()) && is.data.frame(get(x, envir = globalenv()))))
+      return(bad(sprintf("no dataset called '%s' is loaded. Spelling? (wage1, ceosal1, gpa1, k401k, ...)", x)))
+    return(list(ok = TRUE, code = deparse(x), note = sprintf("= \"%s\"", x))) }
+  if (type == "formula") {
+    x <- sub("^lm\\s*\\((.*)\\)$", "\\1", x); x <- sub(",\\s*data\\s*=.*$", "", x)
+    f <- tryCatch(eval(parse(text = x)), error = function(e) NULL)
+    if (!inherits(f, "formula")) return(bad("not a formula. Write it like  log(wage) ~ educ + exper"))
+    v <- all.vars(f); return(list(ok = TRUE, code = x, note = sprintf("y = %s;  x = %s", deparse(f[[2]]), paste(attr(terms(f), "term.labels"), collapse = ", ")))) }
+  if (type == "logical") {
+    v <- toupper(x); v <- if (v %in% c("TRUE", "T", "YES", "Y")) "TRUE" else if (v %in% c("FALSE", "F", "NO", "N")) "FALSE" else NA
+    if (is.na(v)) return(bad("type TRUE or FALSE")); return(list(ok = TRUE, code = v, note = paste("=", v))) }
+  if (!nzchar(x) || toupper(x) %in% c("NA", "NULL")) {
+    nul <- trimws(def) == "NULL"; return(list(ok = TRUE, code = if (nul) "NULL" else "NA", note = "(blank: not given)")) }
+  if (grepl("%", x)) return(bad("drop the % sign. Read the label: does it want 0.18 or 18?"))
+  x <- sub("^c\\((.*)\\)$", "\\1", x)
+  tok <- strsplit(trimws(gsub(";", ",", x)), "\\s*,\\s*|\\s+")[[1]]; tok <- tok[nzchar(tok)]
+  if (!all(grepl("^[-+0-9.eE/*()^]+$|^NA$", tok))) return(bad("only numbers here (letters found). Use . for decimals"))
+  val <- tryCatch(sapply(tok, function(t) eval(parse(text = t))), error = function(e) NULL)
+  if (is.null(val)) return(bad("can't read that number"))
+  vec <- grepl("^c\\(", trimws(def)) || grepl("values|list|slopes|each x|column|means|order|VALUES|MEANS", desc)
+  if (!vec && length(val) > 1)
+    return(bad(sprintf("this box takes ONE number but you typed %d (%s). Decimal? use a dot: 0.5 not 0,5. Thousands? drop the comma: 1050",
+                       length(val), paste(tok, collapse = " | "))))
+  code <- if (length(val) > 1) paste0("c(", paste(tok, collapse = ", "), ")") else tok
+  list(ok = TRUE, code = code, note = if (length(val) > 1) sprintf("= %d numbers: %s", length(val), paste(format(val), collapse = ", ")) else paste("=", format(val)))
+}
+.fld_prefill <- function(inp, q, r) {                       # value from the question for this box, or NULL
+  key <- tolower(sub("^[a-z][0-9]+_", "", inp$name)); typ <- .fld_type(inp$name, inp$def)
+  d <- .dataset_in(.norm(q)); if (is.na(d) || d == "?") d <- NULL
+  if (typ == "text" && grepl("dataset", inp$desc)) return(d)
+  cols <- if (!is.null(d)) tryCatch(names(get(d, envir = globalenv())), error = function(e) NULL)
+  fml <- .q_formula(q, cols); f <- if (!is.null(fml)) tryCatch(as.formula(fml), error = function(e) NULL)
+  if (typ == "formula" && !is.null(fml) && !grepl("log\\(", fml) && grepl("^d[345]_", inp$name)) {   # block says which side is logged
+    sides <- trimws(strsplit(fml, "~")[[1]]); xs <- trimws(strsplit(sides[2], "\\+")[[1]])
+    if (grepl("^d[35]_", inp$name)) sides[1] <- sprintf("log(%s)", sides[1])
+    if (grepl("^d[45]_", inp$name)) xs <- sprintf("log(%s)", xs)
+    fml <- paste(sides[1], "~", paste(xs, collapse = " + ")) }
+  if (typ == "formula") return(fml)
+  if (typ == "text" && !is.null(d)) {                       # column-name boxes
+    lhs <- if (!is.null(f)) all.vars(f[[2]])[1]; rhs <- if (!is.null(f)) all.vars(f[[3]]); m <- .q_cols(q, d)
+    if (grepl("^d10_", inp$name)) {                         # D10 takes log(x) terms as they are
+      lt <- if (!is.null(f)) deparse(f[[2]]); rt <- if (!is.null(f)) attr(terms(f), "term.labels")
+      v <- switch(sub("^d10_", "", inp$name), y = lt, x1 = rt[1],
+                  x2 = if (length(rt) > 1) rt[2] else setdiff(m, c(all.vars(f)))[1], NULL)
+      if (!is.null(v) && !is.na(v)) return(v) else return(NULL) }
+    if (grepl("^d0_", inp$name)) {
+      v <- switch(sub("^d0_", "", inp$name), x = m[1], y = m[2], NULL)
+      if (!is.null(v) && !is.na(v)) return(v)
+      if (inp$name %in% c("d0_x", "d0_y", "d0_by")) return(structure(cols[1], soft = TRUE)) else return(NULL) }
+    v <- switch(sub("^[a-z][0-9]+_", "", inp$name),
+      y = if (!is.null(lhs)) lhs else m[1], x = if (length(rhs)) rhs[1] else m[2], NULL)
+    if (is.null(v) && grepl("_(var|xj)$", inp$name)) {
+      g <- regmatches(.asciify(q), regexec("(?i)(?:coefficient|slope|estimate|se|standard error|t[- ]?statistic)\\s+(?:of\\s+the\\s+\\w+\\s+)?(?:on|of|for)\\s+(?:the\\s+)?(\\w+)", .asciify(q), perl = TRUE))[[1]]
+      if (length(g) && g[2] %in% cols) v <- g[2] else if (length(rhs)) v <- rhs[length(rhs)] }
+    if (!is.null(v) && !is.na(v) && v %in% cols) return(v)
+    return(NULL) }
+  if (grepl("_at$", inp$name) && !is.null(fml)) {
+    xs <- tryCatch(attr(terms(as.formula(fml)), "term.labels"), error = function(e) NULL)
+    v <- sapply(xs, function(x) { i <- which(tolower(r$lab$label) == tolower(x)); if (length(i)) r$lab$value[i[1]] else NA })
+    if (length(xs) && !anyNA(v)) return(paste(v, collapse = ", "))
+    if (length(xs) && grepl("^c\\(", trimws(inp$def))) return(structure(paste(rep("0", length(xs)), collapse = ", "), soft = TRUE)) }
+  if (grepl("_dx$", inp$name) && !is.null(fml)) {     # "exper rises by 2" -> per-x changes, 0 = held fixed
+    xs <- tryCatch(attr(terms(as.formula(fml)), "term.labels"), error = function(e) NULL); qa <- .asciify(q)
+    if (length(xs) == 1 && grepl("(?i)\\b(one more|another|an additional|each additional|one additional|increases? by one|rises? by one)\\b", qa, perl = TRUE)) return("1")
+    if (length(xs)) return((function(v) if (all(v == "0")) structure(paste(v, collapse = ", "), soft = TRUE) else paste(v, collapse = ", "))(sapply(xs, function(x) {
+      g <- regmatches(qa, regexec(paste0("(?i)\\b", gsub("([().])", "\\\\\\1", x), "\\s+(?:rises|increases|goes up|is increased|grows|falls|decreases|drops|goes down|is reduced)\\s+by\\s+(", .NUM_RE, ")"), qa, perl = TRUE))[[1]]
+      if (!length(g)) return("0")
+      if (grepl("(?i)falls|decreases|drops|down|reduced", g[1], perl = TRUE)) paste0("-", sub("^-", "", g[2])) else g[2] }))) }
+  if (typ != "number") return(NULL)
+  if (!is.null(r$eq) && key == "b0") return(r$eq$b0)
+  vecf <- grepl("^c\\(", trimws(inp$def))
+  if (!is.null(r$eq) && key %in% c("b", "b1") && (vecf || !grepl(",", r$eq$b))) return(r$eq$b)
+  for (l in r$lists) if (identical(l$key, key)) return(l$values)
+  key2 <- c(old = "from", new = "to")[key]; if (is.na(key2)) key2 <- key
+  i <- which(r$lab$key %in% c(key, key2)); if (length(i)) return(sub("%$", "", r$lab$value[i[1]]))
+  NULL
+}
+.q_lm <- function(q) {                                      # text inside lm( ... ), up to ", data"
+  i <- regexpr("lm\\s*\\(", q); if (i < 0) return(NULL)
+  ch <- strsplit(substring(q, i + attr(i, "match.length")), "")[[1]]; dep <- 1
+  for (k in seq_along(ch)) { dep <- dep + (ch[k] == "(") - (ch[k] == ")"); if (dep == 0) break }
+  x <- paste(ch[seq_len(k - 1)], collapse = ""); x <- trimws(sub(",\\s*data\\s*=.*$", "", x))
+  if (grepl("~", x)) x else NULL
+}
+.q_formula <- function(q, cols = NULL) {                    # "lm(y ~ a + b" or "regress y on a, b and c" -> "y ~ a + b + c"
+  q <- .asciify(q); f <- .q_lm(q); if (!is.null(f)) return(f)
+  g <- regmatches(q, regexec("(log\\(\\w+\\)|\\w+)\\s*=\\s*b_?0((?:\\s*\\+\\s*b_?[0-9]\\s*\\*?\\s*(?:log\\(\\w+\\)|\\w+))+)", q, perl = TRUE))[[1]]
+  if (length(g)) { xs <- regmatches(g[3], gregexpr("b_?[0-9]\\s*\\*?\\s*(log\\(\\w+\\)|\\w+)", g[3], perl = TRUE))[[1]]
+    return(paste(g[2], "~", paste(sub("^b_?[0-9]\\s*\\*?\\s*", "", xs), collapse = " + "))) }
+  g <- regmatches(q, regexec("(?i)(?:regress(?:ion of)?|estimate|run|using|model of)\\s+(?:the\\s+)?(log\\(\\w+\\)|\\w+)\\s+on\\s+((?:log\\(\\w+\\)|\\w+)(?:(?:\\s*,\\s*|\\s*,?\\s+and\\s+)(?:log\\(\\w+\\)|\\w+))*)", q, perl = TRUE))[[1]]
+  if (!length(g) || tolower(g[2]) %in% c("y", "the")) return(NULL)
+  xs <- strsplit(g[3], "\\s*,\\s*(?:and\\s+)?|\\s+and\\s+", perl = TRUE)[[1]]
+  if (any(tolower(xs) %in% c("x", "x1", "it", "them"))) return(NULL)
+  if (length(cols)) { inn <- function(v) sub("^log\\((\\w+)\\)$", "\\1", v) %in% cols
+    if (!inn(g[2])) return(NULL); ok <- inn(xs); if (!ok[1]) return(NULL); xs <- xs[seq_len(if (all(ok)) length(xs) else which(!ok)[1] - 1)] }
+  paste(g[2], "~", paste(xs, collapse = " + "))
+}
+.q_cols <- function(q, d) {                                 # columns of dataset d named in the question (definitions dropped)
+  cols <- tryCatch(names(get(d, envir = globalenv())), error = function(e) character()); if (!length(cols)) return(character())
+  t <- .strip_desc(.norm(q), d); pos <- sapply(cols, function(cn) { m <- regexpr(paste0("\\b", tolower(cn), "\\b"), t); if (m < 0) Inf else m })
+  cols[is.finite(pos)][order(pos[is.finite(pos)])]
+}
+.form_values <- function(b, q, r) {                        # what each box starts with
+  given <- any(grepl("GIVEN|leave the rest NA", b$lines)) || any(grepl("NA if", sapply(b$inputs, `[[`, "desc")))
+  lapply(b$inputs, function(inp) {
+    typ <- .fld_type(inp$name, inp$def); pf <- if (nzchar(q)) .fld_prefill(inp, q, r) else NULL
+    keep <- grepl("alpha|_h0$|is_var|_k$|Rj2$", inp$name) || typ == "logical"
+    if (!is.null(pf) && isTRUE(attr(pf, "soft"))) return(list(pf = NULL, ex = TRUE, soft = TRUE, val = as.character(pf)))
+    blank <- nzchar(q) && is.null(pf) && given && typ == "number" && !keep
+    ex <- nzchar(q) && is.null(pf) && !blank && !keep && !(trimws(inp$def) %in% c("NA", "NULL"))
+    list(pf = pf, ex = ex, val = if (!is.null(pf)) as.character(pf) else if (blank) "" else .fld_show(inp$def, typ)) })
+}
+.run_block <- function(blk, vals) {                         # run a block with the form's values
+  L <- blk$lines; for (inp in blk$inputs) L[inp$line] <- sprintf("%s <- %s   # from FORM()", inp$name, vals[[inp$name]])
+  capture.output(withCallingHandlers(
+    tryCatch(eval(parse(text = L), envir = globalenv()), error = function(e) cat("ERROR:", conditionMessage(e), "\n")),
+    warning = function(w) { cat("WARNING:", conditionMessage(w), "\n"); invokeRestart("muffleWarning") },
+    message = function(m) { cat(conditionMessage(m)); invokeRestart("muffleMessage") }))
+}
+FORM <- function(tag = NULL, question = NULL, window = FALSE) {
+  if (!requireNamespace("shiny", quietly = TRUE) || !requireNamespace("miniUI", quietly = TRUE)) {
+    cat("FORM() needs 2 packages. While you have internet, run:\n  install.packages(c(\"shiny\", \"miniUI\"))\n"); return(invisible()) }
+  B <- .ex2_blocks(.ex2_lines()); B <- B[setdiff(names(B), "D13")]
+  q <- trimws(gsub("\\s+", " ", if (!is.null(question)) paste(question, collapse = " ") else if (is.null(tag)) .clip_text() else ""))
+  if (length(strsplit(q, " ")[[1]]) < 3) q <- ""
+  guess <- character(); if (nzchar(q)) capture.output(guess <- FIND(q, go = FALSE))
+  t0 <- toupper(if (!is.null(tag)) tag else if (length(guess)) guess[1] else "S1"); if (!t0 %in% names(B)) t0 <- names(B)[1]
+  r <- .qnums(q)
+  ch <- setNames(names(B), sprintf("[%s] %s", names(B), substr(sapply(B, `[[`, "title"), 1, 70)))
+  if (length(guess)) ch <- c(ch[match(guess[guess %in% ch], ch)], ch[!ch %in% guess])
+  css <- "pre{white-space:pre-wrap;font-size:12px} .ans{font-weight:bold;background:#fff3b0;color:#000} .warn{color:#b00020;font-weight:bold}
+          .q{background:#eef3ff;color:#000;padding:6px;border-radius:4px;font-size:13px;margin-bottom:6px} .ok{color:#1b7a1b;font-size:12px}
+          .err{color:#b00020;font-weight:bold;font-size:12px} .pre input{background:#fff3b0} .help{font-size:12px;color:#555;white-space:pre-wrap}
+          .form-group{margin-bottom:2px} label{font-size:13px} .exv input{background:#ffd9d9}"
+  ui <- miniUI::miniPage(shiny::tags$head(shiny::tags$style(css)),
+    miniUI::gadgetTitleBar("Exam II form", left = miniUI::miniTitleBarCancelButton("cancel", "Close"),
+                           right = miniUI::miniTitleBarButton("done", "Done", primary = TRUE)),
+    miniUI::miniContentPanel(
+      if (nzchar(q)) shiny::div(class = "q", shiny::strong("Question: "), q),
+      shiny::selectInput("tag", if (length(guess)) "Block (ASK()'s best guess first):" else "Block:", ch, selected = t0, width = "100%"),
+      shiny::uiOutput("help"), shiny::uiOutput("fields"),
+      shiny::actionButton("go", "Calculate", class = "btn-primary", width = "100%"),
+      shiny::uiOutput("out")))
+  server <- function(input, output, session) {
+    last <- shiny::reactiveVal(character())
+    output$help <- shiny::renderUI(shiny::div(class = "help", paste(B[[input$tag]]$help, collapse = "\n")))
+    output$fields <- shiny::renderUI({
+      b <- B[[input$tag]]
+      if (!length(b$inputs)) return(shiny::p(shiny::em("Nothing to type for this block: press Calculate.")))
+      fv <- .form_values(b, q, r)
+      shiny::tagList(lapply(seq_along(b$inputs), function(k) { inp <- b$inputs[[k]]; pf <- fv[[k]]$pf; ex <- fv[[k]]$ex; val <- fv[[k]]$val
+        exnote <- if (isTRUE(fv[[k]]$soft)) "(not in the question: fill in only if they ask)" else "(old example: CHANGE it)"
+        shiny::div(class = if (!is.null(pf)) "pre" else if (ex) "exv" else "",
+          shiny::textInput(paste0("f_", inp$name), shiny::HTML(sprintf("<b>%s</b> &nbsp;%s%s", inp$name, sub(", in quotes", "", inp$desc),
+                           if (!is.null(pf)) " &nbsp;<i>(filled from the question: CHECK it)</i>" else if (ex) paste0(" &nbsp;<i>", exnote, "</i>") else "")),
+                           value = val, width = "100%"),
+          shiny::uiOutput(paste0("p_", inp$name))) }))
+    })
+    shiny::observe({
+      for (inp in B[[input$tag]]$inputs) local({ inp <- inp
+        output[[paste0("p_", inp$name)]] <- shiny::renderUI({
+          v <- input[[paste0("f_", inp$name)]]; if (is.null(v)) return(NULL)
+          p <- .fld_parse(v, .fld_type(inp$name, inp$def), inp$def, inp$desc)
+          shiny::div(class = if (p$ok) "ok" else "err", if (p$ok) paste("reads as", p$note) else p$note) }) })
+    })
+    shiny::observeEvent(input$go, {
+      b <- B[[input$tag]]; vals <- list(); errs <- c()
+      for (inp in b$inputs) { p <- .fld_parse(input[[paste0("f_", inp$name)]] %||% "", .fld_type(inp$name, inp$def), inp$def, inp$desc)
+        if (p$ok) vals[[inp$name]] <- p$code else errs <- c(errs, sprintf("%s: %s", inp$name, p$note)) }
+      res <- if (length(errs)) c("Fix the red boxes first:", errs) else .run_block(b, vals)
+      last(res)
+      esc <- function(x) gsub(">", "&gt;", gsub("<", "&lt;", gsub("&", "&amp;", x, fixed = TRUE), fixed = TRUE), fixed = TRUE)
+      html <- vapply(res, function(l) { cl <- if (grepl("^>>> (ANSWER|PICK)", l)) "ans" else if (grepl("^(WARNING|ERROR|Fix|  CHECK|!!)", l)) "warn" else ""
+        if (nzchar(cl)) sprintf("<span class='%s'>%s</span>", cl, esc(l)) else esc(l) }, "")
+      output$out <- shiny::renderUI(shiny::HTML(paste0("<pre>", paste(html, collapse = "\n"), "</pre>")))
+    })
+    shiny::observeEvent(input$done, { if (length(last())) cat(last(), sep = "\n"); shiny::stopApp(invisible(last())) })
+    shiny::observeEvent(input$cancel, shiny::stopApp(invisible()))
+  }
+  viewer <- if (window) shiny::dialogViewer("Exam II form", width = 1000, height = 900) else shiny::paneViewer(minHeight = "maximize")
+  port <- getOption("ex2.form.port")                        # (testing hook: serve on a port, no viewer)
+  if (!is.null(port)) return(shiny::runApp(shiny::shinyApp(ui, server), port = port, launch.browser = FALSE))
+  shiny::runGadget(ui, server, viewer = viewer, stopOnCancel = FALSE)
+}
+if (!exists("%||%")) `%||%` <- function(a, b) if (is.null(a)) b else a
 
 ## ---- STATS(), REG(), OVB(), FTEST(): one-call reports --------------------------
 STATS <- function(data, vars) {
