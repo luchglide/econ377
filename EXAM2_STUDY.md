@@ -7,7 +7,7 @@ Script: `exam2.R`. Run the whole file once before the exam. Every block prints i
 - **A few questions from before Exam I:** E[X]/Var from a probability table, Var(X + b) = Var(X), population quantity vs sample statistic, sample mean/sd, and the **mean within a group**, e.g. `mean(wage1$wage[wage1$female == 1])` → [D0] group mean.
 - **Problem Set 12** (optional): about five exam questions closely follow PS12 problems 2, 4, 6, 9 and 12. See `PS12_questions.md`. Blocks: [S2] given numbers, [D14] se by hand on data, [K18] concepts.
 - **Textbook practice:** 64 Wooldridge Ch 2–3 problems and computer exercises, with answers, are in `Wooldridge_ch2_ch3_practice.md`. All 64 are in ASK()'s examples.
-- **Typing help:** run `setup_rstudio.R` once (installs packages, turns on RStudio typo checks, adds Addins > Exam II). In `exam2.R`: `FORM()` opens fill-in boxes pre-filled from the copied question; `NUMS()` lists every number in it.
+- **Typing help:** run `setup_rstudio.R` once (installs packages, turns on RStudio typo checks, adds Addins > Exam II). In `exam2.R`: `NUMS()` lists every number in the copied question, labelled.
 - Study guide sections: units/logs (D13) · unbiasedness, Var(β̂₁) = σ²/SST_X, sd ÷ √k (D15–16) · multiple regression, MLR1–4, MLR3 failures, endogeneity (D17–19) · OVB (3.23) both directions, Table 3.2, the story in words (D19–20) · Var(β̂ⱼ) with R_j², df, σ̂, se by hand in R, Gauss–Markov (D20–21).
 
 ## What's on it (updated Nov 2)

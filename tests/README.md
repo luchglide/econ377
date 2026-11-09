@@ -27,7 +27,3 @@ Rscript ask_real_loo.R ../exam2.R
 ## Textbook bank (Nov 8)
 
 64 Wooldridge Ch 2–3 problems and computer exercises (`../Wooldridge_ch2_ch3_practice.md`). Before the rule fixes, ASK() routed 48/64 top-1 and 55/64 top-2. After them, 64/64 top-1. Those rules were tuned on these items, so that number is not held out. With the 64 items added to EXAMPLES, the real-question leave-one-out score is 200/217 top-1 and 213/217 top-2.
-
-## FORM() (Nov 9)
-
-`Rscript form_test.R ../exam2.R` pre-fills FORM()'s boxes for all 245 questions in EXAMPLES, the way FORM() does, and runs each block. 10 stop with an error. Each of those has a red box: a value the question gives in words the form can't read, for example "birth weight on family income" instead of variable names. Of the 80 textbook questions with known answers, every one that FORM() filled in completely showed the right answer.
