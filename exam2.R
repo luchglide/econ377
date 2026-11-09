@@ -676,6 +676,7 @@ d0_val  <- NA            # <-- CHANGE  ... and its value (e.g. 1). NA = no group
 # >> ANSWERS: nothing to change below
 blk("D0", sprintf("summary of %s in %s", d0_x, d0_data))
 d0_df <- get(d0_data); d0_v <- d0_df[[d0_x]]; d0_w <- d0_df[[d0_y]]
+if (is.null(d0_v)) stop(sprintf("\n  d0_x: '%s' is not a column of %s. Columns: %s", d0_x, d0_data, paste(head(names(d0_df), 20), collapse = ", ")), call. = FALSE)
 ans(sprintf("n = number of rows in %s", d0_data), nrow(d0_df))
 ans(sprintf("mean of %s", d0_x), mean(d0_v, na.rm = TRUE))
 ans(sprintf("sd of %s", d0_x), sd(d0_v, na.rm = TRUE))
@@ -683,9 +684,11 @@ ans(sprintf("variance of %s", d0_x), var(d0_v, na.rm = TRUE))
 ans(sprintf("min of %s", d0_x), min(d0_v, na.rm = TRUE)); ans(sprintf("max of %s", d0_x), max(d0_v, na.rm = TRUE))
 ans(sprintf("median of %s", d0_x), median(d0_v, na.rm = TRUE))
 ans(sprintf("how many rows with %s > %g", d0_x, d0_cut), sum(d0_v > d0_cut, na.rm = TRUE))
-ans(sprintf("correlation of %s and %s", d0_y, d0_x), cor(d0_w, d0_v, use = "complete.obs"))
-ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "complete.obs"))
-if (!is.na(d0_val)) { d0_g <- d0_df[[d0_by]] == d0_val
+if (is.null(d0_w)) info(sprintf("(no correlation: d0_y '%s' is not a column of %s)", d0_y, d0_data), "only matters for a correlation question") else {
+  ans(sprintf("correlation of %s and %s", d0_y, d0_x), cor(d0_w, d0_v, use = "complete.obs"))
+  ans(sprintf("covariance of %s and %s", d0_y, d0_x), cov(d0_w, d0_v, use = "complete.obs")) }
+if (!is.na(d0_val) && is.null(d0_df[[d0_by]])) info(sprintf("!! d0_by '%s' is not a column of %s.", d0_by, d0_data), paste("Columns:", paste(head(names(d0_df), 12), collapse = ", ")))
+if (!is.na(d0_val) && !is.null(d0_df[[d0_by]])) { d0_g <- d0_df[[d0_by]] == d0_val
   ans(sprintf("GROUP mean of %s where %s == %g", d0_x, d0_by, d0_val), mean(d0_v[d0_g], na.rm = TRUE))
   ans(sprintf("GROUP sd of %s where %s == %g", d0_x, d0_by, d0_val), sd(d0_v[d0_g], na.rm = TRUE))
   ans(sprintf("how many rows with %s == %g", d0_by, d0_val), sum(d0_g, na.rm = TRUE))
