@@ -209,14 +209,14 @@ part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-he
   D10 = list(d10_data = quote("bwght"), d10_y = quote("bwght"), d10_x1 = quote("cigs"), d10_x2 = quote("faminc")),
   D12 = list(d12_data = quote("wage1"), d12_formula = quote(log(wage) ~ educ + exper + tenure), d12_var = quote("exper"), d12_h0 = quote(0), d12_alpha = quote(0.05)),
   D14 = list(d14_data = quote("hprice1"), d14_formula = quote(price ~ sqrft + bdrms + lotsize), d14_xj = quote("bdrms")),
-  S1 = list(s1_SST = quote(NA), s1_SSE = quote(135), s1_SSR = quote(NA), s1_R2 = quote(0.18), s1_n = quote(NA), s1_S2y = quote(NA), s1_k = quote(NA)),
+  S1 = list(s1_SST = quote(NA), s1_SSE = quote(135), s1_SSR = quote(NA), s1_R2 = quote(0.18), s1_n = quote(NA), s1_S2y = quote(NA), s1_Sy = quote(NA), s1_k = quote(NA)),
   S2 = list(s2_sigma = quote(NA), s2_sigma2 = quote(NA), s2_SSR = quote(437), s2_n = quote(13), s2_k = quote(1), s2_SSTx = quote(12), s2_x = quote(NULL), s2_SX = quote(NA), s2_SX2 = quote(NA), s2_Rj2 = quote(0)),
   S3 = list(s3_model = quote("log-log"), s3_b0 = quote(3.36), s3_b1 = quote(0.44), s3_cy = quote(1000), s3_cx = quote(1)),
   S4 = list(s4_b = quote(0.083), s4_dx = quote(1), s4_pctx = quote(10), s4_old = quote(NA), s4_new = quote(NA)),
   S5 = list(s5_EX = quote(3), s5_EX2 = quote(27), s5_VarX = quote(NA), s5_a = quote(3), s5_b = quote(-2), s5_vx = quote(8), s5_vy = quote(6), s5_cov = quote(-2.9), s5_c1 = quote(2), s5_c2 = quote(-2), s5_x = quote(c(1, 4, 5, 6)), s5_y = quote(c(4, 7, 4, 2)), s5_p = quote(c(0.1, 0.4, 0.3, 0.2)), s5_v = quote(c(6, 14, 34)), s5_pv = quote(c(0.5, 0.3, 0.2)), s5_A = quote(3), s5_B = quote(4)),
   S6 = list(s6_x = quote(c(4, 6, 7, 8, 10)), s6_y = quote(c(4, 6, 7, 1, 8)), s6_i = quote(3), s6_x0 = quote(7)),
   S7 = list(s7_b0 = quote(4), s7_b = quote(c(2.9, -0.6)), s7_at = quote(c(1, 2)), s7_dx = quote(c(1, -3)), s7_xbar = quote(c(5, 2)), s7_ybar = quote(NA), s7_yhat = quote(NA), s7_dy = quote(NA)),
-  S8 = list(s8_sum = quote(100), s8_n = quote(31), s8_vals = quote(c(49, 5)), s8_counts = quote(c(1, 18)), s8_dy = quote(27), s8_dx = quote(3), s8_b0 = quote(1), s8_b1 = quote(0.8), s8_x = quote(12), s8_y = quote(19), s8_cxy = quote(NA), s8_vx = quote(NA), s8_sx = quote(NA), s8_sy = quote(NA), s8_ybar = quote(NA), s8_xbar = quote(NA), s8_EXY = quote(NA), s8_EX = quote(NA), s8_EY = quote(NA), s8_a = quote(NA), s8_b = quote(NA), s8_c = quote(NA)),
+  S8 = list(s8_sum = quote(100), s8_n = quote(31), s8_vals = quote(c(49, 5)), s8_counts = quote(c(1, 18)), s8_dy = quote(27), s8_dx = quote(3), s8_b0 = quote(1), s8_b1 = quote(0.8), s8_x = quote(12), s8_y = quote(19), s8_cxy = quote(NA), s8_vx = quote(NA), s8_sx = quote(NA), s8_sy = quote(NA), s8_vy = quote(NA), s8_r = quote(NA), s8_ybar = quote(NA), s8_xbar = quote(NA), s8_EXY = quote(NA), s8_EX = quote(NA), s8_EY = quote(NA), s8_a = quote(NA), s8_b = quote(NA), s8_c = quote(NA)),
   U1 = list(u1_b1 = quote(0.58), u1_c = quote(1/1000)),
   U2 = list(u2_b1 = quote(2.48), u2_b0 = quote(0), u2_c = quote(1000)),
   U3 = list(u3_b0 = quote(3.36), u3_c = quote(1000)),
@@ -1112,8 +1112,10 @@ s1_SSR <- NA     # <-- CHANGE  RESIDUAL sum of squares
 s1_R2  <- 0.18   # <-- CHANGE  R^2 as a decimal (18% -> 0.18)
 s1_n   <- NA     # <-- CHANGE  n, if given
 s1_S2y <- NA     # <-- CHANGE  sample VARIANCE of y, if given
+s1_Sy  <- NA     # <-- CHANGE  OR the sample SD of y (gets squared for you)
 s1_k   <- NA     # <-- CHANGE  number of slopes k (only for ADJUSTED R^2)
 # >> ANSWERS: nothing to change below
+if (is.na(s1_S2y) && !is.na(s1_Sy)) s1_S2y <- s1_Sy^2
 s1_given <- c(SST = !is.na(s1_SST), SSE = !is.na(s1_SSE), SSR = !is.na(s1_SSR), R2 = !is.na(s1_R2))
 for (s1_i in 1:4) {
   if (is.na(s1_SST) && !is.na(s1_n) && !is.na(s1_S2y)) s1_SST <- (s1_n - 1) * s1_S2y
@@ -1372,7 +1374,8 @@ ans("predicted y in levels/$ = exp(PREDICTION)", exp(s7_pred))
 ##   / "x rises by 3, y rises by 27: slope?" / "y-hat = 1 + 0.8x, x = 12, actual y = 19: residual?"
 ##   / "cov(x,y) = 4, var(x) = 7: OLS slope?" / "y-bar = 10, x-bar = 8, slope 0.7: intercept?"
 ##   / "E[XY] = 17, E[X] = 1, E[Y] = 3: Cov?" / "Cov = -1: Cov(3X + 2, 5Y - 1)?" / "E[aX + bY - c]?"
-##   (PS2-PS6, Quizzes 2-6, Exam I Q13)   Type what's GIVEN, leave the rest NA. Only lines it can compute print.
+##   / "cov = 11, S_x = 3, S_y^2 = 64: correlation?" / "r = 0.6, S_x = 2, S_y = 5: OLS slope?"
+##   (PS2-PS6, Quizzes 2-6, Exam I Q13, Q17)   Type what's GIVEN, leave the rest NA. Only lines it can compute print.
 ## Lists of x and y -> [S6]. E[X], Var, probability tables -> [S5]. % change, percentage points -> [S4].
 # >> YOUR NUMBERS: type what's GIVEN, leave the rest NA
 s8_sum    <- 100       # <-- CHANGE  MEAN: the sum of the numbers ...
@@ -1389,6 +1392,8 @@ s8_cxy    <- NA        # <-- CHANGE  OLS slope / correlation: cov(x, y) ...
 s8_vx     <- NA        # <-- CHANGE  ... var(x)   (slope = cov / var)
 s8_sx     <- NA        # <-- CHANGE  ... OR sd(x) and
 s8_sy     <- NA        # <-- CHANGE  ... sd(y)    (correlation = cov / (sd x * sd y))
+s8_vy     <- NA        # <-- CHANGE  ... OR var(y) instead of sd(y) (Exam I Q17 gives S_x AND S_y^2: mixed is fine)
+s8_r      <- NA        # <-- CHANGE  SLOPE FROM CORRELATION: r (with s8_sx and s8_sy): b1 = r x sd(y) / sd(x)
 s8_ybar   <- NA        # <-- CHANGE  OLS intercept = y-bar - slope x x-bar: y-bar ...
 s8_xbar   <- NA        # <-- CHANGE  ... x-bar (slope: s8_b1, or computed from cov / var)
 s8_EXY    <- NA        # <-- CHANGE  Cov = E[XY] - E[X]E[Y]: E[XY] ...
@@ -1407,7 +1412,10 @@ if (s8_ok(s8_vals, s8_counts) && length(s8_vals) == length(s8_counts))
 if (s8_ok(s8_dy, s8_dx)) ans(sprintf("slope = change in y / change in x = %g / %g", s8_dy, s8_dx), s8_dy / s8_dx)
 s8_slope <- if (s8_ok(s8_cxy, s8_vx)) s8_cxy / s8_vx else s8_b1
 if (s8_ok(s8_cxy, s8_vx)) ans(sprintf("OLS slope = cov / var(x) = %g / %g", s8_cxy, s8_vx), s8_slope)
-if (s8_ok(s8_cxy, s8_sx, s8_sy)) ans("correlation = cov / (sd(x) sd(y))", s8_cxy / (s8_sx * s8_sy))
+if (is.na(s8_sy) && s8_ok(s8_vy)) s8_sy <- sqrt(s8_vy)
+if (is.na(s8_sx) && s8_ok(s8_vx)) s8_sx <- sqrt(s8_vx)
+if (s8_ok(s8_cxy, s8_sx, s8_sy)) ans(sprintf("correlation = cov / (sd(x) sd(y)) = %g / (%.4g x %.4g)", s8_cxy, s8_sx, s8_sy), s8_cxy / (s8_sx * s8_sy))
+if (s8_ok(s8_r, s8_sx, s8_sy)) ans(sprintf("OLS slope from correlation = r x sd(y) / sd(x) = %g x %.4g / %.4g", s8_r, s8_sy, s8_sx), s8_r * s8_sy / s8_sx)
 if (s8_ok(s8_ybar, s8_xbar, s8_slope)) ans(sprintf("OLS intercept = %g - %g x %g", s8_ybar, s8_slope, s8_xbar), s8_ybar - s8_slope * s8_xbar)
 if (s8_ok(s8_b0, s8_b1, s8_x)) {
   s8_fit <- s8_b0 + s8_b1 * s8_x
