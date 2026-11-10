@@ -466,6 +466,9 @@ GO <- function(tag) {
   if (has("sign of the bias|upward or downward|biased which way|(positive|negative)(ly)? correlated|corr\\s*\\([^)]*\\)\\s*[<>]|beta2 (is )?(positive|negative|[<>])")) add("B3", 1.6)
   ssonly <- has("\\bssr\\b") && has("observations|\\bn\\s*=") && !has("\\bsse\\b|\\bsst\\b|r\\^2|r-squared|r2\\b|explained|variance of (y|the dependent)")
   if (num && ssonly) add("S2", 1.8)
+  # se of a NAMED coefficient with no numbers given (e.g. "for the educ coefficient", copied without its Data: line) -> by hand on data
+  if (nnum == 0 && has("coefficient|\\bb_?\\{?j|beta\\w*\\s*_?\\s*j") && has("\\bse\\b|se\\s*\\(|standard error|sst_?\\s*j|r_?\\s*j") && has("for the [a-z]\\w* coefficient|coefficient on [a-z]\\w*|\\blm\\("))
+    { add("D14", 3.2); num <- FALSE }
   if (num && !ssonly && !pts && has("\\bsse\\b|\\bssr\\b|\\bsst\\b(?!_?x)|r\\^2|r-squared|r2\\b|explained|sum of squares|sample variance of (y|the dependent)") &&
       !has("sigma|se\\s*\\(|sd\\s*\\(|standard error|sst_?x|vif")) add(c("S1"), 1.4)
   if (num && logeq && has("dollars|in levels|predicted (hourly )?(wage|price|salary|y)\\b") && has("=\\s*-?[0-9.]+\\s*[+-]") && !has("percent|%")) add("S7", 1.8)
