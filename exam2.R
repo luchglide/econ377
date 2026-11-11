@@ -264,6 +264,7 @@ part <- function(t) cat(sprintf("  ---- %s ----\n", t))                 # sub-he
   invisible(stale)
 }
 fx <- function(a, b, v = "X") {                                        # writes aX + b as it would appear in a question
+  if (is.na(a) || is.na(b)) return(paste0("(", format(a), ")", v, " + (", format(b), ")"))   # blanks left NA: no crash
   a_s <- if (a == 1) v else if (a == -1) paste0("-", v) else paste0(format(a), v)
   if (b == 0) a_s else paste0(a_s, if (b > 0) " + " else " - ", format(abs(b))) }
 get_data <- function(name) {
@@ -1286,10 +1287,10 @@ s5_cov <- -2.9   # <-- CHANGE  Cov(X, Y)
 s5_c1  <- 2      # <-- CHANGE  c1, the number in front of X
 s5_c2  <- -2     # <-- CHANGE  c2, the number in front of Y (a minus goes INTO c2)
 part(sprintf("PART B: two variables, Var(X)=%g Var(Y)=%g Cov=%g", s5_vx, s5_vy, s5_cov))
-ans(sprintf("Var(%s%s%s)", fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")),
+ans(sprintf("Var(%s%s%s)", fx(s5_c1, 0), if (isTRUE(s5_c2 < 0)) " - " else " + ", fx(abs(s5_c2), 0, "Y")),
     s5_c1^2 * s5_vx + s5_c2^2 * s5_vy + 2 * s5_c1 * s5_c2 * s5_cov)
 ans("Cor(X,Y) = Cov / (sd(X) sd(Y))", s5_cov / sqrt(s5_vx * s5_vy))
-pick("CHECK the sign", sprintf("this is Var(%s%s%s). Question says MINUS? then s5_c2 must be negative", fx(s5_c1, 0), if (s5_c2 < 0) " - " else " + ", fx(abs(s5_c2), 0, "Y")))
+pick("CHECK the sign", sprintf("this is Var(%s%s%s). Question says MINUS? then s5_c2 must be negative", fx(s5_c1, 0), if (isTRUE(s5_c2 < 0)) " - " else " + ", fx(abs(s5_c2), 0, "Y")))
 # >> PART C: a JOINT probability table of X and Y (one row per cell)
 s5_x <- c(1, 4, 5, 6)            # <-- CHANGE  the x column
 s5_y <- c(4, 7, 4, 2)            # <-- CHANGE  the y column
