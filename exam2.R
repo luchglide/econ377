@@ -419,6 +419,9 @@ GO <- function(tag) {
     logx <- h("(~|\\bon\\b|\\+)\\s*[^.?~]*\\blog\\(\\w+\\)|elasticity|\\bon log\\s+\\w+")
     if (h("^(data:?\\s*)?\\w*\\s*log\\s+\\w+\\s+on\\b|\\blog\\s+\\w+\\s+on\\b|\\blog\\(\\w+\\)\\s+on\\b|same percentage effect|constant percentage|log\\(\\w+\\)\\s*=\\s*b\\s?0")) logy <- TRUE
     if (h("log-log|constant[- ]elasticity|elasticity of")) { logy <- TRUE; logx <- TRUE } else if (h("log-level")) { logy <- TRUE; logx <- FALSE } else if (h("level-log")) { logy <- FALSE; logx <- TRUE }
+    vin <- regmatches(q, regexpr("variation in (the )?\\w+", q, perl = TRUE)); rhs <- regmatches(q, regexpr("~[^)?]*", q, perl = TRUE))
+    if (length(vin) && length(rhs) && h("explained by|explain") && grepl(paste0("\\b", sub("^variation in (the )?", "", vin), "\\b"), rhs, perl = TRUE))
+      return(list(bonus = c(D14 = 2.5), gate = "data"))
     two  <- h("\\bon \\w+(\\(\\w+\\))?(, \\w+(\\(\\w+\\))?)*,? and \\w+|~\\s*[^)]*\\+|\\w+, \\w+ as regressors|holding \\w+ (fixed|constant)|and \\w+ as regressors|\\bb\\s?2\\b|beta\\s?2|with and without|explained by [^.?]* and |\\w+ and \\w+ explain")
     if (h("\\bna\\b|totexpend|their sum|equals \\w+ \\+ \\w+|= \\w+ \\+ \\w+ and regress|collinear")) add("D11", 1.6)
     else if (h("t[ -]?stat|t ratio|significan|reject|p-value|critical value|h0|null hypothesis|one-sided|two-sided|h1:")) add("D12", 1.6)
@@ -445,6 +448,7 @@ GO <- function(tag) {
   num <- short || grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
   # >> concept wordings from the Exam II concept-notes page (study guide, Exam I, PS, quizzes)
   if (has("predict\\w*\\s+(a\\s+)?(natural\\s+)?log\\s*\\(?\\w*\\)?\\s*(=|of|is)\\s*-?[0-9.]+|predicted log\\s*\\(?\\w*\\)?\\s*(=|of|is)\\s*-?[0-9.]+")) return(list(bonus = c(S8 = 2.5, S7 = 0.8), gate = "numbers"))
+  if (has("what is (the )?delta|find (the )?delta|solve for delta|what is \\W{0,3}delta") && num) return(list(bonus = c(B1 = 2.5, B2 = 1), gate = "numbers"))
   if (has("police|ice[- ]cream|drown") && has("correlat") && !has("error term|part of u|omitted|exogenous|bias|left out")) return(list(bonus = c(K19 = 2.5, K17 = 1), gate = "concept"))
   if (has("\\bmu\\b|mu-y|population (mean|quantity|parameter)") && has("y-bar|ybar|sample|random")) return(list(bonus = c(K19 = 2.5, K18 = 1), gate = "concept"))
   if (has("sample variance (divides|is computed)|divides? the sum of squared deviations")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
@@ -475,7 +479,7 @@ GO <- function(tag) {
   if (has("var\\}\\s*\\(\\s*[xy]\\s*\\)\\s*=\\s*-?[0-9]|cov\\}\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=|sd\\}\\s*\\(\\s*x") && !has("var\\}\\s*\\(\\s*x\\s*\\)\\s*\\\\?\\)?\\.?\\s*find the ols|ols slope")) add("S5", 1.4)
   if (has("e\\s*[(\\[]\\s*x|e\\s*[(\\[]\\s*y|var\\s*\\(\\s*[xy]\\b\\s*\\)\\s*=\\s*-?[0-9]|cov\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=\\s*-?[0-9]|probabilit|joint (distribution|probability)|takes (the )?values|sd\\s*\\(\\s*-?[0-9]*\\s*x\\b|deviation of -?[0-9]*x|var\\[")) add(c("S5"), 1.6)
   if (has("\\bvif\\b|inflation|r_?j\\b|r_?j\\^2|regressing x_?[0-9] on (all )?the other|on all other explanatory")) add("V7", 1.8)
-  if (has("times (larger|as large|smaller)|doubl|quadrupl|tripl|sample size (doubles|is|falls|is cut)|sample were|(cut|reduce)\\w* (the sample|n) in half|sample (is |gets )?(cut in half|halved)|half as (large|big)|halve the (sd|standard)|cut (the )?(sd|standard deviation|standard error) in half|how (many times|large) (larger|must)")) add(c("V6"), if (has("new (sd|var|variance|standard)|what is the new|by what factor")) 2.2 else 1.4)
+  if (has("times (larger|as large|smaller)|doubl|quadrupl|tripl|sample size (doubles|is|falls|is cut)|sample were|(cut|reduce)\\w* (the sample|n) in half|sample (is |gets )?(cut in half|halved)|half as (large|big)|halve the (sd|standard)|cut (the )?(sd|standard deviation|standard error) in half|how (many times|large) (larger|must)|how many observations|observations (would be |are )?needed|sample size (would be |is )?needed")) add(c("V6"), if (has("new (sd|var|variance|standard)|what is the new|by what factor|needed")) 2.2 else 1.4)
   nnum <- length(gregexpr("=\\s*-?[0-9]*\\.?[0-9]+", s)[[1]]) * grepl("=\\s*-?[0-9]*\\.?[0-9]+", s)
   if (nnum >= 2 && has("delta ?(1|tilde)|tilde|3\\.23|short regression|long regression|omit|leaving out|left out|bias|delta(?! ?(y|x|hat))")) add(c("B1", "B2"), 1.6)
   if (num && has("delta ?(y|hat ?y)\\s*=|predicted change|change in y|delta y")) add("S7", 1.6)
@@ -1302,11 +1306,17 @@ ans("table E[X^2]", sum(s5_x^2 * s5_p)); ans("population slope beta1 = Cov(X,Y) 
 s5_v  <- c(6, 14, 34)        # <-- CHANGE  the values Y takes
 s5_pv <- c(0.5, 0.3, 0.2)    # <-- CHANGE  their probabilities
 s5_A  <- 3                   # <-- CHANGE  A in E[AY + B]
-s5_B  <- 4                   # <-- CHANGE  B in E[AY + B]
+s5_B  <- 4                   # <-- CHANGE  B in E[AY + B] / Var(AY + B). A probability missing? It is 1 minus the others.
+if (length(s5_pv) == length(s5_v) - 1) { s5_pv <- c(s5_pv, 1 - sum(s5_pv))
+  cat(sprintf("  !! one probability missing: filled in the LAST one as 1 - (the others) = %g. If a different one is missing, type all of them in order.\n", tail(s5_pv, 1))) }
+same_len(s5_v, s5_pv, "s5_v", "s5_pv")
 part(sprintf("PART D: Y takes %s with probabilities %s", paste(s5_v, collapse = ", "), paste(s5_pv, collapse = ", ")))
 s5_E <- sum(s5_v * s5_pv)
 ans("E[Y]", s5_E); ans("E[Y^2]", sum(s5_v^2 * s5_pv)); ans("Var(Y)", sum(s5_v^2 * s5_pv) - s5_E^2)
 ans(sprintf("E[%s]", fx(s5_A, s5_B, "Y")), s5_A * s5_E + s5_B)
+ans(sprintf("Var(%s) = %g^2 x Var(Y)  (the + B drops out)", fx(s5_A, s5_B, "Y"), s5_A), s5_A^2 * (sum(s5_v^2 * s5_pv) - s5_E^2))
+ans(sprintf("sd(%s) = |%g| x sd(Y)", fx(s5_A, s5_B, "Y"), s5_A), abs(s5_A) * sqrt(sum(s5_v^2 * s5_pv) - s5_E^2))
+if (abs(sum(s5_pv) - 1) > 1e-9) cat(sprintf("  !! probabilities add to %g, not 1. A missing one is 1 - (the others) = %g. Add it to s5_v / s5_pv.\n", sum(s5_pv), 1 - sum(s5_pv)))
 
 ## ======================================================================
 ## [S6] SMALL-SAMPLE OLS SOLVER: type x and y, get EVERYTHING ----
