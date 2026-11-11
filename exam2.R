@@ -791,7 +791,12 @@ if (!is.na(d0_val) && !is.null(d0_df[[d0_by]])) { d0_g <- d0_df[[d0_by]] == d0_v
   ans(sprintf("GROUP mean of %s where %s == %g", d0_x, d0_by, d0_val), mean(d0_v[d0_g], na.rm = TRUE))
   ans(sprintf("GROUP sd of %s where %s == %g", d0_x, d0_by, d0_val), sd(d0_v[d0_g], na.rm = TRUE))
   ans(sprintf("how many rows with %s == %g", d0_by, d0_val), sum(d0_g, na.rm = TRUE))
-  ans(sprintf("PERCENT of rows with %s == %g", d0_by, d0_val), 100 * mean(d0_g, na.rm = TRUE)) }
+  ans(sprintf("PERCENT of rows with %s == %g", d0_by, d0_val), 100 * mean(d0_g, na.rm = TRUE))
+  if (all(d0_df[[d0_by]] %in% c(0, 1, NA))) {                      # 0/1 group: the other group and the gap too
+    d0_o <- 1 - d0_val
+    ans(sprintf("OTHER GROUP mean of %s where %s == %g", d0_x, d0_by, d0_o), mean(d0_v[d0_df[[d0_by]] == d0_o], na.rm = TRUE))
+    ans(sprintf("GAP = mean(%s == %g) - mean(%s == %g)", d0_by, d0_val, d0_by, d0_o),
+        mean(d0_v[d0_g], na.rm = TRUE) - mean(d0_v[d0_df[[d0_by]] == d0_o], na.rm = TRUE)) } }
 
 ## ======================================================================
 ## [D1] SIMPLE REGRESSION ON DATA: slope, prediction, change, R^2, residual, SSE/SSR/SST ----
