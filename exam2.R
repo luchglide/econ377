@@ -325,7 +325,7 @@ CATALOG <- list(
   c("V3",  "sd of b1 from sigma and raw x values", "sd standard deviation x values sigma five"),
   c("V4",  "sigma^2-hat = SSR / (n-k-1)", "estimate error variance sigma2 ssr n observations"),
   c("V5",  "se(b1) from SSR, n, SST_x", "standard error se ssr sst_x n observations"),
-  c("V6",  "sd(b1) when the sample is k times as large", "times as large sample sd spread same way"),
+  c("V6",  "what-if: sd/Var of b1 when the sample is k times as large, sigma doubles, x more spread, R_j^2 rises", "times as large sample sd spread same way half halve doubles triples how many times larger must new variance sigma doubles"),
   c("V7",  "multiple regression Var(bj) with Rj^2 / VIF", "variance inflation vif multicollinearity rj2 r-squared other"),
   c("B1",  "OVB formula (3.23): solve for any piece", "formula 3.23 simple multiple slope delta b1tilde b1hat b2hat b2 find coefficient"),
   c("B2",  "Bias = beta2 * delta1 (or expected simple slope)", "bias beta2 delta1 omit e[b1tilde] expected value of the simple slope true beta1"),
@@ -410,6 +410,7 @@ GO <- function(tag) {
   if (has("which regression gives|r\\W{0,3}_\\W{0,2}j\\W{0,4}2? measures|what is \\W{0,3}x\\W{0,3}_\\W{0,2}j|residual standard error.*which of your answers|warning about missing data"))
     return(list(bonus = c(K18 = 2.5), gate = "concept"))
   if (has("what does the \\$ do|\\$ do\\?|quick snapshot|which r command")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
+  if (has("simple (\\w+ )?slope") && has("lm\\(\\w+ ~ \\w+\\) gives -?[0-9.]|what'?s the simple")) return(list(bonus = c(B1 = 2.5, B2 = 0.8), gate = "numbers"))
   ds <- .dataset_in(s)
   if (!is.na(ds)) {                                          # ---------- PART III: real data ----------
     q <- if (ds != "?") .strip_desc(s, ds) else s
@@ -442,6 +443,25 @@ GO <- function(tag) {
   logeq <- has("\\b(log|ln)\\s*\\(|\\blog \\w+ on\\b|\\bon log\\b|\\blog y\\b|\\blog x\\b|log-log|log-level|level-log|constant[- ]elasticity|elasticity")
   short <- has("\\bgiven\\b|\\bgave\\b|\\bwant\\b|\\bknow\\b|\\bneed\\b|\\bfind\\b")
   num <- short || grepl("(?<![a-z_^0-9.])-?[0-9]+(\\.[0-9]+)?(?![a-z_])", gsub("(!=|=|<|>)\\s*0(?![.0-9])", " ", s, perl = TRUE), perl = TRUE)
+  # >> concept wordings from the Exam II concept-notes page (study guide, Exam I, PS, quizzes)
+  if (has("predict\\w*\\s+(a\\s+)?(natural\\s+)?log\\s*\\(?\\w*\\)?\\s*(=|of|is)\\s*-?[0-9.]+|predicted log\\s*\\(?\\w*\\)?\\s*(=|of|is)\\s*-?[0-9.]+")) return(list(bonus = c(S8 = 2.5, S7 = 0.8), gate = "numbers"))
+  if (has("police|ice[- ]cream|drown") && has("correlat") && !has("error term|part of u|omitted|exogenous|bias|left out")) return(list(bonus = c(K19 = 2.5, K17 = 1), gate = "concept"))
+  if (has("\\bmu\\b|mu-y|population (mean|quantity|parameter)") && has("y-bar|ybar|sample|random")) return(list(bonus = c(K19 = 2.5, K18 = 1), gate = "concept"))
+  if (has("sample variance (divides|is computed)|divides? the sum of squared deviations")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
+  if (has("var\\w*\\s*\\(?\\s*(annual )?income\\s*\\|\\s*age")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
+  if (has("what goes wrong|every (worker|observation|person) (in the sample )?has exactly")) return(list(bonus = c(K5 = 2.5), gate = "concept"))
+  if (has("which changes? (would )?make|why (do we )?prefer")) return(list(bonus = c(K7 = 2.5), gate = "concept"))
+  if (has("times its (ols )?residual|each x value times")) return(list(bonus = c(K10 = 2.5), gate = "concept"))
+  if (has("(is|are) (part of|in) \\(?u\\b") && !has("which assumption|direction|biased (up|down)|overstat|understat")) return(list(bonus = c(K2 = 2.5, K17 = 0.8), gate = "concept"))
+  if (has("lies? exactly on the (ols )?line|every observation lies")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
+  if (has("r\\^?2\\s*=\\s*0?\\.[0-9]+") && has("which (statement )?is correct") && !has("sst|ssr|sse")) return(list(bonus = c(K19 = 2.5), gate = "concept"))
+  if (has("when (is there|does this cause|does omitting) no|no omitted-variable bias")) return(list(bonus = c(K15 = 2.5), gate = "concept"))
+  if (has("which reading|holding \\w+ fixed it'?s")) return(list(bonus = c(K14 = 2.5), gate = "concept"))
+  if (has("r\\W{0,3}_?\\W{0,2}j\\W{0,3}\\^?2? (gets close to|approaches|->|goes to)?\\s*1\\b|as r\\w*\\^?2\\s*(->)?\\s*1")) return(list(bonus = c(K18 = 2.5), gate = "concept"))
+  if (has("what'?s df|why subtract more|df.*why")) return(list(bonus = c(K18 = 2.5, S2 = 0.5), gate = "concept"))
+  if (has("sigma hat unbiased|unbiased for sigma\\b")) return(list(bonus = c(K18 = 2.5), gate = "concept"))
+  if (has("does .?best.? mean|best means|what does best")) return(list(bonus = c(K16 = 2.5), gate = "concept"))
+  if (has("which (statement )?is correct|what happens") && has("multiplied by|re-measured|measured in \\w+ instead|instead of") && !has("log")) return(list(bonus = c(K8 = 2.5, U1 = 0.8), gate = "concept"))
   # >> PART II: numbers in the question
   if (has("residuals?[^.?]*-?[0-9.]+\\s*,\\s*-?[0-9.]+") && has("one more|missing|final|last|\\?\\s*[.,]|, \\?|(sixth|fifth|seventh|last) residual")) add("O2", 1.6)
   if (has("\\bx\\s*=\\s*[\\[(]\\s*-?[0-9]") && has("\\by\\s*=\\s*[\\[(]\\s*-?[0-9]|sample (standard deviation|variance|mean) of x")) add(c("S6"), 1.4)
@@ -455,7 +475,7 @@ GO <- function(tag) {
   if (has("var\\}\\s*\\(\\s*[xy]\\s*\\)\\s*=\\s*-?[0-9]|cov\\}\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=|sd\\}\\s*\\(\\s*x") && !has("var\\}\\s*\\(\\s*x\\s*\\)\\s*\\\\?\\)?\\.?\\s*find the ols|ols slope")) add("S5", 1.4)
   if (has("e\\s*[(\\[]\\s*x|e\\s*[(\\[]\\s*y|var\\s*\\(\\s*[xy]\\b\\s*\\)\\s*=\\s*-?[0-9]|cov\\s*\\(\\s*x\\s*,\\s*y\\s*\\)\\s*=\\s*-?[0-9]|probabilit|joint (distribution|probability)|takes (the )?values|sd\\s*\\(\\s*-?[0-9]*\\s*x\\b|deviation of -?[0-9]*x|var\\[")) add(c("S5"), 1.6)
   if (has("\\bvif\\b|inflation|r_?j\\b|r_?j\\^2|regressing x_?[0-9] on (all )?the other|on all other explanatory")) add("V7", 1.8)
-  if (has("times (larger|as large)|doubl|quadrupl|tripl|sample size (doubles|is)|sample were")) add(c("V6"), 1.4)
+  if (has("times (larger|as large|smaller)|doubl|quadrupl|tripl|sample size (doubles|is|falls|is cut)|sample were|(cut|reduce)\\w* (the sample|n) in half|sample (is |gets )?(cut in half|halved)|half as (large|big)|halve the (sd|standard)|cut (the )?(sd|standard deviation|standard error) in half|how (many times|large) (larger|must)")) add(c("V6"), if (has("new (sd|var|variance|standard)|what is the new|by what factor")) 2.2 else 1.4)
   nnum <- length(gregexpr("=\\s*-?[0-9]*\\.?[0-9]+", s)[[1]]) * grepl("=\\s*-?[0-9]*\\.?[0-9]+", s)
   if (nnum >= 2 && has("delta ?(1|tilde)|tilde|3\\.23|short regression|long regression|omit|leaving out|left out|bias|delta(?! ?(y|x|hat))")) add(c("B1", "B2"), 1.6)
   if (num && has("delta ?(y|hat ?y)\\s*=|predicted change|change in y|delta y")) add("S7", 1.6)
@@ -1375,6 +1395,7 @@ ans("predicted y in levels/$ = exp(PREDICTION)", exp(s7_pred))
 ##   / "cov(x,y) = 4, var(x) = 7: OLS slope?" / "y-bar = 10, x-bar = 8, slope 0.7: intercept?"
 ##   / "E[XY] = 17, E[X] = 1, E[Y] = 3: Cov?" / "Cov = -1: Cov(3X + 2, 5Y - 1)?" / "E[aX + bY - c]?"
 ##   / "cov = 11, S_x = 3, S_y^2 = 64: correlation?" / "r = 0.6, S_x = 2, S_y = 5: OLS slope?"
+##   / "fitted value 12, residual -3: actual y?" (Exam I Q6) / "predicts log(wage) = 1.50: wage in dollars?"
 ##   (PS2-PS6, Quizzes 2-6, Exam I Q13, Q17)   Type what's GIVEN, leave the rest NA. Only lines it can compute print.
 ## Lists of x and y -> [S6]. E[X], Var, probability tables -> [S5]. % change, percentage points -> [S4].
 # >> YOUR NUMBERS: type what's GIVEN, leave the rest NA
@@ -1402,6 +1423,9 @@ s8_EY     <- NA        # <-- CHANGE  ... E[Y]
 s8_a      <- NA        # <-- CHANGE  E[aX + bY + c] and Cov(aX + .., bY + ..): a (number in front of X)
 s8_b      <- NA        # <-- CHANGE  ... b (number in front of Y; a minus goes INTO it)
 s8_c      <- NA        # <-- CHANGE  ... c (the constant; "- 7" -> -7; 0 if none)
+s8_fitted <- NA        # <-- CHANGE  ACTUAL y = fitted + residual: the fitted value y-hat ...
+s8_resid  <- NA        # <-- CHANGE  ... and the residual u-hat (keep its sign)
+s8_logy   <- NA        # <-- CHANGE  DOLLARS from a predicted log(y): the predicted log, e.g. 1.50 -> exp(1.50)
 # >> ANSWERS: nothing to change below
 blk("S8", "quick formulas (only what you typed prints)")
 .you_typed("S8")
@@ -1427,6 +1451,8 @@ if (s8_ok(s8_b1, s8_dx)) ans(sprintf("change in y-hat = b1 x change in x = %g x 
 if (s8_ok(s8_EXY, s8_EX, s8_EY)) ans(sprintf("Cov = E[XY] - E[X]E[Y] = %g - %g x %g", s8_EXY, s8_EX, s8_EY), s8_EXY - s8_EX * s8_EY)
 if (s8_ok(s8_a, s8_EX)) ans(sprintf("E[aX + bY + c] = %g E[X] + %g E[Y] + %g", s8_a, if (is.na(s8_b)) 0 else s8_b, if (is.na(s8_c)) 0 else s8_c),
                             s8_a * s8_EX + (if (s8_ok(s8_b, s8_EY)) s8_b * s8_EY else 0) + (if (is.na(s8_c)) 0 else s8_c))
+if (s8_ok(s8_fitted, s8_resid)) ans(sprintf("actual y = fitted + residual = %g + (%g)  (residual < 0 -> line OVER-predicted)", s8_fitted, s8_resid), s8_fitted + s8_resid)
+if (s8_ok(s8_logy)) ans(sprintf("y in levels/dollars = exp(predicted log) = exp(%g)", s8_logy), exp(s8_logy))
 if (s8_ok(s8_a, s8_b, s8_cxy)) ans(sprintf("Cov(%gX + .., %gY + ..) = %g x %g x Cov  (added constants drop out)", s8_a, s8_b, s8_a, s8_b), s8_a * s8_b * s8_cxy)
 
 ## SPECIALIZED BLOCKS: one formula each. The solvers above do all of these too.
@@ -1647,14 +1673,42 @@ ans(sprintf("sigma-hat = sqrt(%g / (%g - 2))", v5_SSR, v5_n), sqrt(v5_SSR / (v5_
 ans(sprintf("se(b1) = sigma-hat / sqrt(%g)", v5_SST), sqrt(v5_SSR / (v5_n - 2)) / sqrt(v5_SST))
 
 ## ======================================================================
-## [V6] sd(b1) WHEN THE SAMPLE IS k TIMES AS LARGE: divide by sqrt(k) ----
+## [V6] WHAT-IF: sample k times as large, sigma doubles, x more spread, R_j^2 rises, target sd ... ----
 ## LOOKS LIKE: "sd(b1-hat) = 0.34. Sample 6 times as large (SST_X also 6x). New sd?"  (Q9 #7, PS10 #9)
-## DEFAULT: 0.14      (sigma doubles instead -> multiply the sd by 2)
-v6_sd <- 0.34   # <-- CHANGE  current sd
-v6_k  <- 6      # <-- CHANGE  how many times as large
-blk("V6", "bigger sample")
+##   / "sample cut in half" / "sigma doubles" / "how many times larger must the sample be to halve the sd?"
+##   / "S_X doubles" / "Var(b1-hat) = 0.09, sample 4x: new Var?" / "R_j^2 goes from 0.5 to 0.8: new se?"
+## THE LOGIC (every version is this one formula):   Var(b1) = sigma^2 / SST_x,   SST_x = (n - 1) * S_x^2
+##   (multiple regression: Var(bj) = sigma^2 / [SST_j (1 - R_j^2)];  sd = se = sqrt(Var))
+##   change                       -> SST_x          -> Var(b1)        -> sd / se(b1)
+##   sample k times as large      -> x k            -> / k            -> / sqrt(k)
+##   sample k times SMALLER       -> / k            -> x k            -> x sqrt(k)
+##   sigma (sd of u) times c      -> (no change)    -> x c^2          -> x c
+##   sigma^2 times c              -> (no change)    -> x c            -> x sqrt(c)
+##   S_x (spread of x) times c    -> x c^2          -> / c^2          -> / c
+##   x bunched together           -> smaller        -> larger         -> larger
+##   R_j^2 up (x_j more correlated with the other x's) -> (1 - R_j^2) down -> larger -> larger
+##   WANT sd cut to 1/m           -> need a sample m^2 times as large (halve sd -> 4x the data)
+## sigma^2 is about the ERROR u: it never changes SST_x. n and the spread of x never change sigma^2.
+## DEFAULT: 0.14      Type the multipliers that apply; leave the others at 1 (or NA).
+v6_sd     <- 0.34   # <-- CHANGE  current sd (or se) of b1-hat   (NA if they give the variance instead)
+v6_var    <- NA     # <-- CHANGE  current Var(b1-hat), only if they give the VARIANCE
+v6_k      <- 6      # <-- CHANGE  sample is k TIMES AS LARGE (half the sample -> 0.5; unchanged -> 1)
+v6_sig    <- 1      # <-- CHANGE  sigma (sd of the error) is multiplied by this (doubles -> 2). sigma^2 doubles -> sqrt(2)
+v6_spread <- 1      # <-- CHANGE  S_x (sd of x) is multiplied by this (x twice as spread out -> 2)
+v6_rj2    <- c(NA, NA)  # <-- CHANGE  multiple regression: R_j^2 from OLD to NEW, e.g. c(0.5, 0.8)
+v6_target <- NA     # <-- CHANGE  FLIPPED: the sd they WANT -> how many times as large must the sample be?
+# >> ANSWERS: nothing to change below
+blk("V6", "what-if: sample size, sigma, spread of x, R_j^2")
 .you_typed("V6")
-ans(sprintf("new sd = %g / sqrt(%g)", v6_sd, v6_k), v6_sd / sqrt(v6_k))
+if (is.na(v6_sd) && !is.na(v6_var)) v6_sd <- sqrt(v6_var)
+v6_rf <- if (all(!is.na(v6_rj2))) (1 - v6_rj2[1]) / (1 - v6_rj2[2]) else 1      # Var multiplier from R_j^2
+v6_vm <- v6_sig^2 * v6_rf / (v6_k * v6_spread^2)                                   # total Var multiplier
+ans(sprintf("Var multiplier = sigma^2 x %g / (SST_x x %g)  [k = %g, S_x x %g%s]", v6_sig^2 * v6_rf, v6_k * v6_spread^2, v6_k, v6_spread,
+            if (v6_rf != 1) sprintf(", (1 - Rj2) %g -> %g", 1 - v6_rj2[1], 1 - v6_rj2[2]) else ""), v6_vm)
+ans("sd/se multiplier = sqrt(Var multiplier)", sqrt(v6_vm))
+if (!is.na(v6_sd)) { ans(sprintf("NEW sd (se) = %g x %.4g", v6_sd, sqrt(v6_vm)), v6_sd * sqrt(v6_vm))
+                     ans(sprintf("NEW Var = %.4g x %.4g = %.5f", v6_sd^2, v6_vm, v6_sd^2 * v6_vm), v6_sd^2 * v6_vm) }
+if (!is.na(v6_target) && !is.na(v6_sd)) ans(sprintf("FLIPPED: sample must be (%g / %g)^2 times as large", v6_sd, v6_target), (v6_sd / v6_target)^2)
 
 ## ======================================================================
 ## [V7] MULTIPLE REGRESSION: Var(bj) = sigma^2 / [SST_j (1 - Rj^2)],  VIF = 1 / (1 - Rj^2) ----
@@ -1831,6 +1885,14 @@ pick("[K6] heteroskedasticity", "SLR5 fails: Var formula no longer applies; OLS 
 ## [K7] "Which change makes Var(b1-hat) smaller / larger?" (PS9 #13, Q8 #8, Q9 #5) ----
 pick("[K7] SMALLER Var", "smaller sigma^2, larger sample, MORE spread-out x (bigger SST_X)")
 pick("[K7] LARGER Var", "larger sigma^2, smaller sample, x bunched together. NOT b0 or b1")
+## K7 LOGIC: Var(b1) = sigma^2 / SST_x, SST_x = (n - 1) S_x^2. Bigger numerator -> worse; bigger denominator -> better.
+##   Multiple regression adds (1 - R_j^2) to the denominator. Same directions for sd and se (square roots).
+pick("[K7] SST_x LARGER", "more observations, x MORE spread out (bigger S_x). sigma^2 does NOT change SST_x")
+pick("[K7] SST_x SMALLER", "fewer observations, x bunched together. All x the same -> SST_x = 0 (SLR.3 fails)")
+pick("[K7] sigma^2 (error variance) larger", "more noise in u (other factors matter more). n and spread of x do NOT change it")
+pick("[K7] MLR Var(bj) / se LARGER", "larger sigma^2, smaller SST_j, HIGHER R_j^2 (x_j more correlated with the other x's)")
+pick("[K7] MLR Var(bj) / se SMALLER", "smaller sigma^2, bigger sample / more spread in x_j, LOWER R_j^2")
+pick("[K7] why prefer SMALLER Var", "estimates cluster tighter around beta, so any ONE sample is more likely to be close")
 ## [K8] units questions (PS8 #15, PS9 #1, Q8 #1) ----
 pick("[K8] x times 10 (level model)", "slope DIVIDED by 10, intercept same, R^2 same")
 pick("[K8] log(y), y in $ not $000s", "b1 does NOT change; only b0 changes (by log(1000))")
@@ -1842,13 +1904,16 @@ pick("[K9] log-level  log(y) ~ x", "1 unit rise in x -> about 100*b % change in 
 ## [K10] "After OLS multiple regression, which are always true? Select all" (PS11 #4) ----
 pick("[K10] TRUE (3)", "passes through the means; residuals average 0; cov(each Xj, residuals) = 0")
 pick("[K10] FALSE", "cov(Y, residuals) = 0; every residual 0 in big samples")
+pick("[K10] sum of x * residual", "always 0 (each x uncorrelated with the residuals in the sample)")
+pick("[K10] add an x, R^2", "NEVER falls (OLS could set the new beta to 0). High R^2 says nothing about bias")
 ## [K11] "Which violate MLR3 (no perfect collinearity)? Select all" (PS11 #7) ----
 pick("[K11] VIOLATE", "more x's than observations; x3 = x1 + x2 exactly; same variable in 2 units")
-pick("[K11] FINE", "highly but NOT perfectly correlated x's")
+pick("[K11] FINE", "highly but NOT perfectly correlated x's (0.95 is fine); educ AND educ^2 (not LINEAR, so fine)")
 ## [K12] "Which makes MLR4 fail / X endogenous?" (PS11 #9) ----
 pick("[K12] MLR4 fails", "a variable that affects Y AND is correlated with X1 is left out (or wrong functional form)")
 ## [K13] "Why not add every variable we can find?" (PS11 #10) ----
 pick("[K13] too many variables", "can INCREASE the variance of the estimates and can even violate MLR3")
+pick("[K13] irrelevant x (beta = 0) added", "still UNBIASED; variance of the other b-hats goes UP if it is correlated with them")
 ## [K14] "cigs slope -0.51 simple, -0.46 holding income fixed. Which reading?" (PS11 #15) ----
 pick("[K14] simple vs multiple", "-0.46 = smoking's effect holding income fixed; the other -0.05 is income riding along")
 ## [K15] "When does omitting X2 cause NO bias? Select all" (PS11 #19) ----
@@ -1859,6 +1924,8 @@ pick("[K16] t-stat", "(b-hat - a)/se: how many se's the estimate is from the nul
 pick("[K16] one-sided >", "reject H0 if t > c;  two-sided: reject if |t| > c")
 pick("[K16] p-value", "reject H0 if p < alpha; small p = evidence AGAINST H0")
 pick("[K16] high corr (not perfect)", "allowed; just raises Var(bj) (multicollinearity)")
+pick("[K16] BLUE: BEST means", "SMALLEST variance among all LINEAR UNBIASED estimators (not highest R^2). Needs MLR.1-5")
+pick("[K16] Gauss-Markov assumptions", "MLR.1-5. Unbiased needs only MLR.1-4; MLR.5 fails -> still unbiased, se wrong, not BLUE")
 
 ## [K18] se OF A COEFFICIENT, the pieces (PS12 #1, #2, #3, #7, #14, #15) ----
 pick("[K18] x_j is", "the independent variable whose coefficient's se you want")
@@ -1867,6 +1934,8 @@ pick("[K18] sigma-hat estimates", "sigma, the standard deviation of the error U 
 pick("[K18] R_j^2 -> 1", "se grows without bound (multicollinearity)")
 pick("[K18] missing data (NA)", "compute every piece on the rows the regression used, or the hand se won't match summary()")
 pick("[K18] Var(X + b), population vs sample", "Var(X + b) = Var(X). mu_Y is a fixed number; Y-bar is a random variable")
+pick("[K18] df = n - k - 1, why", "one df used per estimated beta: k slopes + 1 intercept (n = 88, k = 3 -> 84)")
+pick("[K18] sigma-hat^2 vs sigma-hat", "sigma-hat^2 = SSR/(n-k-1) is UNBIASED for sigma^2 (Thm 3.3); sigma-hat is NOT unbiased for sigma")
 
 ## [K19] BEFORE EXAM I: definitions, rules, R commands (PS1-PS6, Quizzes 1-6) ----
 pick("[K19] econometrics combines", "data + economics + STATISTICS")
@@ -1892,6 +1961,10 @@ pick("[K19] OLS slope / intercept", "b1-hat = cov(x,y) / var(x);  b0-hat = y-bar
 pick("[K19] fitted / residual", "y-hat = PREDICTION at X_i;  residual = y - y-hat (actual - fitted). Positive residual = UNDER-predicted; negative = OVER-predicted")
 pick("[K19] OLS facts", "residuals sum to 0; (x-bar, y-bar) is ON the line; SST = SSE + SSR; R^2 = share of variation explained")
 pick("[K19] R^2 near 0", "the line explains little of the variation in y: common, and the regression is still valid")
+pick("[K19] R^2 = 0.62", "x explains 62% of the VARIATION in y (not the slope, not % predicted right)")
+pick("[K19] every point ON the line", "every residual 0 -> SSR = 0 -> R^2 = 1")
+pick("[K19] actual from fitted + residual", "y = y-hat + u-hat: fitted 12, residual -3 -> actual 9, line OVER-predicted")
+pick("[K19] Var(income | age 10 vs 40)", "age 40 is larger: almost every 10-year-old earns 0 (no spread)")
 pick("[K19] intercept and a change", "b0 does NOT affect the change in y (False): change in y = b1 x change in x")
 pick("[K19] beta1 in y = b0 + b1 X1 + b2 X2", "the effect of X1 on y, holding X2 fixed")
 pick("[K19] R commands", "wage1$wage = the column wage from wage1; summary() = snapshot of every variable; mean(x) = sum(x)/length(x) (True); center, spread, shape = mean(), sd(), hist()")
@@ -2350,7 +2423,89 @@ EXAMPLES <- data.frame(stringsAsFactors = FALSE, tag = c(
   "S8",
   "S7",
   "S8",
-  "S1"),
+  "S1",
+  # Exam II concept notes page (Exam I, PS, quizzes, study guide), Nov 10
+  "K19",
+  "K19",
+  "K1",
+  "K19",
+  "K19",
+  "K19",
+  "S5",
+  "S5",
+  "K19",
+  "K19",
+  "D0",
+  "K19",
+  "K9",
+  "K9",
+  "K9",
+  "K9",
+  "K9",
+  "K8",
+  "K8",
+  "K8",
+  "S4",
+  "S8",
+  "K4",
+  "K7",
+  "K7",
+  "V6",
+  "K5",
+  "K6",
+  "K14",
+  "K10",
+  "K10",
+  "K11",
+  "D11",
+  "K12",
+  "K2",
+  "K2",
+  "K2",
+  "K13",
+  "K19",
+  "K19",
+  "K10",
+  "B3",
+  "B3",
+  "B3",
+  "K17",
+  "K17",
+  "K17",
+  "K15",
+  "K3",
+  "K14",
+  "B1",
+  "B1",
+  "K13",
+  "K18",
+  "K18",
+  "K18",
+  "S2",
+  "S2",
+  "S2",
+  "K18",
+  "D14",
+  "D14",
+  "D14",
+  "D14",
+  "K18",
+  "K18",
+  "K18",
+  "K18",
+  "K16",
+  "K16",
+  "V6",
+  "V6",
+  "V6",
+  "V6",
+  "V6",
+  "V6",
+  "K7",
+  "K7",
+  "K7",
+  "K7",
+  "K7"),
 text = c(
   "In ( {test score}= _0+ _1 , {class size}+U ), family income is part of (U ). Richer school districts tend to have smaller classes. Which statement is correct?",
   "The OLS estimates ( _0, _1 ) are called least squares estimates. A researcher fits four candidate lines to the same sample and records three sums for each. Exactly one is the OLS line. Which one? Line ( _i u_i ) ( _i| u_i| ) ( _i u_i^{2} ) A 0.00 7.30 9.71 B -1.00 5.80 9.00 C 0.00 6.40 8.13 D 0.50 6.70 8.35",
@@ -2787,4 +2942,85 @@ text = c(
   "A fitted line is \\(\\hat y=1+\\dfrac{6}{10}\\,x\\). A person has \\(x=8\\) and actual \\(y=19\\). Find the OLS residual \\(\\hat u\\) for this person. (round to the hundredths)",
   "A fitted slope is \\(\\hat\\beta_1=\\dfrac{6}{10}\\). Find the predicted change in \\(y\\) when \\(x\\) rises by \\(8\\). (round to the hundredths)",
   "For the fitted line \\(\\hat y=-2+\\dfrac{6}{10}\\,x\\) and the three points \\((X_i, Y_i)\\): \\((3,15),(5,9),(10,1)\\), find \\(\\mathrm{SSR}\\). (round to the hundredths)",
-  "A regression has \\(\\mathrm{SST}=353\\) and \\(\\mathrm{SSR}=176\\). Find the explained sum of squares \\(\\mathrm{SSE}\\). (round to the hundredths)"))
+  "A regression has \\(\\mathrm{SST}=353\\) and \\(\\mathrm{SSR}=176\\). Find the explained sum of squares \\(\\mathrm{SSE}\\). (round to the hundredths)",
+  "In Y = beta0 + beta1X + U, the error term U represents: The residual from the OLS line All factors other than X that affect Y The intercept A mistake in the data",
+  "In an OLS regression, observation i has fitted value Y-hati = 12 and residual U-hati = -3. Which is correct? The actual Yi is 15; OLS under-predicted The actual Yi is 9; OLS over-predicted The actual Yi is 12 The actual Yi is -3",
+  "Four candidate lines are fit to the same sample. Which one is the OLS line? Line sum u-hat sum |u-hat| sum u-hat^2 A 0.00 3.80 3.30 B 0.00 3.20 2.40 C -0.50 3.30 2.55 D 1.00 3.00 3.00",
+  "Across U.S. cities, the number of police officers is positively correlated with the number of crimes. Which statement is best? Police cause crime Correlation alone doesn't show cause: cities with more crime hire more police (and bigger cities have more of both) Police have no effect on crime The correlation must be a data error",
+  "Ice-cream sales and drownings both rise in summer, so they're positively correlated. Best explanation? Ice cream causes drowning Drowning causes ice-cream sales A third factor, hot weather, raises both It's a coincidence",
+  "A researcher wants mu_Y (mu-Y), the average wage of ALL U.S. workers, and computes Y-bar (Y-bar) from 526 workers. Which is true? Both are fixed numbers mu_Y is fixed; Y-bar is a random variable mu_Y is random; Y-bar is fixed They're always equal",
+  "Var(X) = 9. What is Var(X + 5)? What is Var(2X + 5)?",
+  "X takes values 0, 1, 2 with probabilities 0.2, 0.5, 0.3. Find E[X], E[X^2] and Var(X).",
+  "If X and Y are independent, Var(X + Y) equals: Var(X) + Var(Y) Var(X) + Var(Y) + 2Cov(X, Y), which can't be simplified Var(X)*Var(Y) 0",
+  "The SAMPLE variance divides the sum of squared deviations from the mean by: n n - 1 n + 1 the mean",
+  "What does mean(wage1$wage[wage1$female == 1]) compute? The average wage of everyone The share of workers who are female The average wage of women only The wage of the first female worker",
+  "U.S. residents: which is larger, Var(annual income | age = 10) or Var(annual income | age = 40)? age = 10 age = 40 They're equal Can't tell",
+  "log(wage)-hat = 0.58 + 0.083*educ. One more year of education changes predicted wage by about: $0.083 8.3% 0.083% 83%",
+  "log(rent)-hat = 2.1 + 0.45*log(income). What does 0.45 mean? A $1 income rise raises rent 0.45% A 1% income rise raises rent about 0.45% A 1% income rise raises rent 45% A 1% income rise raises rent $0.45",
+  "test-score-hat = 12 + 8*log(income). What does the 8 mean? A $1 income rise adds 8 points A 1% income rise adds about 0.08 points A 1% income rise adds 8 points A 1% income rise raises scores 8%",
+  "sales-hat = 50 + 20*log(advertising). What does the 20 mean?",
+  "In which model is the slope read as %change in y approx 100*beta1*change in x? y on x log(y) on x y on log(x) log(y) on log(x)",
+  "In a regression of y on x, every value of x is multiplied by 10. Which is correct? The slope is multiplied by 10 The slope is divided by 10; the intercept and R^2 stay the same The intercept is divided by 10 R^2 changes",
+  "log(salary)-hat = beta-hat0 + beta-hat1*log(sales), salary in $1000s. Salary is re-measured in dollars. What happens? Only the intercept changes (up by log(1000) approx 6.91) Only the slope changes Both change Neither changes",
+  "Same log-log model, but now SALES is re-measured: millions -> thousands (every value x 1000). What happens? Only the intercept changes Only the slope changes Both change Neither changes",
+  "The unemployment rate falls from 5% to 4%. Which are correct? (Select all.) It fell 1 percentage point It fell 1 percent It fell 20 percent It fell 25 percent",
+  "A model predicts log(wage) = 1.50. What's the predicted wage in dollars?",
+  "You draw 1,000 random samples and compute beta-hat1 in each. If OLS is unbiased (SLR.1-4 hold), which is correct? Every beta-hat1 equals beta1 The beta-hat1's differ, but their average is (about) beta1 The beta-hat1's are all bigger than beta1 beta1 changes from sample to sample",
+  "Why do we prefer an unbiased estimator with SMALLER Var(beta-hat1)? It's always exactly right Its estimates cluster more tightly around beta1, so any one sample is more likely to be close It has a higher R^2 It makes beta1 bigger",
+  "Under SLR.1-5, Var(beta-hat1) = sigma^2/SSTx. Which changes make Var(beta-hat1) LARGER? (Select all.) A larger error variance sigma^2 A smaller sample x values bunched closer together A larger true slope beta1",
+  "sd(beta-hat1) = 0.30. The sample becomes 4 times as large (x spread the same). New sd(beta-hat1)? What if it were 9 times as large?",
+  "Every worker in the sample has exactly 12 years of education. You regress wage on education. What goes wrong? The slope is biased x doesn't vary, so SSTx = 0 and the slope can't be computed R^2 is 1 Nothing",
+  "The spread of food spending around the regression line grows as income grows. Which is correct? OLS is biased Homoskedasticity fails (heteroskedasticity); OLS is still unbiased, but the usual variance formula and se's are wrong MLR.3 fails R^2 must be 0",
+  "In wage-hat = beta-hat0 + beta-hat1*educ + beta-hat2*exper, what does beta-hat1 measure? The total effect of educ, including exper's The change in predicted wage from one more year of educ, holding exper fixed The correlation of wage and educ The wage at 0 education",
+  "After OLS with an intercept, which are ALWAYS true? (Select all.) sum u-hati = 0 sum xiju-hati = 0 for every x y-bar = beta-hat0 + beta-hat1x-bar1 + ... + beta-hatkx-bark y is uncorrelated with u-hat The errors u are uncorrelated with the x's",
+  "In any OLS regression with an intercept, sum xiu-hati (each x times its residual, summed) equals: 0 1 SSR R^2",
+  "Which regressions VIOLATE MLR.3 (no perfect collinearity)? (Select all.) wage on exper (years) and expermonths = 12*exper voteA on expendA, expendB and totexpend = expendA + expendB A regression with k = 3 x's estimated on n = 3 observations wage on educ and exper, which have correlation 0.95 log(wage) on educ and educ^2",
+  "In vote1, you create totexpend = expendA + expendB and run lm(voteA ~ expendA + expendB + totexpend). What does R do? Gives an error and stops Reports NA for totexpend Gives three normal estimates Drops expendA",
+  "Which situation makes MLR.4, E(u | x1, ..., xk) = 0, fail (so the x's are endogenous)? Two x's are correlated 0.8 The error variance differs across x A variable that affects y and is correlated with an included x is left out The sample is small",
+  "In wage = beta0 + beta1*educ + U, ability is in U. Ability raises wages and is positively correlated with education. Which assumption fails? MLR.2 (random sampling) MLR.3 (no perfect collinearity) MLR.4 (zero conditional mean) MLR.5 (homoskedasticity)",
+  "In yield = beta0 + beta1*fertilizer + U, land quality is in U. Farmers put more fertilizer on better land. Then: E[U | fertilizer] = 0, so OLS is unbiased E[U | fertilizer] != 0, so the OLS slope is biased (upward) Only the intercept is affected R^2 must be low",
+  "In test score = beta0 + beta1*class size + U, family income is in U. Richer districts have smaller classes. Which is correct? E[U | class size] = 0 still holds E[U | class size] != 0, so the OLS slope is biased MLR.3 fails Nothing changes; income isn't in the model",
+  "Unbiasedness only needs MLR.1-4. Why not add every variable you can find? Extra variables always cause bias Irrelevant or highly correlated extra variables raise the variance (se) of the estimates you care about R^2 falls MLR.2 fails",
+  "A regression of house price on square footage has R^2 = 0.62. Which is correct? 62% of houses are priced correctly Square footage explains 62% of the variation in price The slope is 0.62 The correlation is 0.62",
+  "The y values aren't all equal, and every observation lies exactly on the OLS line. Then: R^2 = 0 R^2 = 1 and SSR = 0 The slope is 0 SST = 0",
+  "You ADD another x to a regression (same data). R^2: Can rise or fall Never falls Always falls Becomes adjusted R^2",
+  "An omitted X2 raises Y (beta2 > 0) and is POSITIVELY correlated with the included X1. The simple-regression slope on X1 is: Biased upward Biased downward Unbiased Can't tell",
+  "An omitted X2 LOWERS Y (beta2 < 0) and is POSITIVELY correlated with X1. The simple-regression slope on X1 is: Biased upward Biased downward Unbiased Can't tell",
+  "An omitted X2 lowers Y (beta2 < 0) and is NEGATIVELY correlated with X1. The slope on X1 is: Biased upward Biased downward Unbiased Can't tell",
+  "Test scores on class size, leaving out family income. Income raises scores; richer districts have smaller classes. The class-size slope is most likely: Biased upward Biased downward (more negative than the true effect) Unbiased Can't tell",
+  "Crop yield on fertilizer, leaving out land quality. Better land raises yield; farmers use more fertilizer on better land. The fertilizer slope most likely: Overstates the effect (upward bias) Understates it (downward bias) Is unbiased Can't tell",
+  "Exam scores on hours of tutoring, leaving out prior ability. Ability raises scores, but students who tutor most tend to have LOWER prior ability. The tutoring slope most likely: Overstates tutoring's effect Understates tutoring's effect (downward bias) Is unbiased Can't tell",
+  "You regress Y on X1 alone, leaving out X2. When is there NO omitted-variable bias? (Select all.) beta2 = 0 (X2 doesn't affect Y) X1 and X2 are uncorrelated (delta-tilde1 = 0) X2 is correlated with X1 and affects Y The sample is very large",
+  "In wage = beta0 + beta1*educ + U, which omitted factor is MOST likely to bias the educ slope? Shoe size Innate ability The day of the week the survey was taken A random ID number",
+  "Birth weight on cigs: the simple slope is -0.51; holding family income fixed it's -0.46. Income raises birth weight (beta-hat2 > 0), and mothers who smoke more have lower incomes (delta-tilde1 < 0). Which reading is correct? The simple regression understates smoking's harm The simple regression overstates smoking's harm (negative bias of about -0.05) There's no bias Income has no effect",
+  "colGPA on ACT: the simple slope is 0.0271; adding hsGPA, the ACT slope is 0.0094 and hsGPA's is 0.453. What's delta-tilde1, and what's the direction of the bias?",
+  "wage on educ and exper: educ 0.644, exper 0.070. lm(exper ~ educ) gives -1.47. What's the simple educ slope, and what's the bias?",
+  "You add x3, which has NO effect on y but is highly correlated with x1. What happens to beta-hat1? It becomes biased It stays unbiased, but its variance rises Its variance falls MLR.3 fails",
+  "In se(beta-hatj) = sigma-hat/[SSTj(1 - Rj^2)], what is xj? The dependent variable y The residuals The x whose coefficient's standard error you want Whichever x has the largest coefficient",
+  "In wage = beta0 + beta1*educ + beta2*exper + beta3*tenure + U, you want se(beta-hat2) for exper. Which regression gives Rj^2? lm(wage ~ exper) lm(exper ~ wage) lm(exper ~ educ + tenure) lm(wage ~ educ + exper + tenure), its own R^2",
+  "sigma-hat = [SSR/(n - k - 1)]. What does sigma-hat estimate? The sd of beta-hatj R^2 sigma, the sd of the error u The sd of y",
+  "A regression with k = 2 x's on n = 42 observations has SSR = 2,857. Find sigma-hat (round to hundredths).",
+  "n = 62 and xj has sample sd 3.1. Find SSTj.",
+  "sigma-hat = 5.1, SSTj = 363, Rj^2 = 0.74. Find se(beta-hatj).",
+  "Holding sigma-hat and SSTj fixed, what happens to se(beta-hatj) as Rj^2 -> 1? It approaches sigma-hat It shrinks to 0 It doesn't change It grows without bound (multicollinearity)",
+  "reg <- lm(price ~ sqrft + bdrms + lotsize, data = hprice1). hprice1 has 88 rows. df?",
+  "Same regression: compute sigma-hat = (SSR/df).",
+  "For xj = bdrms: compute SSTj and Rj^2.",
+  "Put it together: se(beta-hatj) for bdrms.",
+  "summary(reg) shows \"Residual standard error: 59.83 on 84 degrees of freedom.\" What does that match? Nothing sigma-hat (sigma-hat), and 84 = df = n - k - 1 se of bdrms SSTj",
+  "y has some missing values (NA) but xj doesn't. You compute SSTj from all rows of xj. What happens? Your hand se can differ from summary(reg), because lm() dropped rows your SSTj used Only R^2 is affected R stops with an error Nothing",
+  "n = 88 and k = 3: what's df, and why subtract more than 1?",
+  "sigma-hat^2 is unbiased for sigma^2. Is sigma-hat unbiased for sigma? Yes, always No, the square root of an unbiased estimate isn't exactly unbiased Only if n > 30 Only under heteroskedasticity",
+  "Under MLR.1-5, OLS is BLUE. What does \"Best\" mean? Highest R^2 Smallest variance among all LINEAR UNBIASED estimators Smallest variance among ALL estimators Unbiased",
+  "Which assumptions are the \"Gauss-Markov assumptions\"? Which are needed just for unbiasedness?",
+  "sd(b1-hat) = 0.30. The sample size is cut in half. What is the new sd of the slope estimator?",
+  "The standard deviation of the error doubles while the sample stays the same. sd(b1-hat) was 0.25. New sd?",
+  "How many times larger must the sample be to cut the standard error of b1-hat in half?",
+  "Var(b1-hat) = 0.09. The sample becomes 4 times as large with x spread the same way. What is the new variance?",
+  "The x values become twice as spread out (S_x doubles). What happens to sd(b1-hat) = 0.40?",
+  "R_j^2 rises from 0.5 to 0.8, holding sigma and SST_j fixed. By what factor does se(b_j) change?",
+  "Which changes make SST_x smaller? Select all that apply.",
+  "Which changes would make SST_x larger, holding everything else fixed? Select all that apply.",
+  "Which of the following changes the error variance sigma^2? Select all that apply.",
+  "In multiple regression, which changes make se(b_j-hat) larger? Select all that apply.",
+  "Which change makes the standard error of the slope smaller? A larger sample, more noise in u, x bunched together, a larger intercept"))
